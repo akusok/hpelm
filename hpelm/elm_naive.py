@@ -34,11 +34,12 @@ def ELM_Naive(X, T, nn=None, Xs=None, Ts=None, classification=False):
     
     Th = np.tanh(np.dot(Xs,W) + bias).dot(B)
     if classification:
-        Ts = np.argmax(Ts,1)
+        #Ts = np.argmax(Ts,1)
         Th = np.argmax(Th,1)
-        return float(np.sum(Th==Ts))/Th.shape[0]
-    else:        
-        return np.mean((Th-Ts)**2)
+        #return float(np.sum(Th==Ts))/Th.shape[0]
+    #else:        
+        #return np.mean((Th-Ts)**2)
+    return Th
 
 
 
