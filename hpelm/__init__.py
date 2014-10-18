@@ -4,4 +4,5 @@ Created on Aug 18, 2014
 @author: akusoka1
 '''
 
+from .elm_naive import ELM_Naive as ELM
 
