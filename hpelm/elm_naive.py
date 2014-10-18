@@ -8,11 +8,13 @@ Created on Sat Oct 18 16:55:42 2014
 import numpy as np
 
 
-def ELM_Naive(X, T, nn, Xs=None, Ts=None, classification=False):
+def ELM_Naive(X, T, nn=None, Xs=None, Ts=None, classification=False):
     """Naively simple implementation of ELM.
     """
  
     n,d = X.shape
+    if nn is None:
+        nn = int(d**1.5 + 1);
     mean = np.mean(X,0)
     std = np.std(X,0)
     X = (X - mean) / std        
