@@ -1,0 +1,55 @@
+
+High-Performance Computing toolbox for Extreme Learning Machine
+
+
+Test-Driven Development - Work Units
+
+	1. Test adding neurons to ELM
+		a. Create ELM with fixed dimensionality of inputs and outputs 
+		b. Add neurons with type
+		c. Add neurons several times
+		d. Add linear neurons (type "None")
+		e. Add multiple different types of neurons
+		f. Add neurons with type, projection matrix and bias
+		g. Add multiple neurons with type, projection matrix and bias
+		h. Add single neuron with parameters
+		i. Add neurons with custom transformation function
+
+
+	2. Test basic ELM
+		a. Data is projected correctly without bias
+		b. Data is projected correctly with bias
+		c. Single neuron solves XOR problem (100 initializations)
+		
+		d. Targets can have 1 or 2 dimensions
+		 . Inputs and targets must have same number of samples
+		 . Inputs must have correct dimensionality
+		 . Targets must have correct dimensionality
+		 . ELM must have neurons for training
+		 . ELM must be trained for running
+
+		j. Solve Iris problem with ELM
+				
+				
+	3. Distributed ELM
+				
+	    a. Calculate matrix H distributively, get same results			
+				
+				
+		
+	2. Save and load ELM model
+		a. Get and set ELM model, obtain same results
+		b. Save and load ELM model, obtain same results
+	
+	
+	3. OP-ELM
+		a. Decrease training error with OP-ELM
+	
+	4. TROP-ELM (fast and full modes)
+	
+	5. Solvers and different precision
+	
+	6. Matlab interface
+	
+	
+	8. Distributed OP-ELM

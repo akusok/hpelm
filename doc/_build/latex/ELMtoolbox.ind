@@ -1,0 +1,24 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter A
+  \item add\_neurons() (elm.ELM method), \hyperpage{1}
+
+  \indexspace
+  \bigletter E
+  \item ELM (class in elm), \hyperpage{1}
+  \item elm (module), \hyperpage{1}
+
+  \indexspace
+  \bigletter G
+  \item get\_model() (elm.ELM method), \hyperpage{1}
+
+  \indexspace
+  \bigletter R
+  \item run() (elm.ELM method), \hyperpage{1}
+
+  \indexspace
+  \bigletter T
+  \item train() (elm.ELM method), \hyperpage{1}
+
+\end{theindex}
