@@ -12,8 +12,9 @@ def readme():
     with open('README.rst') as f:
         return f.read()
 
+
 setup(name='hpelm',
-      version='0.1.6',
+      version='0.1.7',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
@@ -35,5 +36,8 @@ setup(name='hpelm',
       install_requires=[
           'numpy',
       ],
+      scripts=['bin/elm_naive.py'],
+      test_suite='nose.collector',
+      tests_require=['nose'],
       include_package_data=True,
       zip_safe=False)

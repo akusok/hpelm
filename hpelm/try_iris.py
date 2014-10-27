@@ -51,8 +51,9 @@ def run_naive():
     Y[50:100,1] = 1
     Y[100:,2] = 1
     
-    acc = ELM_Naive(X, Y, 20, classification=True)
-    print acc*150, '/ 150'
+    Yh = ELM_Naive(X, Y, 20, classification=True)
+    acc = float(np.sum(Y.argmax(1) == Yh)) / Y.shape[0]
+    print "%.1f%%" % (acc*100)
 
 
 if __name__ == "__main__":
