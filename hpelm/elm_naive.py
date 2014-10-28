@@ -14,7 +14,8 @@ def ELM_Naive(X, T, nn=None, Xs=None, Ts=None, classification=False):
  
     n,d = X.shape
     if nn is None:
-        nn = int(d**1.5 + 1);
+        nn = int(3*(d**0.5)*np.log(d));
+        nn = max(nn, 7)
     mean = np.mean(X,0)
     std = np.std(X,0)
     X = (X - mean) / std        

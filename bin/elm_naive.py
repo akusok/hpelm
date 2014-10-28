@@ -10,13 +10,9 @@ import numpy as np
 import os
 from hpelm import ELM_Naive
 
-print __file__
 curdir = os.path.dirname(__file__)
 pX = os.path.join(curdir, "../datasets/iris/iris_data.npy")
 pY = os.path.join(curdir, "../datasets/iris/iris_targets.npy")
-
-print 'pX', pX
-print 'pY', pY
 
 X = np.load(pX)
 Y = np.load(pY)

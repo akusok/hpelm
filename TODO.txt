@@ -2,7 +2,77 @@
 High-Performance Computing toolbox for Extreme Learning Machine
 
 
-Test-Driven Development - Work Units
+Test-driven Development:
+==================================
+
+Stages:
+      I. Single machine basic ELM
+     II. Multi-machine basic ELM
+    III. Parallel regularization
+     IV. High-performance solvers
+      V. Other algorithms (OS-ELM)
+
+
+I. Single machine basic ELM
+
+Acceptance tests:
+    1. Run ELM on Sine data
+    2. Run ELM on Sine data in Matlab
+
+Walking skeleton:
+    1. Load data
+    2. Train ELM
+    3. Report LOO error
+
+Refactor testing:
+
+    Datasets, various problem sizes, times and speed-up
+    
+        0. Run ELM on Iris dataset (classification, unittest)
+        1. Run ELM on Breast cancer dataset (binary)
+        2. Run ELM on Wine dataset (classification, easy)
+        3. Run ELM on Housing dataset (regression)
+        4. Run ELM on Power consumption dataset (regression, bigger)
+        5. Run ELM on Song year dataset (regression, bigger)
+        6. Run ELM on MNIST dataset (classification, very big)
+        7. Run ELM on HIGGS dataset (binary, out-of-memory)
+
+    Data formats:
+    
+        0. Test saving to .txt
+        1. Test loading from .txt
+        2. Test saving to .h5
+        3. Test loading from .h5
+
+    ELM functionality:
+
+        0. Test save and load model
+
+        1. Test correct projections and transformations
+
+        2. Test model initializing
+
+        3. Test singular inputs (1-dim), classification targets
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Unit Testing - Work Units
 
 	1. Test adding neurons to ELM
 		a. Create ELM with fixed dimensionality of inputs and outputs 
