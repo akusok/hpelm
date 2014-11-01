@@ -1,2 +1,2 @@
 include README.rst
-include datasets/iris/*
+include datasets/*

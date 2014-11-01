@@ -11,18 +11,86 @@ Stages:
     III. Parallel regularization
      IV. High-performance solvers
       V. Other algorithms (OS-ELM)
-
+            MSE for classification?
 
 I. Single machine basic ELM
 
-Acceptance tests:
-    1. Run ELM on Sine data
-    2. Run ELM on Sine data in Matlab
+    Acceptance tests:
+        1. Run ELM on Sine data
+        2. Run ELM on Sine data in Matlab
+    
+    Walking skeleton:
+        1. Load data
+        2. Train ELM
+        3. Report LOO error
 
-Walking skeleton:
-    1. Load data
-    2. Train ELM
-    3. Report LOO error
+    Unit tests:
+        1. Load data from files
+            1a. Load from .txt text files
+            1b. Load from .h5 HDF5 files created in Matlab
+            1c. Load one variable from .h5, other is passed directly
+            *1d. Save model to file
+            *1e. Load model from file
+
+        *2. Error functions
+            2a. MSE LOO error
+            *2b. LOO for classification
+
+        *3. Data loader
+            3a. Reshape 1-dim X and add bias
+            3b. Reshape 1-dim X and 1-dim Y
+            3c. Classification - transform integer classes into one-out-of-all code
+            3d. Classification - keep correct classification
+            3e. Classification - correct predictions for multiclass
+            3f. Save mean and std of training data
+            3g. Apply mean and std to new test data
+            3h. Read text files with different delimiters
+            *3i. Return iterator with batch parameter
+
+        4. Model initialization
+            4a. Default initialization has linear and tanh neurons
+            4b. Linear neurons are added with 'lin' code
+            4c. Linear neurons are added with None code
+            4d. Tanh neurons are added with 'tanh' code
+            4e. Custom neurons can be added with arbitrary function
+            4f. Projection matrix and bias are used correctly if provided
+            4g. Different projection matrices and biases are combined correctly
+            4h. Can pass a list of transformation function for initialization
+            4i. Linear neurons cause W=I and nn=d.
+            
+        *5. Helper functions
+            *5a. Can create a list of RBF kernels
+            *5b. Can initialize RBF kernels from random samples
+            *5c. Can initialize RBF kernels with given centers
+            *5d. Can use any given distance function with RBF kernels
+            *5e. Can write data to HDF5 file (all at once)
+            *5f. Can read data from HDF5 file (all at once)
+            *5g. Can append data to existing HDF5 file
+
+        6. Limited memory ELM
+            *6a. Keep X and H'H in memory, don't keep whole H
+            *6b. Add memory consumption limit and calculate batch size from it
+            *6c. Out-of-memory ELM - partial loading from HDD with HDF5 
+
+        *7. Integration with Matlab (test script)
+            """Matlab interaction is done via file system and a run script.
+
+            There is an exchange folder, where Matlab saves its variables in
+            hdf5 format, and then generates the Python run script. Another simple
+            command from Matlab runs this script, or it can be edited and run
+            independently from Matlab. Also the whole folder can be transfered
+            anywhere and the script run from anywhere. The script can be edited
+            to set any possible parameters of the ELM.
+            """
+            *7a. Save data from Matlab to HDF5 file
+            *7b. Load data from HDF5 file to Matlab
+            *7c. Prepare data files given an exchange folder
+            *7d. Prepare run script given an exchange folder
+            *7e. Train simple ELM given an exchange folder
+            *7f. Train ELM and return results back
+            *7g. Predict for new data using trained ELM
+
+
 
 Refactor testing:
 
