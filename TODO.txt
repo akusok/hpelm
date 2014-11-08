@@ -36,16 +36,19 @@ I. Single machine basic ELM
             2a. MSE LOO error
             *2b. LOO for classification
 
-        *3. Data loader
+        3. Data loader
             3a. Reshape 1-dim X and add bias
-            3b. Reshape 1-dim X and 1-dim Y
-            3c. Classification - transform integer classes into one-out-of-all code
-            3d. Classification - keep correct classification
-            3e. Classification - correct predictions for multiclass
-            3f. Save mean and std of training data
-            3g. Apply mean and std to new test data
-            3h. Read text files with different delimiters
-            *3i. Return iterator with batch parameter
+            3b. Reshape 1-dim Y
+            3c. Test encoder 1-dim
+            3d. Test encoder 2-dim
+            3e. Test encoder string
+            3f. Test decoder 1-dim
+            3g. Test decoder string
+            3h. Classification - transform integer classes into one-out-of-all code
+            3i. Classification - transform anything to classes
+            3j. Get mean and std of training data
+            3k. Read text files with different delimiters
+            3l. Batch parameter works
 
         4. Model initialization
             4a. Default initialization has linear and tanh neurons
