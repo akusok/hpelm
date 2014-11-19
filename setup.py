@@ -14,11 +14,11 @@ def readme():
 
 
 setup(name='hpelm',
-      version='0.1.9',
+      version='0.2.0',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
-          'Development Status :: 2 - Pre-Alpha',
+          'Development Status :: 3 - Alpha',
           'Environment :: Console',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: BSD License',

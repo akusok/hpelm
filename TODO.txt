@@ -7,169 +7,75 @@ Test-driven Development:
 
 Stages:
       I. Single machine basic ELM
-     II. Multi-machine basic ELM
-    III. Parallel regularization
-     IV. High-performance solvers
-      V. Other algorithms (OS-ELM)
+     II. Benchmark data with ELM
+    III. Multi-machine basic ELM
+     IV. Parallel regularization
+      V. High-performance solvers
+     VI. Other algorithms (OS-ELM)
             MSE for classification?
 
-I. Single machine basic ELM
+
+II. Benchmark data with ELM
 
     Acceptance tests:
-        1. Run ELM on Sine data
-        2. Run ELM on Sine data in Matlab
-    
-    Walking skeleton:
-        1. Load data
-        2. Train ELM
-        3. Report LOO error
+        1. Run benchmark on data from OP-ELM, get similar performance
+        *2. Run benchmark on data from OP-ELM, get lower runtime
+        *3. Run incremental benchmark on big data, plot runtime graph
 
-    Unit tests:
-        1. Load data from files
-            1a. Load from .txt text files
-            1b. Load from .h5 HDF5 files created in Matlab
-            1c. Load one variable from .h5, other is passed directly
-            *1d. Save model to file
-            *1e. Load model from file
 
-        *2. Error functions
-            2a. MSE LOO error
-            *2b. LOO for classification
+    1. Run ELM on all required datasets
+        1a. Classification_Iris
+        1b. Classification_Pima Indians Diabetes
+        1c. Classification_Wine 
+        1d. Classification_Wisconsin Breast Cancer
+        1e. Regression_Abalone
+        1f. Regression_Ailerons
+        1g. Regression_Auto price
+        1h. Regression_Bank
+        1i. Regression_Boston
+        1j. Regression_Breast cancer
+        1k. Regression_Computer
+        1l. Regression_CPU
+        1m. Regression_Elevators
+        1n. Regression_Servo
+        1o. Regression_Stocks
 
-        3. Data loader
-            3a. Reshape 1-dim X and add bias
-            3b. Reshape 1-dim Y
-            3c. Test encoder 1-dim
-            3d. Test encoder 2-dim
-            3e. Test encoder string
-            3f. Test decoder 1-dim
-            3g. Test decoder string
-            3h. Classification - transform integer classes into one-out-of-all code
-            3i. Classification - transform anything to classes
-            3j. Get mean and std of training data
-            3k. Read text files with different delimiters
-            3l. Batch parameter works
 
-        4. Model initialization
-            4a. Default initialization has linear and tanh neurons
-            4b. Linear neurons are added with 'lin' code
-            4c. Linear neurons are added with None code
-            4d. Tanh neurons are added with 'tanh' code
-            4e. Custom neurons can be added with arbitrary function
-            4f. Projection matrix and bias are used correctly if provided
-            4g. Different projection matrices and biases are combined correctly
-            4h. Can pass a list of transformation function for initialization
-            4i. Linear neurons cause W=I and nn=d.
-            
-        *5. Helper functions
-            *5a. Can create a list of RBF kernels
-            *5b. Can initialize RBF kernels from random samples
-            *5c. Can initialize RBF kernels with given centers
-            *5d. Can use any given distance function with RBF kernels
-            *5e. Can write data to HDF5 file (all at once)
-            *5f. Can read data from HDF5 file (all at once)
-            *5g. Can append data to existing HDF5 file
+    *2. Limited memory ELM
+        *2a. Keep X and H'H in memory, don't keep whole H
+        *2b. Add memory consumption limit and calculate batch size from it
+        *2c. Out-of-memory ELM - partial loading from HDD with HDF5 
 
-        6. Limited memory ELM
-            *6a. Keep X and H'H in memory, don't keep whole H
-            *6b. Add memory consumption limit and calculate batch size from it
-            *6c. Out-of-memory ELM - partial loading from HDD with HDF5 
 
-        *7. Integration with Matlab (test script)
-            """Matlab interaction is done via file system and a run script.
+    *3. OP-ELM, MRSR2
 
-            There is an exchange folder, where Matlab saves its variables in
-            hdf5 format, and then generates the Python run script. Another simple
-            command from Matlab runs this script, or it can be edited and run
-            independently from Matlab. Also the whole folder can be transfered
-            anywhere and the script run from anywhere. The script can be edited
-            to set any possible parameters of the ELM.
-            """
-            *7a. Save data from Matlab to HDF5 file
-            *7b. Load data from HDF5 file to Matlab
-            *7c. Prepare data files given an exchange folder
-            *7d. Prepare run script given an exchange folder
-            *7e. Train simple ELM given an exchange folder
-            *7f. Train ELM and return results back
-            *7g. Predict for new data using trained ELM
+
+    *4. Some kind of cross-validation for variable selection
 
 
 
-Refactor testing:
 
-    Datasets, various problem sizes, times and speed-up
-    
-        0. Run ELM on Iris dataset (classification, unittest)
-        1. Run ELM on Breast cancer dataset (binary)
-        2. Run ELM on Wine dataset (classification, easy)
-        3. Run ELM on Housing dataset (regression)
-        4. Run ELM on Power consumption dataset (regression, bigger)
-        5. Run ELM on Song year dataset (regression, bigger)
-        6. Run ELM on MNIST dataset (classification, very big)
-        7. Run ELM on HIGGS dataset (binary, out-of-memory)
+III. Multi-machine basic ELM
 
-    Data formats:
-    
-        0. Test saving to .txt
-        1. Test loading from .txt
-        2. Test saving to .h5
-        3. Test loading from .h5
-
-    ELM functionality:
-
-        0. Test save and load model
-
-        1. Test correct projections and transformations
-
-        2. Test model initializing
-
-        3. Test singular inputs (1-dim), classification targets
-
-        
+    Acceptance tests:
+        *1. Run benchmark on data from OP-ELM, get similar performance
+        *2. Run benchmark on data from OP-ELM, get lower runtime
+        *3. Run incremental benchmark on big data, plot runtime graph
+        *4. Run incremental benchmark with more cores/nodes, plot runtime graph
 
 
 
 
 
 
-
-
-
-
-
-
-
+  
 
 
 
 
 Unit Testing - Work Units
 
-	1. Test adding neurons to ELM
-		a. Create ELM with fixed dimensionality of inputs and outputs 
-		b. Add neurons with type
-		c. Add neurons several times
-		d. Add linear neurons (type "None")
-		e. Add multiple different types of neurons
-		f. Add neurons with type, projection matrix and bias
-		g. Add multiple neurons with type, projection matrix and bias
-		h. Add single neuron with parameters
-		i. Add neurons with custom transformation function
 
-
-	2. Test basic ELM
-		a. Data is projected correctly without bias
-		b. Data is projected correctly with bias
-		c. Single neuron solves XOR problem (100 initializations)
-		
-		d. Targets can have 1 or 2 dimensions
-		 . Inputs and targets must have same number of samples
-		 . Inputs must have correct dimensionality
-		 . Targets must have correct dimensionality
-		 . ELM must have neurons for training
-		 . ELM must be trained for running
-
-		j. Solve Iris problem with ELM
 				
 				
 	3. Distributed ELM (MPI)

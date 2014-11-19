@@ -28,22 +28,52 @@ def decode(data, cdict):
     return [un_cdict[i] for i in np.argmax(data, 1)]  
 
 
+def np_generator(D, batch, add_bias=False, c_dict=None):
+    """Returns numpy array part-by-part
+    """
+    N = len(D)
+    nb = N/batch
+    if N > nb*batch: nb += 1  # add last incomplete step    
+    for b in xrange(nb):
+        start = b*batch
+        step = min(batch, N-start)
+        D1 = D[start : start+step]
+        if add_bias:
+            D1 = np.hstack((D1, np.ones((step,1), dtype=D.dtype)))
+        elif c_dict is not None:
+            D1 = encode(D1, c_dict)
+        yield D1  
+    
+
+def hdf5_generator(h5, node, batch, add_bias=False, c_dict=None):
+    """Reads and returns HDF5 file array part-by-part.
+    """
+    N = node.shape[1]  # HDF5 files are transposed, for Matlab compatibility        
+    nb = N/batch
+    if N > nb*batch: nb += 1  # add last incomplete step    
+    for b in xrange(nb):
+        start = b*batch
+        step = min(batch, N-start)
+        D1 = node[:, start : start+step].T
+        if add_bias:
+            D1 = np.hstack((D1, np.ones((step,1), dtype=D1.dtype)))
+        elif c_dict is not None:
+            D1 = encode(D1, c_dict)            
+        yield D1
+    h5.close()  # closing file
+
+
+
 def batchX(X, batch=10000, delimiter=" "):
     """Iterates over data X from whatever source.
     """
     if isinstance(X, basestring) and (X[-3:] == ".h5"):  # read partially from HDF5
         h5 = openFile(X)
-        for node in h5.walk_nodes(): pass  # find a node with whatever name
-        N = node.shape[1]  # HDF5 files are transposed, for Matlab compatibility        
-        nb = N/batch
-        if N > nb*batch: nb += 1  # add last incomplete step
-        for b in xrange(nb):
-            start = b*batch
-            step = min(batch, N-start)
-            X1 = node[:, start : start+step].T
-            X1 = np.hstack((X1, np.ones((step,1), dtype=X.dtype)))
-            yield X1
-        h5.close()  # closing file
+        for node in h5.walk_nodes(): # find a node with whatever name
+            pass
+        inputs = node.shape[0]  # HDF5 files are transposed, for Matlab compatibility     
+        samples = node.shape[1]            
+        bX = hdf5_generator(h5, node, batch, add_bias=True)        
 
     else:  # load whole X into memory
         # load text file
@@ -58,18 +88,13 @@ def batchX(X, batch=10000, delimiter=" "):
                               "(*.h5), or Numpy binary (*.npy)")
         if not isinstance(X, np.ndarray): X = np.array(X)
         if len(X.shape) == 1: X = X.reshape(-1,1)  # add second dimension
-        
-        # return data
-        N = X.shape[0]
-        nb = N/batch
-        if N > nb*batch: nb += 1  # add last incomplete step
-        for b in xrange(nb):
-            start = b*batch
-            step = min(batch, N-start)
-            X1 = X[start : start+step]
-            X1 = np.hstack((X1, np.ones((step,1), dtype=X.dtype)))
-            yield X1  
+        inputs = X.shape[1]
+        samples = X.shape[0]
+        bX = np_generator(X, batch, add_bias=True)        
 
+    # return data
+    return bX, inputs, samples
+    
 
 def batchT(T, batch=10000, delimiter=" ", c_dict=None):
     """Iterates over targets T with correct transformation.
@@ -80,18 +105,10 @@ def batchT(T, batch=10000, delimiter=" ", c_dict=None):
 
     if isinstance(T, basestring) and (T[-3:] == ".h5"):  # read partially from HDF5
         h5 = openFile(T)
-        for node in h5.walk_nodes(): pass  # find a node with whatever name
-        N = node.shape[1]  # HDF5 files are transposed, for Matlab compatibility        
-        nb = N/batch
-        if N > nb*batch: nb += 1  # add last incomplete step
-        for b in xrange(nb):
-            start = b*batch
-            step = min(batch, N-start)
-            T1 = node[:, start : start+step].T
-            if c_dict is not None:
-                T1 = encode(T1, c_dict)
-            yield T1
-        h5.close()  # closing file
+        for node in h5.walk_nodes(): # find a node with whatever name
+            pass
+        targets = node.shape[0]  # HDF5 files are transposed, for Matlab compatibility 
+        bT = hdf5_generator(h5, node, batch, c_dict=c_dict)        
 
     else:  # load whole T into memory
         # load text file
@@ -104,27 +121,19 @@ def batchT(T, batch=10000, delimiter=" ", c_dict=None):
                 raise IOError("Targets file T should be text (*.txt), "+
                               "a compressed text (*.gz/*.bz2), an HDF5 file "+
                               "(*.h5), or Numpy binary (*.npy)")
-
-        # checks for non-classification targets
-        if c_dict is None:
+        if c_dict is None:  # classification targets have their special treatment
             if not isinstance(T, np.ndarray): T = np.array(T)
-            if len(T.shape) == 1: T = T.reshape(-1,1)  # add second dimension
-        
-        # return data
-        N = len(T)
-        nb = N/batch
-        if N > nb*batch: nb += 1  # add last incomplete step
-        for b in xrange(nb):
-            start = b*batch
-            step = min(batch, N-start)
-            T1 = T[start : start+step]
-            if c_dict is not None:
-                T1 = encode(T1, c_dict)
-            yield T1  
+            if len(T.shape) == 1: T = T.reshape(-1,1)  # add second dimension        
+            targets = T.shape[1]
+        bT = np_generator(T, batch, c_dict=c_dict)        
+
+    # return data
+    if c_dict is not None: targets = len(c_dict)  # classification targets are unique classes
+    return bT, targets
 
 
 def meanstdX(X, batch=10000, delimiter=" "):
-    """Computes mean and standard deviation of X.
+    """Computes mean and standard deviation of X, skips binary features.
     """
     if isinstance(X, basestring) and (X[-3:] == ".h5"):  # read partially from HDF5
         h5 = openFile(X)
@@ -136,16 +145,25 @@ def meanstdX(X, batch=10000, delimiter=" "):
 
         E_x = np.zeros((d,), dtype=np.float64)
         E_x2 = np.zeros((d,), dtype=np.float64)
+        idx_binary = range(d)  # indexes of binary features
         for b in xrange(nb):
             start = b*batch
             step = min(batch, N-start)
             X1 = node[:, start : start+step].astype(np.float).T
             E_x += np.mean(X1,0) * (1.0*step/N)    
-            E_x2 += np.mean(X1**2,0) * (1.0*step/N)    
-
+            E_x2 += np.mean(X1**2,0) * (1.0*step/N)   
+            # check which features are binary
+            b1 = []            
+            for idx in idx_binary:
+                X1bin = X1[:, idx]     
+                if np.abs(X1bin).max() <= 1:                             
+                    if np.allclose(X1bin, X1bin.astype(np.int)):
+                        b1.append(idx)
+            idx_binary = b1
+            
         meanX = E_x
         E2_x = E_x**2
-        stdX = (E_x2 - E2_x)**0.5            
+        stdX = (E_x2 - E2_x)**0.5        
         h5.close()  # closing file
 
     else:  # load whole X into memory
@@ -162,9 +180,20 @@ def meanstdX(X, batch=10000, delimiter=" "):
         if not isinstance(X, np.ndarray): X = np.array(X)
         if len(X.shape) == 1: X = X.reshape(-1,1)  # add second dimension
 
+        idx_binary = []  # find binary features, where we skip normalization
+        for idx in xrange(X.shape[1]):
+            X1bin = X[:, idx]     
+            if np.abs(X1bin).max() <= 1:                             
+                if np.allclose(X1bin, X1bin.astype(np.int)):
+                    idx_binary.append(idx)
+
         meanX = X.mean(0)
         stdX = X.std(0)
 
+    # remove normalization of binary features
+    for idx in idx_binary:
+        meanX[idx] = 0
+        stdX[idx] = 1
     # fix for constant input features, prevents division by zero
     stdX[stdX == 0] = 1
     return meanX, stdX
