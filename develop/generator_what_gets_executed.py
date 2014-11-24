@@ -6,12 +6,12 @@ Created on Thu Nov  6 16:15:27 2014
 """
 
 
-def gen():
+def gen(k=None):
     print "starting"
     for i in range(3):
         print "generating i: ", i
         yield i
-    print "finalizing"
+    print "finalizing", k
     
 def gen2():
     d = 1
@@ -32,3 +32,23 @@ d,g = gen2()
 print "d = ", d
 for g1 in g:
     print g1
+
+###############################
+f = gen('f')
+g = gen('g')
+for a,b in zip(f,g):
+    print a,b  # only F finalizes!
+     
+###############################
+print "+++++++++++++++++"
+f = gen('f')
+g = gen('g')
+for a in f:
+    b = g.next()
+    print a,b  # only F finalizes!
+
+
+
+
+
+    

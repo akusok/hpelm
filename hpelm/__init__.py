@@ -9,3 +9,4 @@ from .elm import ELM
 from .data_loader import batchX, batchT, encode, decode, meanstdX, c_dictT
 from .h5tools import h5write, h5read
 from .neuron_generator import gen_neurons
+from .error_functions import press, press_L2

@@ -59,9 +59,9 @@ def hdf5_generator(h5, node, batch, add_bias=False, c_dict=None):
             D1 = np.hstack((D1, np.ones((step,1), dtype=D1.dtype)))
         elif c_dict is not None:
             D1 = encode(D1, c_dict)            
+        if start+step == N: h5.close()  # closing file on last iteration
         yield D1
-    h5.close()  # closing file
-
+    
 
 
 def batchX(X, batch=10000, delimiter=" "):
@@ -72,7 +72,7 @@ def batchX(X, batch=10000, delimiter=" "):
         for node in h5.walk_nodes(): # find a node with whatever name
             pass
         inputs = node.shape[0]  # HDF5 files are transposed, for Matlab compatibility     
-        samples = node.shape[1]            
+        N = node.shape[1]
         bX = hdf5_generator(h5, node, batch, add_bias=True)        
 
     else:  # load whole X into memory
@@ -89,11 +89,11 @@ def batchX(X, batch=10000, delimiter=" "):
         if not isinstance(X, np.ndarray): X = np.array(X)
         if len(X.shape) == 1: X = X.reshape(-1,1)  # add second dimension
         inputs = X.shape[1]
-        samples = X.shape[0]
+        N = X.shape[0]
         bX = np_generator(X, batch, add_bias=True)        
 
     # return data
-    return bX, inputs, samples
+    return bX, inputs, N
     
 
 def batchT(T, batch=10000, delimiter=" ", c_dict=None):
@@ -189,6 +189,7 @@ def meanstdX(X, batch=10000, delimiter=" "):
 
         meanX = X.mean(0)
         stdX = X.std(0)
+        N = X.shape[0]
 
     # remove normalization of binary features
     for idx in idx_binary:

@@ -7,10 +7,11 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 from numpy.linalg import lstsq
-from scipy.special import expit as sigm
 
 from .data_loader import batchX, batchT, meanstdX, c_dictT, decode
 from .neuron_generator import gen_neurons
+from .regularizations import semi_Tikhonov, mrsr
+from .error_functions import press
 
 
 class ELM(object):
@@ -29,6 +30,8 @@ class ELM(object):
         if "classification" in args:
             self.classification = True
             print "starting ELM for classification"
+        elif "multiclass" in args:
+            self.multiclass = True
         elif "timeseries" in args:
             self.timeseries = True
             print "starting ELM for timeseries"
@@ -45,9 +48,29 @@ class ELM(object):
         self.B = None
         self.Xmean = 0
         self.Xstd = 1
-        self.Tmean = 0
         self.C_dict = None  # dictionary for translating classes to binary representation
+        self.cI = 1E-9
         np.set_printoptions(precision=5, suppress=True)
+
+
+
+    def add_neurons(self, neurons, N):
+        # runs if there is an uninitialized model or more neurons specified
+        if (self.W is None) or (len(neurons) > 0):  
+            # init W correctly
+            if self.W is None: 
+                self.W = np.empty((self.inputs+1, 0))
+            if len(neurons) == 0:  # basic setup if no neurons are specified
+                nn = min(5*self.inputs, int(N**0.5))
+                neurons = ((self.inputs, 'lin'), (nn, 'sigm'))
+            elif not hasattr(neurons[0], '__iter__'):  # fix neurons not being inside a list
+                neurons = [neurons]
+            # add neurons of desired type
+            for ntype in neurons:
+                ufunc, W = gen_neurons(self.inputs, self.Xmean, self.Xstd, ntype)
+                self.ufunc.extend(ufunc)  
+                self.W = np.hstack((self.W, W))
+
 
 
     def train(self, X, T, batch=10000, delimiter=" ", neurons=[]):
@@ -56,54 +79,36 @@ class ELM(object):
         Neurons: (number, type, [W], [B])
         """        
         
+        # get parameters of new data and add neurons
         self.Xmean, self.Xstd = meanstdX(X, batch, delimiter)
-        if self.classification: 
-            self.C_dict = c_dictT(T, batch)
-        else:
-            self.Tmean,_ = meanstdX(T, batch, delimiter)
-        
+        if self.classification: self.C_dict = c_dictT(T, batch)
+            
         # get data iterators
-        genX, self.inputs, N  = batchX(X, batch, delimiter)
-        genT, self.targets = batchT(T, batch, delimiter, self.C_dict)
+        genX, self.inputs, N = batchX(X, batch, delimiter)
+        genT, self.targets  = batchT(T, batch, delimiter, self.C_dict)
+        self.add_neurons(neurons, N)
         
-        # uninitialized model or more neurons 
-        if (self.W is None) or (len(neurons) > 0):  
-            # init W correctly
-            if self.W is None: self.W = np.empty((self.inputs+1, 0))
-            if len(neurons) == 0:  # basic setup if no neurons are specified
-                nn = min(5*self.inputs, int(N**0.5))
-                neurons = ((self.inputs, 'lin'), (nn, 'sigm'))
-            elif not hasattr(neurons[0], '__iter__'):  # fix neurons not being in a list
-                neurons = [neurons]
-
-            # add neurons of desired type
-            for ntype in neurons:
-                ufunc, W = gen_neurons(self.inputs, self.Xmean, self.Xstd, ntype)
-                self.ufunc.extend(ufunc)  
-                self.W = np.hstack((self.W, W))
-
-        X = np.vstack(genX)
-        T = np.vstack(genT)
-        
-        # add semi-Tikhonov regularization: small random noise projected to "zero"
-        # "zero" = zero + E[T], otherwise we introduce a bias
-        nT = X.shape[0]/10 + 10
-        xT = np.random.rand(nT, X.shape[1]-1) * 10E-9
-        xT = np.hstack((xT, np.ones((nT,1))))
-        X = np.vstack((X, xT))
-        T = np.vstack((T, np.tile(self.Tmean, (nT,1))))
-        
-        H = np.dot(X,self.W)
-
-        for i in xrange(H.shape[1]):
-            H[:,i] = self.ufunc[i](H[:,i])
+        # project data
+        nn = len(self.ufunc)
+        HH = np.zeros((nn, nn))
+        HT = np.zeros((nn, self.targets))
+        for X,T in zip(genX, genT):
+            X,T = semi_Tikhonov(X,T)  # add Tikhonov regularization
             
-        T = np.dot(H.T, T)                  
-        nn = H.shape[1]
-        H = np.dot(H.T, H) + 1E-9 * np.eye(nn)
+            # get hidden layer outputs
+            H = np.dot(X,self.W)
+            for i in xrange(H.shape[1]):
+                H[:,i] = self.ufunc[i](H[:,i])
             
-        self.B = lstsq(H, T)[0]
-        #self.B = np.linalg.pinv(H).dot(T)
+            # least squares solution - multiply both sides by H'
+            p = float(X.shape[0]) / N
+            HH += np.dot(H.T, H)*p
+            HT += np.dot(H.T, T)*p
+            
+        # solve ELM model
+        HH += self.cI * np.eye(nn)  # enhance solution stability
+        self.B = lstsq(HH, HT)[0]
+        #self.B = np.linalg.pinv(HH).dot(HT)
         
 
 
@@ -117,54 +122,142 @@ class ELM(object):
         assert self.B is not None, "train this model first"
         genX, inputs, _ = batchX(X, batch, delimiter)
         
-        X = np.vstack(genX)
-        assert self.inputs == inputs, "incorrect dimensionality of inputs"
+        results = []
+        for X in genX:        
+            assert self.inputs == inputs, "incorrect dimensionality of inputs"
+            # project test inputs to outputs
+            H = np.dot(X,self.W)
+            for i in xrange(H.shape[1]):
+                H[:,i] = self.ufunc[i](H[:,i])
+            Th1 = H.dot(self.B)  
+            # additional processing for classification
+            if self.classification:
+                Th1 = decode(Th1, self.C_dict)
+            results.append(Th1)
 
-        H = np.dot(X,self.W)
-        for i in xrange(H.shape[1]):
-            H[:,i] = self.ufunc[i](H[:,i])
- 
-        Th = H.dot(self.B)  
-        if self.classification:
-            if self.multiclass:
-                Th = np.array(Th > 0.5, dtype=np.int)
-            else:
-                Th = decode(Th, self.C_dict)
+        # merge results            
+        if isinstance(results[0], np.ndarray):
+            Th = np.vstack(results)
+        else:
+            Th = []  # merge results which are lists of items
+            for r1 in results: Th.extend(r1)
+                
         return Th
         
 
-    def loo_press(self, X, Y):
+
+    def loo_press(self, X, Y, batch=10000, delimiter=" "):
         """PRESS (Predictive REsidual Summ of Squares) error.
         
         Trick is to never calculate full HPH' matrix.
         """
-        X = np.vstack(batchX(X)[0])        
-        Y = np.vstack(batchT(Y)[0])        
-        
-        H = np.dot(X,self.W)
-        for i in xrange(H.shape[1]):
-            H[:,i] = self.ufunc[i](H[:,i])
-                    
-        # TROP-ELM stuff with lambda
-        lmd = 0
-        Ht = H.T
-        HtY = Ht.dot(Y)
-        P = np.linalg.inv(Ht.dot(H) + np.eye(H.shape[1])*lmd)
-        HP = H.dot(P)
 
-        e1 = Y - HP.dot(HtY)  # e1 = Y - HPH'Y
-        Pdiag = np.einsum('ij,ji->i', HP, Ht)        
-        e2 = np.ones((H.shape[0], )) - Pdiag  # diag(HPH')
+        MSE = 0
+        genX, _, N = batchX(X, batch, delimiter)
+        genT, _  =   batchT(Y, batch, delimiter, self.C_dict)
 
-        e = e1 / np.tile(e2, (Y.shape[1],1)).T  # PRESS error
-        E = np.mean(e**2)  # MSE PRESS        
+        for X,T in zip(genX, genT):
+            H = np.dot(X,self.W)
+            for i in xrange(H.shape[1]):
+                H[:,i] = self.ufunc[i](H[:,i])
+            
+            p = float(X.shape[0]) / N
+            MSE += press(H, T, self.classification, self.multiclass) * p
+        
+        return MSE
+        
+        
+    def prune_op(self, X, T, batch=10000, delimiter=" "):
+        """Prune ELM as in OP-ELM paper.
+        """        
+        # get data iterators
+        genX, self.inputs, N = batchX(X, batch, delimiter)
+        genT, self.targets  = batchT(T, batch, delimiter, self.C_dict)
+        
+        # project data
+        nn = len(self.ufunc)
+        delta = 0.95  # improvement of MSE for adding more neurons
+        nfeats = []
+        neurons = np.zeros((nn,))
+        for X1,T1 in zip(genX, genT):
+            X1,T1 = semi_Tikhonov(X1,T1)  # add Tikhonov regularization
+            
+            # get hidden layer outputs
+            H = np.dot(X1,self.W)
+            for i in xrange(H.shape[1]):
+                H[:,i] = self.ufunc[i](H[:,i])
+            
+            # get ranking of neurons in that batch
+            rank = mrsr(H, T1, nn)
+            
+            # select best number of neurons
+            MSE = press(H[:, rank[:2]], T1, self.classification, self.multiclass)
+            R_opt = rank[:2]
+            early_stopping = int(nn/10) + 1  # early stopping if no improvement in 10% neurons
+            last_improvement = 0
+            for i in range(3, nn):
+                last_improvement += 1
+                r = rank[:i]
+                mse1 = press(H[:,r], T1, self.classification, self.multiclass)
+                if mse1 < MSE * delta:
+                    MSE = mse1
+                    R_opt = r
+                    last_improvement = 0
+                elif last_improvement > early_stopping:  # early stopping if MSE raises 
+                    break
+            r = R_opt
+            
+            # save number of neurons and their ranking information
+            nfeats.append(len(r)) 
+            # first selected neuron gets weight 2, last one gets weight 1
+            neurons[r] += np.linspace(2,1,num=len(r))
 
-        return E
+        # combine neuron ranking
+        nfeats = np.round(np.mean(nfeats))
+        neurons = np.argsort(neurons)[::-1][:nfeats]  # sorting in descending order
         
+        # update ELM parameters and re-calculate B
+        self.W = self.W[:,neurons]
+        self.ufunc = [self.ufunc[j] for j in neurons]
+        self.train(X, T, batch=batch, delimiter=delimiter)
         
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
         
         

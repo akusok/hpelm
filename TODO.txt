@@ -41,16 +41,33 @@ II. Benchmark data with ELM
         1o. Regression_Stocks
 
 
-    *2. Limited memory ELM
-        *2a. Keep X and H'H in memory, don't keep whole H
+    *2. Limited memory ELM: process X by batches, keep only H'H in memory
+        2a. Train ELM by batches
+        2b. Predict with ELM by batches
+        2c. Calculate MSE by batches
         *2b. Add memory consumption limit and calculate batch size from it
         *2c. Out-of-memory ELM - partial loading from HDD with HDF5 
 
+    
+    *3. Error function: PRESS 
+        3a. PRESS for regression
+        3b. PRESS for classification ignores small noise
+        3c. PRESS for multiclass ignores small noise
+        3d. PRESS for classification reports misclassifications
+        3e. PRESS for multiclass reports misclassifications
+        *3. Monte-carlo cross-validation (batch)
 
-    *3. OP-ELM, MRSR2
+
+    *4. Variable selection: OP
+        4a. MRSR for all datasets from test suite #1
+        *4. MRSR2
+        *4. Akaike Information Criterion    
 
 
-    *4. Some kind of cross-validation for variable selection
+    *5. Other funny ELMs
+        *5. Sequential ELM according to that paper
+        
+
 
 
 
@@ -63,8 +80,12 @@ III. Multi-machine basic ELM
         *3. Run incremental benchmark on big data, plot runtime graph
         *4. Run incremental benchmark with more cores/nodes, plot runtime graph
 
-
-
+    *1. Parallel basics
+        *1. Parallel HH and HT
+        *1. Parallel prediction with ELM
+        *1. Parallel PRESS (regression)
+        *1. Parallel PRESS (classification)
+        *1. Parallel regularization
 
 
 
