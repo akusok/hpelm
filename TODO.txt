@@ -60,7 +60,7 @@ II. Benchmark data with ELM
 
     *4. Variable selection: OP
         4a. MRSR for all datasets from test suite #1
-        *4. MRSR2
+        *4b. MRSR2 for all datasets from test suite #1
         *4. Akaike Information Criterion    
 
 

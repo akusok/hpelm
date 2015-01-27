@@ -15,12 +15,17 @@ def ELM_Basic(X, T, nn, Xs=None, Ts=None, classification=False):
 
     # prepare data and model 
     n,d = X.shape
-    W = np.random.randn(d, nn) / (d**0.5)
+    W = np.random.randn(d, nn) * 3**0.5
     bias = np.random.randn(nn)
     
     H = np.dot(X,W) + bias  # random projection
-    H = sigm(H)  # non-linear transformation
+    H = np.tanh(H)  # non-linear transformation
+
     B = np.dot(np.linalg.pinv(H), T)  # linear regression
+
+    #HH = H.T.dot(H) + 1E-3*np.eye(H.shape[1])
+    #HT = H.T.dot(T)    
+    #B = np.linalg.lstsq(HH, HT)[0]
 
     # test ELM model
     if Xs is None:  # training error

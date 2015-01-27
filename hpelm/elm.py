@@ -6,167 +6,248 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
-from numpy.linalg import lstsq
-
-from .data_loader import batchX, batchT, meanstdX, c_dictT, decode
-from .neuron_generator import gen_neurons
-from .regularizations import semi_Tikhonov, mrsr
-from .error_functions import press
+from scipy.spatial.distance import cdist
+from scipy.special import expit as sigm
+import cPickle
 
 
-class ELM(object):
+class ELM_abstract(object):
+
+    def __init__(self, inputs, outputs, kind=""):
+        assert isinstance(inputs, (int, long))
+        assert isinstance(outputs, (int, long))
+        assert isinstance(kind, basestring)
+        self.inputs = 0
+        self.targets = 0
+        self.neurons = {}
+        self.Beta = None
+        pass
+
+    def save(self, model):
+        assert isinstance(model, basestring)
+        model = {"inputs": self.inputs,
+                 "outputs": self.targets,
+                 "neurons": self.neurons,
+                 "Beta": self.Beta}
+        pass
+
+    def load(self, model):
+        assert isinstance(model, basestring)
+        pass
+
+    def add_neurons(self, number, func, W=None, B=None):
+        assert isinstance(number, int)
+        assert isinstance(func, (basestring, np.ufunc))
+        assert isinstance(W, np.ndarray)
+        assert isinstance(B, np.ndarray)
+        # here 'ufunc' is derived from neuron name
+        nn = number
+        C = W
+        s = B
+        ntype = {"lin": (nn, W, B),  # projection here
+                 "sigm": (nn, W, B),
+                 "tanh": (nn, W, B),
+                 "rbf_l1": (nn, C, s),  # distances here
+                 "rbf_l2": (nn, C, s),
+                 "rbf_linf": (nn, C, s),
+                 np.sin: (nn, W, B)}  # only projection for custom functions
+        self.neurons[func] = ntype
+        pass
+
+    def _project(self, X):
+        # projects X into H
+        H = X
+        return H
+
+    def _getdata(self, X, T):
+        # checks X and T, loads them from file
+        return X, T
+
+    def train(self, X, T):
+        pass
+
+    def predict(self, X):
+        pass
+
+
+class ELM(ELM_abstract):
     """Non-parallel Extreme Learning Machine.
     """
 
-    def __init__(self, *args):
+    def __init__(self, inputs, outputs, kind=""):
         """Create ELM of desired kind.
-        
+
         :param regression: type of ELM task, can be regression, classification or timeseries regression.
         :param sparse: set to create an ELM with sparse projection matrix.
         """
+        assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
+        assert isinstance(outputs, (int, long)), "Number of outputs must be integer"
+        assert isinstance(kind, basestring), "Kind of ELM must be a string"
+
         self.classification = False
         self.multiclass = False
         self.regression = False
-        if "classification" in args:
+        if "classification" in kind:
             self.classification = True
-            print "starting ELM for classification"
-        elif "multiclass" in args:
+        elif "multiclass" in kind:
             self.multiclass = True
-        elif "timeseries" in args:
-            self.timeseries = True
-            print "starting ELM for timeseries"
         else:
             self.regression = True
-            print "starting ELM for regression"
-                
+
         # set default argument values
-        self.inputs = None
-        self.targets = None
-        self.N = None
-        self.W = None
-        self.ufunc = []
-        self.B = None
-        self.Xmean = 0
-        self.Xstd = 1
-        self.C_dict = None  # dictionary for translating classes to binary representation
-        self.cI = 1E-9
-        np.set_printoptions(precision=5, suppress=True)
+        self.inputs = inputs
+        self.targets = outputs
+        self.Beta = None
 
+        self.neurons = {}  # list of all neuron types
 
+        # settings
+        self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")
 
-    def add_neurons(self, neurons, N):
-        # runs if there is an uninitialized model or more neurons specified
-        if (self.W is None) or (len(neurons) > 0):  
-            # init W correctly
-            if self.W is None: 
-                self.W = np.empty((self.inputs+1, 0))
-            if len(neurons) == 0:  # basic setup if no neurons are specified
-                nn = min(5*self.inputs, int(N**0.5))
-                neurons = ((self.inputs, 'lin'), (nn, 'sigm'))
-            elif not hasattr(neurons[0], '__iter__'):  # fix neurons not being inside a list
-                neurons = [neurons]
-            # add neurons of desired type
-            for ntype in neurons:
-                ufunc, W = gen_neurons(self.inputs, self.Xmean, self.Xstd, ntype)
-                self.ufunc.extend(ufunc)  
-                self.W = np.hstack((self.W, W))
+    def add_neurons(self, number, func, W=None, B=None):
+        """Add neurons of a specific type to the ELM model.
 
+        If neurons of such type exist, merges them together.
 
-
-    def train(self, X, T, batch=10000, delimiter=" ", neurons=[]):
-        """Trains ELM, can use any X and T(=Y), and specify neurons.
-        
-        Neurons: (number, type, [W], [B])
-        """        
-        
-        # get parameters of new data and add neurons
-        self.Xmean, self.Xstd = meanstdX(X, batch, delimiter)
-        if self.classification: self.C_dict = c_dictT(T, batch)
-            
-        # get data iterators
-        genX, self.inputs, N = batchX(X, batch, delimiter)
-        genT, self.targets  = batchT(T, batch, delimiter, self.C_dict)
-        self.add_neurons(neurons, N)
-        
-        # project data
-        nn = len(self.ufunc)
-        HH = np.zeros((nn, nn))
-        HT = np.zeros((nn, self.targets))
-        for X,T in zip(genX, genT):
-            X,T = semi_Tikhonov(X,T)  # add Tikhonov regularization
-            
-            # get hidden layer outputs
-            H = np.dot(X,self.W)
-            for i in xrange(H.shape[1]):
-                H[:,i] = self.ufunc[i](H[:,i])
-            
-            # least squares solution - multiply both sides by H'
-            p = float(X.shape[0]) / N
-            HH += np.dot(H.T, H)*p
-            HT += np.dot(H.T, T)*p
-            
-        # solve ELM model
-        HH += self.cI * np.eye(nn)  # enhance solution stability
-        self.B = lstsq(HH, HT)[0]
-        #self.B = np.linalg.pinv(HH).dot(HT)
-        
-
-
-    def predict(self, X, batch=10000, delimiter=" "):
-        """Get predictions using a trained or loaded ELM model.
-        
-        :param X: input data
-        :rtype: predictions Th
+        :param number: - number of neurons to add
+        :param func: - transformation function of those neurons,
+                       "lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf"
+                       or a custom function of type <numpy.ufunc>
+        :param W: - projection matrix or ("rbf_xx") a list of centroids
+        :param B: - bias vector or ("rbf_xx") a vector of sigmas
         """
-        
-        assert self.B is not None, "train this model first"
-        genX, inputs, _ = batchX(X, batch, delimiter)
-        
-        results = []
-        for X in genX:        
-            assert self.inputs == inputs, "incorrect dimensionality of inputs"
-            # project test inputs to outputs
-            H = np.dot(X,self.W)
-            for i in xrange(H.shape[1]):
-                H[:,i] = self.ufunc[i](H[:,i])
-            Th1 = H.dot(self.B)  
-            # additional processing for classification
-            if self.classification:
-                Th1 = decode(Th1, self.C_dict)
-            results.append(Th1)
+        # check and fill input data
+        assert isinstance(number, int), "Number of neurons must be integer"
+        assert func in self.flist or isinstance(func, np.ufunc),\
+            "Type standard neuron function or use custom <numpy.ufunc>"
 
-        # merge results            
-        if isinstance(results[0], np.ndarray):
-            Th = np.vstack(results)
+        if W is None:
+            if func == "lin":  # copying input features for linear neurons
+                W = np.eye(self.inputs, number)
+            else:
+                W = np.random.randn(self.inputs, number)
+                if "rbf" not in func:
+                    W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
+        if B is None:
+            B = np.random.randn(number)
+        assert isinstance(W, np.ndarray), "W must be a numpy array"
+        assert isinstance(B, np.ndarray), "B must be a numpy array"
+        assert W.shape == (self.inputs, number), "W must be size [inputs, neurons]"
+        assert B.shape == (number,), "B must be size [neurons]"
+
+        # generate new neuron type
+        if func in self.neurons.keys():
+            nn0, W0, B0 = self.neurons[func]
+            ntype = (nn0 + number, np.hstack((W0, W)), np.hstack((B0, B)))
         else:
-            Th = []  # merge results which are lists of items
-            for r1 in results: Th.extend(r1)
-                
-        return Th
-        
+            ntype = (number, W, B)
 
+        # save new neuron type
+        self.neurons[func] = ntype
 
-    def loo_press(self, X, Y, batch=10000, delimiter=" "):
-        """PRESS (Predictive REsidual Summ of Squares) error.
-        
-        Trick is to never calculate full HPH' matrix.
+    def save(self, model):
+        assert isinstance(model, basestring), "Model file name must be a string"
+        m = {}
+        m["inputs"] = self.inputs
+        m["outputs"] = self.targets
+        m["neurons"] = self.neurons
+        m["Beta"] = self.Beta
+        try:
+            cPickle.dump(m, open(model, "wb"), -1)
+        except IOError:
+            raise IOError("Cannot create a model file at: %s" % model)
+
+    def load(self, model):
+        assert isinstance(model, basestring), "Model file name must be a string"
+        try:
+            model = cPickle.load(open(model, "rb"))
+        except IOError:
+            raise IOError("Model file not found: %s" % model)
+        self.inputs = model["inputs"]
+        self.targets = model["outputs"]
+        self.neurons = model["neurons"]
+        self.Beta = model["Beta"]
+
+    def _project(self, X):
+        # assemble global hidden layer output
+        H = []
+        for func, ntype in self.neurons.iteritems():
+            _, W, B = ntype
+
+            # projection
+            if func == "rbf_l2":
+                H0 = cdist(X, W.T, "euclidean") / -2 * (B ** 2)
+            elif func == "rbf_l1":
+                H0 = cdist(X, W.T, "cityblock") / -2 * (B ** 2)
+            elif func == "rbf_linf":
+                H0 = cdist(X, W.T, "chebyshev") / -2 * (B ** 2)
+            else:
+                H0 = X.dot(W) + B
+
+            # transformation
+            if func == "lin":
+                pass
+            elif (func == "sigm") or ("rbf" in func):
+                sigm(H0, out=H0)
+            elif func == "tanh":
+                np.tanh(H0, out=H0)
+            else:
+                H0 = func(H0)  # custom <numpy.ufunc>
+            H.append(H0)
+
+        H = np.hstack(H)
+        return H
+
+    def _getdata(self, X, T):
+        # check input data
+        if X is not None:
+            assert isinstance(X, np.ndarray), "X must be a numpy array"
+            assert len(X.shape) == 2, "X must be 2-dimensional matrix"
+            assert X.shape[1] == self.inputs, \
+                "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
+
+        if T is not None:
+            assert isinstance(T, np.ndarray), "T must be a numpy array"
+            if len(T.shape) == 1:
+                T = T.reshape(-1, 1)
+            assert len(X.shape) == 2, "T must be 1- or 2-dimensional matrix"
+            assert T.shape[1] == self.targets, \
+                "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
+
+        return X, T
+
+    def train(self, X, T):
+        """Learn a model to project inputs X to targets T.
+
+        :param X: - matrix of inputs
+        :param T: - matrix of targets
         """
+        X, T = self._getdata(X, T)
+        H = self._project(X)
+        self.Beta = np.linalg.pinv(H).dot(T)
 
-        MSE = 0
-        genX, _, N = batchX(X, batch, delimiter)
-        genT, _  =   batchT(Y, batch, delimiter, self.C_dict)
+    def predict(self, X):
+        """Predict targets for the given inputs X.
 
-        for X,T in zip(genX, genT):
-            H = np.dot(X,self.W)
-            for i in xrange(H.shape[1]):
-                H[:,i] = self.ufunc[i](H[:,i])
-            
-            p = float(X.shape[0]) / N
-            MSE += press(H, T, self.classification, self.multiclass) * p
+        :param X: - model inputs
+        """
+        assert self.Beta is not None, "Train ELM before predicting"
+        X, _ = self._getdata(X, None)
+        H = self._project(X)
+        T_hat = H.dot(self.Beta)
+        return T_hat
+
+
         
-        return MSE
         
         
+        
+        
+        
+        
+        
+        
+    '''  COPY OF OLD PRUNING METHODS
     def prune_op(self, X, T, batch=10000, delimiter=" "):
         """Prune ELM as in OP-ELM paper.
         """        
@@ -180,12 +261,12 @@ class ELM(object):
         nfeats = []
         neurons = np.zeros((nn,))
         for X1,T1 in zip(genX, genT):
-            X1,T1 = semi_Tikhonov(X1,T1)  # add Tikhonov regularization
             
             # get hidden layer outputs
             H = np.dot(X1,self.W)
             for i in xrange(H.shape[1]):
                 H[:,i] = self.ufunc[i](H[:,i])
+            H,T1 = semi_Tikhonov(H,T1,self.Tmean)  # add Tikhonov regularization
             
             # get ranking of neurons in that batch
             rank = mrsr(H, T1, nn)
@@ -223,9 +304,66 @@ class ELM(object):
         
 
 
+    def prune_op2(self, X, T, norm=1, batch=10000, delimiter=" "):
+        """Prune ELM with a more recent implementation of MRSR.
+        
+        :param norm: - check numpy.linalg.norm(X, <norm>)
+        """        
+        # get data iterators
+        genX, self.inputs, N = batchX(X, batch, delimiter)
+        genT, self.targets  = batchT(T, batch, delimiter, self.C_dict)
+        
+        # project data
+        nn = len(self.ufunc)
+        delta = 0.95  # improvement of MSE for adding more neurons
+        nfeats = []
+        neurons = np.zeros((nn,))
+        for X1,T1 in zip(genX, genT):
+            
+            # get hidden layer outputs
+            H = np.dot(X1,self.W)
+            for i in xrange(H.shape[1]):
+                H[:,i] = self.ufunc[i](H[:,i])
+            H,T1 = semi_Tikhonov(H,T1,self.Tmean)  # add Tikhonov regularization
 
+            # get ranking of neurons in that batch
+            # this MRSR2 is a class, with <.rank> attribute and <.new_input()> method
+            M = mrsr2(H, T1, norm)
+            M.new_input()
+            M.new_input()
+            
+            # select best number of neurons
+            MSE = press(H[:, M.rank], T1, self.classification, self.multiclass)
+            R_opt = M.rank
+            early_stopping = int(nn/10) + 1  # early stopping if no improvement in 10% neurons
+            last_improvement = 0
+            for i in range(3, nn):
+                last_improvement += 1
+                M.new_input()
+                mse1 = press(H[:, M.rank], T1, self.classification, self.multiclass)
+                if mse1 < MSE * delta:
+                    MSE = mse1
+                    R_opt = M.rank
+                    last_improvement = 0
+                elif last_improvement > early_stopping:  # early stopping if MSE raises 
+                    break
+            rank = R_opt
+            del M            
+            
+            # save number of neurons and their ranking information
+            nfeats.append(len(rank)) 
+            # first selected neuron gets weight 2, last one gets weight 1
+            neurons[rank] += np.linspace(2,1,num=len(rank))
 
-
+        # combine neuron ranking
+        nfeats = np.round(np.mean(nfeats))
+        neurons = np.argsort(neurons)[::-1][:nfeats]  # sorting in descending order
+        
+        # update ELM parameters and re-calculate B
+        self.W = self.W[:,neurons]
+        self.ufunc = [self.ufunc[j] for j in neurons]
+        self.train(X, T, batch=batch, delimiter=delimiter)
+    '''
 
 
 

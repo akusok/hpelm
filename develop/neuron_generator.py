@@ -54,10 +54,10 @@ def gen_neurons(d, xmean, xstd, neurons):
 
     # generate W and B if they are not given
     if W is None:
-        W = np.random.randn(d, nn) / (d**0.5)
+        W = np.random.randn(d, nn) * (3 / (d**0.5))
         W = W / xstd.reshape(-1,1)  # normalize variance
     if B is None:
-        B = -np.dot(W.T, xmean)  # normalize bias
+        B = -np.dot(W.T, xmean) + np.random.randn(nn)  # normalize plus bias
 
     W = np.vstack((W, B))
     return ufunc, W

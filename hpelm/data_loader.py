@@ -66,6 +66,8 @@ def hdf5_generator(h5, node, batch, add_bias=False, c_dict=None):
 
 def batchX(X, batch=10000, delimiter=" "):
     """Iterates over data X from whatever source.
+    
+    batch < 0 means return a matrix instead of iterator
     """
     if isinstance(X, basestring) and (X[-3:] == ".h5"):  # read partially from HDF5
         h5 = openFile(X)
@@ -73,7 +75,11 @@ def batchX(X, batch=10000, delimiter=" "):
             pass
         inputs = node.shape[0]  # HDF5 files are transposed, for Matlab compatibility     
         N = node.shape[1]
-        bX = hdf5_generator(h5, node, batch, add_bias=True)        
+        if batch > 0:
+            bX = hdf5_generator(h5, node, batch, add_bias=True)        
+        else:
+            D = node[:].T
+            bX = np.hstack((D, np.ones((N,1), dtype=D.dtype)))
 
     else:  # load whole X into memory
         # load text file
@@ -90,7 +96,10 @@ def batchX(X, batch=10000, delimiter=" "):
         if len(X.shape) == 1: X = X.reshape(-1,1)  # add second dimension
         inputs = X.shape[1]
         N = X.shape[0]
-        bX = np_generator(X, batch, add_bias=True)        
+        if batch > 0:
+            bX = np_generator(X, batch, add_bias=True)        
+        else:
+            bX = np.hstack((X, np.ones((N,1), dtype=X.dtype)))
 
     # return data
     return bX, inputs, N
@@ -99,6 +108,7 @@ def batchX(X, batch=10000, delimiter=" "):
 def batchT(T, batch=10000, delimiter=" ", c_dict=None):
     """Iterates over targets T with correct transformation.
     
+    batch < 0 means return a matrix instead of iterator
     :param C_dict: - dictionary of classes for single-class classification,
                      implies the classification task
     """
@@ -108,7 +118,11 @@ def batchT(T, batch=10000, delimiter=" ", c_dict=None):
         for node in h5.walk_nodes(): # find a node with whatever name
             pass
         targets = node.shape[0]  # HDF5 files are transposed, for Matlab compatibility 
-        bT = hdf5_generator(h5, node, batch, c_dict=c_dict)        
+        if batch > 0:
+            bT = hdf5_generator(h5, node, batch, c_dict=c_dict)        
+        else:
+            bT = node[:].T
+            if c_dict is not None: bT = encode(bT, c_dict)            
 
     else:  # load whole T into memory
         # load text file
@@ -125,7 +139,11 @@ def batchT(T, batch=10000, delimiter=" ", c_dict=None):
             if not isinstance(T, np.ndarray): T = np.array(T)
             if len(T.shape) == 1: T = T.reshape(-1,1)  # add second dimension        
             targets = T.shape[1]
-        bT = np_generator(T, batch, c_dict=c_dict)        
+        if batch > 0:
+            bT = np_generator(T, batch, c_dict=c_dict)        
+        else:
+            bT = T
+            if c_dict is not None: bT = encode(bT, c_dict)            
 
     # return data
     if c_dict is not None: targets = len(c_dict)  # classification targets are unique classes
@@ -134,6 +152,8 @@ def batchT(T, batch=10000, delimiter=" ", c_dict=None):
 
 def meanstdX(X, batch=10000, delimiter=" "):
     """Computes mean and standard deviation of X, skips binary features.
+    
+    Only works with batch.
     """
     if isinstance(X, basestring) and (X[-3:] == ".h5"):  # read partially from HDF5
         h5 = openFile(X)
@@ -208,15 +228,18 @@ def c_dictT(T, batch=10000):
         h5 = openFile(T)
         for node in h5.walk_nodes(): pass  # find a node with whatever name
         assert node.shape[0] == 1, "Classification targets must have only one feature"
-        N = node.shape[1]  # HDF5 files are transposed, for Matlab compatibility        
-        nb = N/batch
-        if N > nb*batch: nb += 1  # add last incomplete step
-        c_set = set([])
-        for b in xrange(nb):
-            start = b*batch
-            step = min(batch, N-start)
-            T1 = node[:, start : start+step].ravel()
-            c_set = c_set.union(set(T1))            
+        N = node.shape[1]  # HDF5 files are transposed, for Matlab compatibility    
+        if batch > 0:
+            nb = N/batch
+            if N > nb*batch: nb += 1  # add last incomplete step
+            c_set = set([])
+            for b in xrange(nb):
+                start = b*batch
+                step = min(batch, N-start)
+                T1 = node[:, start : start+step].ravel()
+                c_set = c_set.union(set(T1))            
+        else:
+            c_set = set(node[:].ravel())                        
         h5.close()  # closing file
 
     else:  # load whole T into memory

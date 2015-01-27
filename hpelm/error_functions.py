@@ -8,6 +8,21 @@ import numpy as np
 import scipy as sp
 
 
+def mse(T, Th, classification, multiclass):
+    """Mean Squared Error, or mis-classification error.
+    """
+    N = T.shape[0]
+    if classification:
+        e = np.sum(T.argmax(1) != Th.argmax(1))  # mis-classification error
+        MSE = float(e) / N
+    elif multiclass:
+        e = np.sum((T>0.5) != (Th>0.5))  # multi-class mis-classification
+        MSE = float(e) / N
+    else:
+        e = np.mean((T - Th)**2)  # regression error
+    return MSE
+
+
 def press(H, T, classification, multiclass):
     """According to Momo's article, fast version with no L2-regularization.
     
