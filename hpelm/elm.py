@@ -215,6 +215,7 @@ class ELM(ELM_abstract):
             assert T.shape[1] == self.targets, \
                 "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
 
+        assert X.shape[0] == T.shape[0], "X and T must have the same number of samples"
         return X, T
 
     def train(self, X, T):

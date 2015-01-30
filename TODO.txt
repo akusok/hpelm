@@ -7,6 +7,8 @@ Final goals
     3. Use regularizations and prunings
     4. Use classification
     5. Work with timeseries
+    6. Unbalanced data
+    7. Balance matrix H with different types of inputs
 
 ######################################################################
 

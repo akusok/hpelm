@@ -36,6 +36,7 @@ Test simple ELM correctness
     7. Send all-zero inputs, does not fail
     8. Send all-zero targets, does not fail
     9. Train with no neurons, raise error
+    10. X and T have different number of samples, raise error
 
 
 

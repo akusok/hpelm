@@ -74,3 +74,9 @@ class TestCorrectness(TestCase):
         T = np.array([1, 2, 3])
         elm = hpelm.ELM(1, 1)
         self.assertRaises(AssertionError, elm.train, X, T)
+
+    def test_10_DifferentNumberOfSamples_RaiseError(self):
+        X = np.array([[1, 2], [3, 4], [5, 6]])
+        T = np.array([[1], [2]])
+        elm = hpelm.ELM(2, 1)
+        self.assertRaises(AssertionError, elm.train, X, T)

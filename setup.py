@@ -14,7 +14,7 @@ def readme():
 
 
 setup(name='hpelm',
-      version='0.3.2',
+      version='0.3.4',
       description='High-Performance implementation of an\
                    Extreme Learning Machine',
       long_description=readme(),
@@ -38,7 +38,6 @@ setup(name='hpelm',
           'numpy',
           'scipy>=0.12',
           'tables',
-          'cPickle',
       ],
       scripts=['bin/elm_naive.py'],
       test_suite='nose.collector',
