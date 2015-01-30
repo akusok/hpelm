@@ -1,123 +1,74 @@
 
-High-Performance Computing toolbox for Extreme Learning Machine
+
+Final goals
+
+    1. Solve huge tasks distributively
+    2. Use any types of neurons
+    3. Use regularizations and prunings
+    4. Use classification
+    5. Work with timeseries
+
+######################################################################
 
 
-Test-driven Development:
-==================================
+List of desired behaviour
 
-Stages:
-      I. Single machine basic ELM
-     II. Benchmark data with ELM
-    III. Multi-machine basic ELM
-     IV. Parallel regularization
-      V. High-performance solvers
-     VI. Other algorithms (OS-ELM)
-            MSE for classification?
-
-
-II. Benchmark data with ELM
-
-    Acceptance tests:
-        1. Run benchmark on data from OP-ELM, get similar performance
-        *2. Run benchmark on data from OP-ELM, get lower runtime
-        *3. Run incremental benchmark on big data, plot runtime graph
-
-
-    1. Run ELM on all required datasets
-        1a. Classification_Iris
-        1b. Classification_Pima Indians Diabetes
-        1c. Classification_Wine 
-        1d. Classification_Wisconsin Breast Cancer
-        1e. Regression_Abalone
-        1f. Regression_Ailerons
-        1g. Regression_Auto price
-        1h. Regression_Bank
-        1i. Regression_Boston
-        1j. Regression_Breast cancer
-        1k. Regression_Computer
-        1l. Regression_CPU
-        1m. Regression_Elevators
-        1n. Regression_Servo
-        1o. Regression_Stocks
-
-
-    *2. Limited memory ELM: process X by batches, keep only H'H in memory
-        2a. Train ELM by batches
-        2b. Predict with ELM by batches
-        2c. Calculate MSE by batches
-        *2b. Add memory consumption limit and calculate batch size from it
-        *2c. Out-of-memory ELM - partial loading from HDD with HDF5 
-
+    1. Solve XOR problem with 'sigm' ELM
+    2. Solve Sine problem with 'sigm' ELM
+    3. Types of single input neurons: linear, 'sigm', 'tanh'
+    4. Types of two-input neurons: 'rbf_l2', 'rbf_l1', 'rbf_linf'
+    5. Save and load ELM model
     
-    *3. Error function: PRESS 
-        3a. PRESS for regression
-        3b. PRESS for classification ignores small noise
-        3c. PRESS for multiclass ignores small noise
-        3d. PRESS for classification reports misclassifications
-        3e. PRESS for multiclass reports misclassifications
-        *3. Monte-carlo cross-validation (batch)
 
 
-    *4. Variable selection: OP
-        4a. MRSR for all datasets from test suite #1
-        *4b. MRSR2 for all datasets from test suite #1
-        *4. Akaike Information Criterion    
+List of advanced behaviour - general ELM model
 
-
-    *5. Other funny ELMs
-        *5. Sequential ELM according to that paper
-        
+    1. Normalizations in solution: TROP
+    2. Accelerated neuron computing 
+    3. Matlab integration
+    4. Proper multiclass support
+    5. ??? Arbitrary neurons
+    6. !!! Timeseries !!!
 
 
 
+List of advanced desired behaviour - small data ELM
 
-
-III. Multi-machine basic ELM
-
-    Acceptance tests:
-        *1. Run benchmark on data from OP-ELM, get similar performance
-        *2. Run benchmark on data from OP-ELM, get lower runtime
-        *3. Run incremental benchmark on big data, plot runtime graph
-        *4. Run incremental benchmark with more cores/nodes, plot runtime graph
-
-    *1. Parallel basics
-        *1. Parallel HH and HT
-        *1. Parallel prediction with ELM
-        *1. Parallel PRESS (regression)
-        *1. Parallel PRESS (classification)
-        *1. Parallel regularization
+    1. MSE_PRESS error for classification
+    2. Neuron pruning: MRSR, MRSR2
 
 
 
-  
+List of advanced desired behaviour - huge data ELM
+
+    1. Based on HDF5 data
+    2. Distributed computing of the result
+    3. Distributed MSE error for classification
+    4. High performance solvers (MAGMA)
+    5. Information criteria for neuron pruning
+    6. ??? Parallel I/O
 
 
 
+List of additional tools
 
-Unit Testing - Work Units
+    1. Normalization parameters calculator
+    2. Class encoder/decoder
+    3. RBF neurons sampler: random, given, kNN
+    4. Kernel neurons helper
+    5. Get data about saved ELM model
 
 
-				
-				
-	3. Distributed ELM (MPI)
-				
-	    a. Calculate matrix H distributively, get same results			
-				
-				
-		
-	2. Save and load ELM model
-		a. Get and set ELM model, obtain same results
-		b. Save and load ELM model, obtain same results
-	
-	
-	3. OP-ELM
-		a. Decrease training error with OP-ELM
-	
-	4. TROP-ELM (fast and full modes)
-	
-	5. Solvers and different precision
-	
-	6. Matlab interface
-	
-	
-	8. Distributed OP-ELM
+#####################################################################
+
+
+    H = []
+    for neuron in neurons:
+        H0 = project(X, neuron.W, neuron.b, neuron.kind)
+        H0 = neuron.ufunc(H0)
+        H.append(H0)
+    H = np.hstack(H)        
+
+    # project(X,W,b,"sigm") = X.dot(W) + b
+    # project(X,W,b,"rbf_l2") = cdist(X,W,"l2") / -2*(b**2)
+

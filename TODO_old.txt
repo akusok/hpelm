@@ -1,0 +1,106 @@
+
+High-Performance Computing toolbox for Extreme Learning Machine
+
+
+Test-driven Development:
+==================================
+
+Stages:
+      I. Single machine basic ELM
+     II. Benchmark data with ELM
+    III. Multi-machine basic ELM
+     IV. Parallel regularization
+      V. High-performance solvers
+     VI. Other algorithms (OS-ELM)
+            MSE for classification?
+
+
+II. Benchmark data with ELM
+
+    Acceptance tests:
+        1. Run benchmark on data from OP-ELM, get similar performance
+        *2. Run benchmark on data from OP-ELM, get lower runtime
+        *3. Run incremental benchmark on big data, plot runtime graph
+
+
+
+    *2. Limited memory ELM: process X by batches, keep only H'H in memory
+        2a. Train ELM by batches
+        2b. Predict with ELM by batches
+        2c. Calculate MSE by batches
+        *2b. Add memory consumption limit and calculate batch size from it
+        *2c. Out-of-memory ELM - partial loading from HDD with HDF5 
+
+    
+    *3. Error function: PRESS 
+        3a. PRESS for regression
+        3b. PRESS for classification ignores small noise
+        3c. PRESS for multiclass ignores small noise
+        3d. PRESS for classification reports misclassifications
+        3e. PRESS for multiclass reports misclassifications
+        *3. Monte-carlo cross-validation (batch)
+
+
+    *4. Variable selection: OP
+        4a. MRSR for all datasets from test suite #1
+        *4b. MRSR2 for all datasets from test suite #1
+        *4. Akaike Information Criterion    
+
+
+    *5. Other funny ELMs
+        *5. Sequential ELM according to that paper
+        
+
+
+
+
+
+III. Multi-machine basic ELM
+
+    Acceptance tests:
+        *1. Run benchmark on data from OP-ELM, get similar performance
+        *2. Run benchmark on data from OP-ELM, get lower runtime
+        *3. Run incremental benchmark on big data, plot runtime graph
+        *4. Run incremental benchmark with more cores/nodes, plot runtime graph
+
+    *1. Parallel basics
+        *1. Parallel HH and HT
+        *1. Parallel prediction with ELM
+        *1. Parallel PRESS (regression)
+        *1. Parallel PRESS (classification)
+        *1. Parallel regularization
+
+
+
+  
+
+
+
+
+Unit Testing - Work Units
+
+
+				
+				
+	3. Distributed ELM (MPI)
+				
+	    a. Calculate matrix H distributively, get same results			
+				
+				
+		
+	2. Save and load ELM model
+		a. Get and set ELM model, obtain same results
+		b. Save and load ELM model, obtain same results
+	
+	
+	3. OP-ELM
+		a. Decrease training error with OP-ELM
+	
+	4. TROP-ELM (fast and full modes)
+	
+	5. Solvers and different precision
+	
+	6. Matlab interface
+	
+	
+	8. Distributed OP-ELM

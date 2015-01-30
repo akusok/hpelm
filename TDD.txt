@@ -1,0 +1,62 @@
+
+Final goals
+
+    1. Solve huge tasks distributively
+    2. Use any types of neurons
+    3. Use regularizations and prunings
+    4. Use classification
+    5. Work with timeseries
+
+######################################################################
+
+
+List of desired behaviour
+
+    1. Solve XOR problem with 'sigm' ELM
+    2. Solve Sine problem with 'sigm' ELM
+    3. Handle inputs normalization (parameters are given)
+    4. Types of single input neurons: linear, 'sigm', 'tanh'
+    5. Types of two-input neurons: 'rbf_l2', 'rbf_l1', 'rbf_linf'
+    6. Read data from files: text and binary Numpy
+    7. Save and load ELM model
+
+######################################################################
+
+
+Test simple ELM correctness
+
+    Can load whatever Numpy matrix data
+
+    1. Send non-Numpy inputs, raise error
+    2. Send non-Numpy targets, raise error
+    3. Send 1-dim inputs, correct usage
+    4. Send 1-dim outputs, correct usage
+    5. Send inputs of different dimensionality, raise error
+    6. Send targets of different dimensionality, raise error
+    7. Send all-zero inputs, does not fail
+    8. Send all-zero targets, does not fail
+    9. Train with no neurons, raise error
+
+
+
+Test simple ELM performance
+
+    Run all benchmarks from the paper succesfully
+    1. Classification_Iris
+    2. Classification_Pima Indians Diabetes
+    3. Classification_Wine 
+    4. Classification_Wisconsin Breast Cancer
+    5. Regression_Abalone
+    6. Regression_Ailerons
+    7. Regression_Auto price
+    8. Regression_Bank
+    9. Regression_Boston
+    10. Regression_Breast cancer
+    11. Regression_Computer
+    12. Regression_CPU
+    13. Regression_Elevators
+    14. Regression_Servo
+    15. Regression_Stocks
+
+
+

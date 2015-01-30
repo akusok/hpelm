@@ -21,7 +21,6 @@ class ELM_abstract(object):
         self.targets = 0
         self.neurons = {}
         self.Beta = None
-        pass
 
     def save(self, model):
         assert isinstance(model, basestring)
@@ -29,11 +28,9 @@ class ELM_abstract(object):
                  "outputs": self.targets,
                  "neurons": self.neurons,
                  "Beta": self.Beta}
-        pass
 
     def load(self, model):
         assert isinstance(model, basestring)
-        pass
 
     def add_neurons(self, number, func, W=None, B=None):
         assert isinstance(number, int)
@@ -52,14 +49,13 @@ class ELM_abstract(object):
                  "rbf_linf": (nn, C, s),
                  np.sin: (nn, W, B)}  # only projection for custom functions
         self.neurons[func] = ntype
-        pass
 
     def _project(self, X):
         # projects X into H
         H = X
         return H
 
-    def _getdata(self, X, T):
+    def _checkdata(self, X, T):
         # checks X and T, loads them from file
         return X, T
 
@@ -98,7 +94,6 @@ class ELM(ELM_abstract):
         self.inputs = inputs
         self.targets = outputs
         self.Beta = None
-
         self.neurons = {}  # list of all neuron types
 
         # settings
@@ -130,6 +125,8 @@ class ELM(ELM_abstract):
                     W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
         if B is None:
             B = np.random.randn(number)
+            if "rbf" in func:
+                B = (np.abs(B) * self.inputs) ** 0.5  # high dimensionality fix
         assert isinstance(W, np.ndarray), "W must be a numpy array"
         assert isinstance(B, np.ndarray), "B must be a numpy array"
         assert W.shape == (self.inputs, number), "W must be size [inputs, neurons]"
@@ -176,18 +173,20 @@ class ELM(ELM_abstract):
 
             # projection
             if func == "rbf_l2":
-                H0 = cdist(X, W.T, "euclidean") / -2 * (B ** 2)
+                H0 = cdist(X, W.T, "sqeuclidean") / (-2 * (B ** 2))
             elif func == "rbf_l1":
-                H0 = cdist(X, W.T, "cityblock") / -2 * (B ** 2)
+                H0 = cdist(X, W.T, "cityblock") / (-2 * (B ** 2))
             elif func == "rbf_linf":
-                H0 = cdist(X, W.T, "chebyshev") / -2 * (B ** 2)
+                H0 = cdist(X, W.T, "chebyshev") / (-2 * (B ** 2))
             else:
                 H0 = X.dot(W) + B
 
             # transformation
             if func == "lin":
                 pass
-            elif (func == "sigm") or ("rbf" in func):
+            elif "rbf" in func:
+                np.exp(H0, out=H0)
+            elif func == "sigm":
                 sigm(H0, out=H0)
             elif func == "tanh":
                 np.tanh(H0, out=H0)
@@ -198,10 +197,12 @@ class ELM(ELM_abstract):
         H = np.hstack(H)
         return H
 
-    def _getdata(self, X, T):
+    def _checkdata(self, X, T):
         # check input data
         if X is not None:
             assert isinstance(X, np.ndarray), "X must be a numpy array"
+            if len(X.shape) == 1:
+                X = X.reshape(-1, 1)
             assert len(X.shape) == 2, "X must be 2-dimensional matrix"
             assert X.shape[1] == self.inputs, \
                 "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
@@ -222,7 +223,8 @@ class ELM(ELM_abstract):
         :param X: - matrix of inputs
         :param T: - matrix of targets
         """
-        X, T = self._getdata(X, T)
+        assert len(self.neurons) > 0, "Add neurons before training ELM"
+        X, T = self._checkdata(X, T)
         H = self._project(X)
         self.Beta = np.linalg.pinv(H).dot(T)
 
@@ -232,21 +234,74 @@ class ELM(ELM_abstract):
         :param X: - model inputs
         """
         assert self.Beta is not None, "Train ELM before predicting"
-        X, _ = self._getdata(X, None)
+        X, _ = self._checkdata(X, None)
         H = self._project(X)
         T_hat = H.dot(self.Beta)
         return T_hat
 
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     '''  COPY OF OLD PRUNING METHODS
     def prune_op(self, X, T, batch=10000, delimiter=" "):
         """Prune ELM as in OP-ELM paper.
