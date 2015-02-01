@@ -6,8 +6,9 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
+import numexpr as ne
 from scipy.spatial.distance import cdist
-from scipy.special import expit as sigm
+from multiprocessing import Pool, cpu_count
 import cPickle
 
 
@@ -64,6 +65,16 @@ class ELM_abstract(object):
 
     def predict(self, X):
         pass
+
+
+class parallel_cdist(object):
+
+    def __init__(self, W, kind):
+        self.C = W.T
+        self.kind = kind
+
+    def __call__(self, X):
+        return cdist(X, self.C, self.kind)
 
 
 class ELM(ELM_abstract):
@@ -170,14 +181,27 @@ class ELM(ELM_abstract):
         H = []
         for func, ntype in self.neurons.iteritems():
             _, W, B = ntype
+            k = cpu_count()
 
             # projection
             if func == "rbf_l2":
-                H0 = cdist(X, W.T, "sqeuclidean") / (-2 * (B ** 2))
+                pcdist = parallel_cdist(W, "sqeuclidean")
+                p = Pool(k)
+                H0 = p.map(pcdist, np.array_split(X, k, axis=0))
+                H0 = np.vstack(H0) / (-2 * (B ** 2))
+                p.close()
             elif func == "rbf_l1":
-                H0 = cdist(X, W.T, "cityblock") / (-2 * (B ** 2))
+                pcdist = parallel_cdist(W, "cityblock")
+                p = Pool(k)
+                H0 = p.map(pcdist, np.array_split(X, k, axis=0))
+                H0 = np.vstack(H0) / (-2 * (B ** 2))
+                p.close()
             elif func == "rbf_linf":
-                H0 = cdist(X, W.T, "chebyshev") / (-2 * (B ** 2))
+                pcdist = parallel_cdist(W, "chebyshev")
+                p = Pool(k)
+                H0 = p.map(pcdist, np.array_split(X, k, axis=0))
+                H0 = np.vstack(H0) / (-2 * (B ** 2))
+                p.close()
             else:
                 H0 = X.dot(W) + B
 
@@ -185,11 +209,11 @@ class ELM(ELM_abstract):
             if func == "lin":
                 pass
             elif "rbf" in func:
-                np.exp(H0, out=H0)
+                ne.evaluate('exp(H0)', out=H0)
             elif func == "sigm":
-                sigm(H0, out=H0)
+                ne.evaluate("1/(1+exp(-H0))", out=H0)
             elif func == "tanh":
-                np.tanh(H0, out=H0)
+                ne.evaluate('tanh(H0)', out=H0)
             else:
                 H0 = func(H0)  # custom <numpy.ufunc>
             H.append(H0)
@@ -215,7 +239,9 @@ class ELM(ELM_abstract):
             assert T.shape[1] == self.targets, \
                 "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
 
-        assert X.shape[0] == T.shape[0], "X and T must have the same number of samples"
+        if (X is not None) and (T is not None):
+            assert X.shape[0] == T.shape[0], "X and T must have the same number of samples"
+
         return X, T
 
     def train(self, X, T):

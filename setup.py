@@ -14,7 +14,7 @@ def readme():
 
 
 setup(name='hpelm',
-      version='0.3.4',
+      version='0.3.6',
       description='High-Performance implementation of an\
                    Extreme Learning Machine',
       long_description=readme(),
