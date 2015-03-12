@@ -1,0 +1,56 @@
+ELM toolbox structure
+
+ELM is a training method for a SLFN:
+(SLFN) + (ELM methods which alter that SLFN)
+
+One only needs SLFN to run the method!
+Add a native SLFN implementation to Matlab
+
+SLFN
+    1. number of input nodes
+    2. number of output nodes
+    3. hidden neurons
+        3a. stores neurons with weights and transformation functions
+        3b. adds more neurons to the model
+        3d. neuron type is defined by its transformation function
+    4. output projection matrix Beta
+    5. data projection to the hidden layer (basic one)
+    5. run SLFN to make predictions (with basic projection)
+    6. save and load model
+    7. native Matlab implementation
+
+ELM
+    1. data projection to the hidden layer outputs to get H
+    2. output weights solution
+
+HP-ELM and accelerated computing
+    1. BLUE solution with out-of-memory algorithm
+    2. GPU BLUE solution with mixed-precision computing and MAGMA toolbox
+    3. GPU BLUE with in-GPU correlation matrices
+
+Metrics
+Validation set accuracy for regression and classification
+LOO error for regression (MSE) and classification
+k-fold Cross-Validation, Monte-Carlo Cross-Validation
+
+Model structure selection
+Number of neurons selection based on (some) error
+Neuron pruning with OP-ELM
+Neuron pruning with Harlem-Quinn criterion
+
+Classification
+LOO error for classification problems
+Class balancing with per-class H'H matrices
+
+Timeseries and adaptive model
+Incremental batch ELM (add and remove samples) for running/validating timeseries model
+Matlab native implementation
+
+Cluster Computing ELM --- maybe not needed at all!
+Parallel BLUE with parallel validation
+MPI to run on multiple nodes
+Possibly client-server architecture
+
+Tools
+Building class representations
+Fast calculation of regularization parameters

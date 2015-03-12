@@ -1,8 +1,12 @@
 
 
-Final goals
+Final goals:
 
-    1. Solve huge tasks distributively
+    0. Single-machine ELM that does all of the below
+    1. Solve Big Data tasks
+        1a. Out-of-memory algorithms
+        1b. Accelerated solvers
+        1c. Distributive solution
     2. Use any types of neurons
     3. Use regularizations and prunings
     4. Use classification

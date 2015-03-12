@@ -1,0 +1,77 @@
+The information in ELM is presented in a form of (H'H + H'T) matrices. They are the same
+size nn*nn for any amount of data - from one sample to a billion of samples. More samples
+provide a more accurate estimation of H'H, but the size stays the same.
+
+A global H'H matrix is a sum of H1'H1 + H2'H2 + ...
+That means for classification, we can consider a separate H'H[c0], H'H[c1], ... class
+matrices. Then the problem of unbalanced dataset is solved easily by 
+
+
+Two best variables of IRIS (nn, acc over 100 * 10x c-v)
+Best: vars 2 and 3, nn=7
+0 1
+3  70.9+-2.6
+4  74.9+-1.7
+5  76.3+-1.1
+6  77.2+-1.1
+7  77.5+-1.1
+8  77.9+-1.0
+9  77.9+-0.9
+10  78.2+-1.0
+11  78.1+-0.9
+12  78.1+-0.9
+0 2
+3  76.0+-2.5
+4  82.7+-2.2
+5  86.9+-2.1
+6  90.3+-1.7
+7  91.8+-1.6
+8  93.4+-1.1
+9  94.0+-0.8
+10  94.2+-0.8
+11  94.5+-0.6
+12  94.5+-0.5
+0 3
+3  74.7+-2.8
+4  83.4+-2.6
+5  87.7+-2.1
+6  90.8+-1.5
+7  92.0+-1.5
+8  93.4+-1.0
+9  94.2+-0.9
+10  94.3+-0.7
+11  94.6+-0.7
+12  94.6+-0.6
+1 2
+3  76.8+-2.7
+4  83.1+-2.1
+5  86.1+-1.8
+6  88.5+-1.8
+7  89.8+-1.5
+8  91.1+-1.3
+9  91.7+-1.1
+10  92.5+-1.1
+11  92.7+-1.0
+12  93.3+-0.8
+1 3
+3  80.5+-3.0
+4  86.3+-2.0
+5  89.2+-1.8
+6  91.2+-1.5
+7  92.5+-1.4
+8  93.7+-1.0
+9  94.3+-0.7
+10  94.4+-0.8
+11  94.7+-0.6
+12  94.6+-0.6
+2 3
+3  84.9+-2.9
+4  91.6+-2.1
+5  94.1+-1.1
+6  95.1+-0.6
+7  95.5+-0.5
+8  95.6+-0.4
+9  95.6+-0.3
+10  95.7+-0.3
+11  95.8+-0.3
+12  95.7+-0.3

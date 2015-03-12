@@ -5,8 +5,6 @@ Created on Aug 18, 2014
 '''
 
 from .elm_basic import ELM_Basic
+from .slfn import SLFN
 from .elm import ELM
-from .data_loader import batchX, batchT, encode, decode, meanstdX, c_dictT
-from .h5tools import h5write, h5read
-from .neuron_generator import gen_neurons
-from .error_functions import press, press_L2
+from .elm_big import HPELM
