@@ -23,7 +23,9 @@ class TestAcceptance(TestCase):
 
         elm = hpelm.ELM(1, 1)
         elm.add_neurons(3, "sigm")
+        print elm.Beta
         elm.train(X, Y)
+        print elm.Beta
         Yt = elm.predict(X)
 
         MSE = np.mean((Y - Yt) ** 2)
@@ -47,7 +49,7 @@ class TestAcceptance(TestCase):
                 self.assertGreater(Yh[1], 0)
                 self.assertLess(Y[2], 0)
                 self.assertLess(Y[3], 0)
-                nn = sum([n[0] for n in elm.neurons.values()])
+                nn = sum([n[1] for n in elm.neurons])
                 self.assertEqual(nn, 1)  # one neuron in the ELM
                 return
             except AssertionError:

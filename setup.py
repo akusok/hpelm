@@ -14,12 +14,12 @@ def readme():
 
 
 setup(name='hpelm',
-      version='0.3.6',
+      version='0.4.0',
       description='High-Performance implementation of an\
                    Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Environment :: Console',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: BSD License',
@@ -29,7 +29,7 @@ setup(name='hpelm',
           'Topic :: Scientific/Engineering :: Information Analysis',
       ],
       keywords='ELM HPC regression classification ANN',
-      url='http://127.0.0.1',
+      url='https://www.researchgate.net/profile/Anton_Akusok',
       author='Anton Akusok',
       author_email='akusok.a@gmail.com',
       license='BSD (3-clause)',
@@ -38,6 +38,7 @@ setup(name='hpelm',
           'numpy',
           'scipy>=0.12',
           'tables',
+          'cython'
       ],
       scripts=['bin/elm_naive.py'],
       test_suite='nose.collector',

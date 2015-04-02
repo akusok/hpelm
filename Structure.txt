@@ -6,51 +6,74 @@ ELM is a training method for a SLFN:
 One only needs SLFN to run the method!
 Add a native SLFN implementation to Matlab
 
-SLFN
+SLFN - a basic neural network
+
     1. number of input nodes
     2. number of output nodes
     3. hidden neurons
         3a. stores neurons with weights and transformation functions
         3b. adds more neurons to the model
-        3d. neuron type is defined by its transformation function
+        3c. neuron type is defined by its transformation function
+        3d. neurons have specifier order (needed for pruning)
     4. output projection matrix Beta
     5. data projection to the hidden layer (basic one)
     5. run SLFN to make predictions (with basic projection)
     6. save and load model
     7. native Matlab implementation
 
-ELM
-    1. data projection to the hidden layer outputs to get H
-    2. output weights solution
+
+
+ELM - a convenient shortcut for the full HP-ELM toolbox
+
+    ELM(X, T, Xmean=None, Tmean=None, ms="V(Xv,Tv)/CV(k)/LOO*/OP/HQ", ...
+        "classification/cl", "multiclass/mc", "balanced/b", "timeseries/ts")
+    HPELM(...) - same but on GPU and with batch processing (hello HPF5!)
+
+    1. Normalizes the data (get the parameters)
+    2. Trains ELM
+    3. Selects an optimal number of neurons with some model selection
+        - Get initial error
+        - Prune the system, update error
+        - Repeat until a minimum error is found
+        - Report if 90% neurons selected = should try again with more neurons
+    4. Return a model and the best validation error
+
+
 
 HP-ELM and accelerated computing
     1. BLUE solution with out-of-memory algorithm
     2. GPU BLUE solution with mixed-precision computing and MAGMA toolbox
     3. GPU BLUE with in-GPU correlation matrices
 
-Metrics
-Validation set accuracy for regression and classification
-LOO error for regression (MSE) and classification
-k-fold Cross-Validation, Monte-Carlo Cross-Validation
+
+Metrics - tools used in ELM model structure selection
+
+    1. Validation error
+    2. LOO error
+    3. OP neuron ranking
+    4. HQ neuron ranking
+    5. k-fold, Monte-Carlo sampling implementation
+
 
 Model structure selection
-Number of neurons selection based on (some) error
-Neuron pruning with OP-ELM
-Neuron pruning with Harlem-Quinn criterion
+    1. Number of neurons selection based on criterion (error minimization)
+    2. Neuron pruning with OP-ELM
+    3. Neuron pruning with Harlem-Quinn criterion
+
 
 Classification
-LOO error for classification problems
-Class balancing with per-class H'H matrices
+    1. LOO error for classification problems
+    2. Class balancing with per-class H'H matrices
 
 Timeseries and adaptive model
-Incremental batch ELM (add and remove samples) for running/validating timeseries model
-Matlab native implementation
+    1. Incremental batch ELM (add and remove samples) for running/validating timeseries model
+    2. Matlab native implementation
 
 Cluster Computing ELM --- maybe not needed at all!
-Parallel BLUE with parallel validation
-MPI to run on multiple nodes
-Possibly client-server architecture
+    1. Parallel BLUE with parallel validation
+    2. MPI to run on multiple nodes
+    3. Possibly client-server architecture
 
 Tools
-Building class representations
-Fast calculation of regularization parameters
+    1. Building class representations
+    2. Fast calculation of regularization parameters

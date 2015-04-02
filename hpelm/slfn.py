@@ -18,7 +18,7 @@ class SLFN(object):
     inputs = 0
     targets = 0
     # cannot use a dictionary for neurons, because its iteration order is not defined
-    neurons = []  # list of all neurons with their types (= transformantion functions)
+    neurons = None  # list of all neurons with their types (= transformantion functions)
     Beta = None
     flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")
 
@@ -34,19 +34,20 @@ class SLFN(object):
         # set default argument values
         self.inputs = inputs
         self.targets = outputs
+        self.neurons = []  # create a separate list for each object
 
     def _checkdata(self, X, T):
         """Checks data variables and fixes matrix dimensionality issues.
         """
         if X is not None:
-            assert isinstance(X, np.ndarray), "X must be a numpy array"
+            assert isinstance(X, np.ndarray) and X.dtype.kind not in "OSU", "X must be a numerical numpy array"
             if len(X.shape) == 1:
                 X = X.reshape(-1, 1)
             assert len(X.shape) == 2, "X must be 2-dimensional matrix"
             assert X.shape[1] == self.inputs, "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
 
         if T is not None:
-            assert isinstance(T, np.ndarray), "T must be a numpy array"
+            assert isinstance(T, np.ndarray) and T.dtype.kind not in "OSU", "T must be a numerical numpy array"
             if len(T.shape) == 1:
                 T = T.reshape(-1, 1)
             assert len(X.shape) == 2, "T must be 1- or 2-dimensional matrix"
@@ -80,12 +81,15 @@ class SLFN(object):
                 W = np.eye(self.inputs, number)
             else:
                 W = np.random.randn(self.inputs, number)
-                if "rbf" not in func:
+                if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
                     W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
         if B is None:
             B = np.random.randn(number)
-            if "rbf" in func:
-                B = (np.abs(B) * self.inputs) ** 0.5  # high dimensionality fix
+            # the following causes errors with very high dimensional inputs
+            #if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
+                #B = (np.abs(B) * self.inputs) ** 0.5  # high dimensionality fix
+                #B = B * (self.inputs ** 0.5)  # high dimensionality fix
+                #pass
         assert W.shape == (self.inputs, number), "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
         assert B.shape == (number,), "B must be size [neurons] (expected [%d])" % number
 

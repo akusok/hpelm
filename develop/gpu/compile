@@ -1,0 +1,43 @@
+gcc -DADD_ -fopenmp -DHAVE_CUBLAS -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -c magma_solver.c -o magma_solver.o
+
+gcc -fopenmp -L/usr/local/magma/lib -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/local/cuda-6.5/lib64 -L/opt/intel/composerxe/lib/intel64 -lmagma -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lcublas -lcudart -lstdc++ -lgfortran -lm -o magma_solver magma_solver.o
+
+##################
+
+gcc -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -c example.c -o example.o
+
+gcc -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -pthread -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -I/home/akusok/anaconda/lib/python2.7/site-packages/numpy/core/include -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -I/home/akusok/anaconda/include/python2.7 -c magma_solver.c -o magma_solver.o
+
+gcc -pthread -fopenmp -shared magma_solver.o example.o -L/home/akusok/anaconda/lib -L/usr/local/magma/lib -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/local/cuda-6.5/lib64 -L/opt/intel/composerxe/lib/intel64 -lpython2.7 -lmagma -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lcublas -lcudart -lstdc++ -lgfortran -lm -o /home/akusok/Data/Dropbox/Documents/X-ELM/hpelm/hpelm/gpu/magma_solver.so
+
+python test.py
+
+###################
+
+rm magma_solver.c && cythonize magma_solver.pyx && gcc -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -c example.c -o example.o && gcc -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -pthread -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -I/home/akusok/anaconda/lib/python2.7/site-packages/numpy/core/include -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -I/home/akusok/anaconda/include/python2.7 -c magma_solver.c -o magma_solver.o && gcc -pthread -fopenmp -shared magma_solver.o example.o -L/home/akusok/anaconda/lib -L/usr/local/magma/lib -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/local/cuda-6.5/lib64 -L/opt/intel/composerxe/lib/intel64 -lpython2.7 -lmagma -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lcublas -lcudart -lstdc++ -lgfortran -lm -o /home/akusok/Data/Dropbox/Documents/X-ELM/hpelm/hpelm/gpu/magma_solver.so && python test.py
+
+
+
+#########################
+
+g++ -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -c gpu_solver.cpp -o gpu_solver.o
+
+g++ -fopenmp -L/usr/local/magma/lib -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/local/cuda-6.5/lib64 -L/opt/intel/composerxe/lib/intel64 -lmagma -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lcublas -lcudart -lstdc++ -lgfortran -lm -o gpu_solver gpu_solver.o
+
+
+##
+
+g++ -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -c gpu_solver.c -o gpu_solver.o && g++ -fopenmp -L/usr/local/magma/lib -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/local/cuda-6.5/lib64 -L/opt/intel/composerxe/lib/intel64 -lmagma -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lcublas -lcudart -lstdc++ -lgfortran -lm -o gpu_solver gpu_solver.o && ./gpu_solver
+
+##
+
+g++ -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -c gpu_solver.cpp -o gpu_solver.o
+
+cython --cplus magma_solver.pyx 
+
+g++ -DADD_ -fopenmp -fPIC -DHAVE_CUBLAS -pthread -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -I/home/akusok/anaconda/lib/python2.7/site-packages/numpy/core/include -I/usr/local/magma/include -I/usr/local/cuda-6.5/include -I/opt/intel/composerxe/mkl/include -I/home/akusok/anaconda/include/python2.7 -c magma_solver.cpp -o magma_solver.o
+
+g++ -pthread -fopenmp -shared magma_solver.o gpu_solver.o -L/home/akusok/anaconda/lib -L/usr/local/magma/lib -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/local/cuda-6.5/lib64 -L/opt/intel/composerxe/lib/intel64 -lpython2.7 -lmagma -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lcublas -lcudart -lstdc++ -lgfortran -lm -o /home/akusok/Data/Dropbox/Documents/X-ELM/hpelm/hpelm/gpu/magma_solver.so
+
+python -c "from magma_solver import solve2"
+

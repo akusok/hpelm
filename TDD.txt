@@ -1,13 +1,23 @@
 
 Final goals
 
-    1. Solve huge tasks distributively
-    2. Use any types of neurons
-    3. Use regularizations and prunings
-    4. Use classification
-    5. Work with timeseries
+    1. Working ELM, easy to use
+    2. All types of neurons in one model
+    3. BLUE solution and GPU acceleration
+    4. Model structure selection
+    5. Classification support, class weighting
+    6. Available from Matlab
+    7. Timeseries support
+    8. Distributed implementation
+
 
 ######################################################################
+
+Notes
+
+    1. Universal neurons with 2 inputs - weight and bias,
+        suitable for RBF functions
+    2. 
 
 
 List of desired behaviour
@@ -15,15 +25,20 @@ List of desired behaviour
     1. Solve XOR problem with 'sigm' ELM
     2. Solve Sine problem with 'sigm' ELM
     3. Handle inputs normalization (parameters are given)
-    4. Types of single input neurons: linear, 'sigm', 'tanh'
-    5. Types of two-input neurons: 'rbf_l2', 'rbf_l1', 'rbf_linf'
     6. Read data from files: text and binary Numpy
     7. Save and load ELM model
 
 ######################################################################
 
 
-Test simple ELM correctness
+Acceptance testing
+
+    1. Solve XOR problem with one neuron
+    2. Approximate sine function with ELM
+    3. Run on all datasets from OP-ELM paper
+
+
+Test SLFN correctness
 
     Can load whatever Numpy matrix data
 
@@ -37,7 +52,20 @@ Test simple ELM correctness
     8. Send all-zero targets, does not fail
     9. Train with no neurons, raise error
     10. X and T have different number of samples, raise error
-
+    11. Cannot have more linear neurons than input features
+    12. Linear neurons initialize an identity matrix
+    13. Add linear neurons, got them
+    14. Add sigm neurons, got them
+    15. Add tanh neurons, got them
+    16. Add rbf_l1 neurons, got them
+    17. Add rbf_l2 neurons, got them
+    18. Add rbf_linf neurons, got them
+    19. Add custom ufunc neurons, got them
+    20. Add two types of neurons
+    21. Add one type of neurons twice
+    22. Init with bias
+    23. Init with W
+    24. Init without bias and W, both non-zero
 
 
 Test simple ELM performance
@@ -58,6 +86,55 @@ Test simple ELM performance
     13. Regression_Elevators
     14. Regression_Servo
     15. Regression_Stocks
+
+
+Test data loader
+
+    3a. Reshape 1-dim X and add bias
+    3b. Reshape 1-dim Y
+    3c. Test encoder 1-dim
+    3d. Test encoder 2-dim
+    3e. Test encoder string
+    3f. Test decoder 1-dim
+    3g. Test decoder string
+    3h. Classification - transform integer classes into one-out-of-all code
+    3i. Classification - transform anything to classes
+    3j. Get mean and std of training data
+    3k. Read text files with different delimiters
+    3l. Batch parameter works
+    3m. Data loader gets number of inputs
+    3n. Data loader gets number of targets
+    3o. Data loader gets number of targets for classification
+    3p. Data features consisting of 0, 1 and -1 are not normalized
+
+
+Test model selection
+
+    1. Error functino works for regression
+    2. Error function works for classification
+    3. Pruning works with one neuron type
+    4. Pruning works with several neuron types
+
+    5. Run regression with a validation set
+    6. Run classification with a validation set
+    7. Validation with multiple types of neurons
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
