@@ -12,14 +12,14 @@ from slfn import SLFN
 from modules import mrsr, mrsr2
 
 
-class ELM_TOOLS(SLFN):
+class ELM_BASE(SLFN):
     """Non-parallel Extreme Learning Machine.
     """
 
-    def __init__(self, inputs, outputs, accelerator="", batch=0):
+    def __init__(self, inputs, outputs, accelerator="", batch=100):
         """Contructor of a basic ELM model.
         """
-        super(ELM_TOOLS, self).__init__(inputs, outputs)
+        super(ELM_BASE, self).__init__(inputs, outputs)
         self.norm = 1E-9  # normalization for H'H solution
         self.classification = None
         self.ranking = None
@@ -29,7 +29,8 @@ class ELM_TOOLS(SLFN):
         if accelerator == "GPU":
             self.accelerator = "GPU"
             self.magma_solver = __import__('gpu.magma_solver', globals(), locals(), ['gpu_solve'], -1)
-            self.batch = max(100, batch)
+            assert batch > 0, "Batch should be positive"
+            self.batch = batch
             print "using GPU"
 
     def _project(self, X, T, solve=False):
@@ -133,6 +134,12 @@ class ELM_TOOLS(SLFN):
         if R is None:  # normal classification error
             if self.classification == "c":
                 err = (Y.argmax(1) != T.argmax(1))
+            elif self.classification == "cb":  # balanced classification
+                c = T.shape[1]
+                err = np.zeros(c)
+                for i in xrange(c):  # per-class MSE
+                    idx = T[:, i] == 1
+                    err[i] = np.mean((Y[idx].argmax(1) != i)**2)**0.5
             elif self.classification == "mc":
                 err = ((Y > 0.5) - (T > 0.5))
             else:
@@ -140,6 +147,12 @@ class ELM_TOOLS(SLFN):
         else:  # LOO_PRESS error
             if self.classification == "c":
                 err = (Y.argmax(1) != T.argmax(1)) / R.ravel()
+            elif self.classification == "cb":  # balanced classification
+                c = T.shape[1]
+                err = np.zeros(c)
+                for i in xrange(c):  # per-class MSE
+                    idx = T[:, i] == 1
+                    err[i] = np.mean(((Y[idx].argmax(1) != i) / R[idx].ravel())**2)**0.5
             elif self.classification == "mc":
                 err = ((Y > 0.5) - (T > 0.5)) / R.reshape((-1, 1))
             else:

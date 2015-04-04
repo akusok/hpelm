@@ -4,7 +4,8 @@
 # Setuptools distribution folder
 /dist/
 /datasets_big/
-/bench/
+/benchmark/
+/try/
 
 # Python egg metadata, regenerated from source files by setuptools
 /*.egg-info

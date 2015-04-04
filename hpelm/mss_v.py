@@ -7,10 +7,10 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 
-from elm_tools import ELM_TOOLS
+from elm_base import ELM_BASE
 
 
-class ELM_V(ELM_TOOLS):
+class MSS_V(ELM_BASE):
     """Validation set training of ELM.
     """
 
@@ -70,7 +70,7 @@ class ELM_V(ELM_TOOLS):
         best_nn = rank[:k_opt]
 
         self._prune(best_nn)
-        self.Beta = self._solve(self.project(X), T)
+        self.Beta = self._project(X, T, solve=True)[2]
         print "%d of %d neurons selected with a validation set" % (len(best_nn), nn)
         if len(best_nn) > nn*0.9:
             print "Hint: try re-training with more hidden neurons"

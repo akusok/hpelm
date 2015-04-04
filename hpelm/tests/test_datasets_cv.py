@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 17 16:59:06 2014
+Created on Wed Apr  1 23:03:15 2015
 
 @author: akusok
 """
+
 
 from unittest import TestCase
 import numpy as np
@@ -15,40 +16,40 @@ import hpelm
 def classification_accuracy(folder, nn, ntype="sigm"):
     folder = os.path.join(os.path.dirname(__file__), "../../datasets", folder)
     acc = np.empty((10,))
-    for i in range(10):  # 10-fold cross-validation
+    for i in range(10):  # 10 random initializations
         # get file names
         Xtr = np.load(os.path.join(folder, "xtrain_%d.npy" % (i + 1)))
         Xts = np.load(os.path.join(folder, "xtest_%d.npy" % (i + 1)))
-        Ytr = np.load(os.path.join(folder, "ytrain_%d.npy" % (i + 1)))
-        Yts = np.load(os.path.join(folder, "ytest_%d.npy" % (i + 1)))
+        Ttr = np.load(os.path.join(folder, "ytrain_%d.npy" % (i + 1)))
+        Tts = np.load(os.path.join(folder, "ytest_%d.npy" % (i + 1)))
         # train ELM
-        elm = hpelm.ELM(Xtr.shape[1], Ytr.shape[1])
+        elm = hpelm.ELM(Xtr.shape[1], Ttr.shape[1])
         elm.add_neurons(nn, ntype)
-        elm.train(Xtr, Ytr)
-        Yh = elm.predict(Xts)
+        elm.train(Xtr, Ttr, "CV", k=5)
+        Yts = elm.predict(Xts)
         # evaluate classification results
+        Tts = np.argmax(Tts, 1)
         Yts = np.argmax(Yts, 1)
-        Yh = np.argmax(Yh, 1)
-        acc[i - 1] = float(np.sum(Yh == Yts)) / Yts.shape[0]
+        acc[i - 1] = float(np.sum(Yts == Tts)) / Tts.shape[0]
     return acc
 
 
 def regression_accuracy(folder, nn):
     folder = os.path.join(os.path.dirname(__file__), "../../datasets", folder)
     mse = np.empty((10,))
-    for i in range(10):  # 10-fold cross-validation
+    for i in range(10):  # 10 random initializations
         # get file names
         Xtr = np.load(os.path.join(folder, "xtrain_%d.npy" % (i + 1)))
         Xts = np.load(os.path.join(folder, "xtest_%d.npy" % (i + 1)))
-        Ytr = np.load(os.path.join(folder, "ytrain_%d.npy" % (i + 1)))
-        Yts = np.load(os.path.join(folder, "ytest_%d.npy" % (i + 1)))
+        Ttr = np.load(os.path.join(folder, "ytrain_%d.npy" % (i + 1)))
+        Tts = np.load(os.path.join(folder, "ytest_%d.npy" % (i + 1)))
         # train ELM
-        elm = hpelm.ELM(Xtr.shape[1], Ytr.shape[1])
+        elm = hpelm.ELM(Xtr.shape[1], Ttr.shape[1])
         elm.add_neurons(nn, "sigm")
-        elm.train(Xtr, Ytr)
-        Yh = elm.predict(Xts)
+        elm.train(Xtr, Ttr, "CV", k=5)
+        Yts = elm.predict(Xts)
         # evaluate classification results
-        mse[i - 1] = np.mean((Yts - Yh) ** 2)
+        mse[i - 1] = np.mean((Tts - Yts) ** 2)
     return mse
 
 
@@ -57,36 +58,36 @@ class TestAllDatasets(TestCase):
     # how much worse our result can be
     # tol = 1.10 means 10% worse
     # tol = 0.90 means 10% better
-    tolerance = 1.10
+    tolerance = 0.99
 
     def test_Sigm_ClassificationBenchmark_Iris(self):
         target = 72.2 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Iris", 10, "sigm")
+        acc = classification_accuracy("Classification-Iris", 15, "sigm")
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_Sigm_ClassificationBenchmark_Iris_lin(self):
         target = 72.2 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Iris", 10, "lin")
+        acc = classification_accuracy("Classification-Iris", 15, "lin")
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_ClassificationBenchmark_Iris_Tanh(self):
         target = 72.2 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Iris", 10, "tanh")
+        acc = classification_accuracy("Classification-Iris", 15, "tanh")
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_ClassificationBenchmark_Iris_RBF_l1(self):
         target = 72.2 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Iris", 10, "rbf_l1")
+        acc = classification_accuracy("Classification-Iris", 15, "rbf_l1")
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_ClassificationBenchmark_Iris_RBF_l2(self):
         target = 72.2 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Iris", 10, "rbf_l2")
+        acc = classification_accuracy("Classification-Iris", 20, "rbf_l2")
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_ClassificationBenchmark_Iris_RBF_linf(self):
         target = 72.2 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Iris", 10, "rbf_linf")
+        acc = classification_accuracy("Classification-Iris", 15, "rbf_linf")
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_ClassificationBenchmark_Pima(self):
@@ -111,7 +112,7 @@ class TestAllDatasets(TestCase):
 
     def test_RegressionBenchmark_Ailerons(self):
         target = 3.3E-8  # from OP-ELM paper
-        mse = regression_accuracy("Regression-Ailerons", 20)
+        mse = regression_accuracy("Regression-Ailerons", 30)
         self.assertLess(mse.mean(), target * self.tolerance)
 
     def test_RegressionBenchmark_Auto(self):
@@ -146,7 +147,7 @@ class TestAllDatasets(TestCase):
 
     def test_RegressionBenchmark_Elevators(self):
         target = 2.2E-6  # from OP-ELM paper
-        mse = regression_accuracy("Regression-Elevators", 20)
+        mse = regression_accuracy("Regression-Elevators", 30)
         self.assertLess(mse.mean(), target * self.tolerance)
 
     def test_RegressionBenchmark_Servo(self):

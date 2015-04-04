@@ -7,10 +7,10 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 
-from elm_tools import ELM_TOOLS
+from elm_base import ELM_BASE
 
 
-class ELM_CV(ELM_TOOLS):
+class MSS_CV(ELM_BASE):
     """Cross-Validation training of ELM.
     """
 
@@ -54,7 +54,7 @@ class ELM_CV(ELM_TOOLS):
         # halve the interval each time
 
         # initialize intervals
-        A = 1
+        A = 3
         E = nn
         l = E - A
         B = A + l/4
@@ -103,7 +103,7 @@ class ELM_CV(ELM_TOOLS):
             err_ts += self._error(Yts, Tts) / k
 
         self._prune(best_nn)
-        self.Beta = self._solve(self.project(X), T)
+        self.Beta = self._project(X, T, solve=True)[2]
         print "%d of %d neurons selected with a Cross-Validation" % (len(best_nn), nn)
         print "the Cross-Validation test error is %f" % err_ts
         if len(best_nn) > nn*0.9:

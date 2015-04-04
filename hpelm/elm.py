@@ -5,13 +5,13 @@ Created on Mon Oct 27 17:48:33 2014
 @author: akusok
 """
 
-from elm_tools import ELM_TOOLS
-from elm_loo import ELM_LOO
-from elm_v import ELM_V
-from elm_cv import ELM_CV
+from elm_base import ELM_BASE
+from mss_loo import MSS_LOO
+from mss_v import MSS_V
+from mss_cv import MSS_CV
 
 
-class ELM(ELM_TOOLS):
+class ELM(ELM_BASE):
     """Interface for training Extreme Learning Machines.
     """
 
@@ -91,13 +91,13 @@ class ELM(ELM_TOOLS):
 
         # polymorphism switching to a correct "_train" method
         if MODELSELECTION == "V":
-            self.__class__ = ELM_V
+            self.__class__ = MSS_V
             self._train(X, T, Xv, Tv)
         elif MODELSELECTION == "CV":
-            self.__class__ = ELM_CV
+            self.__class__ = MSS_CV
             self._train(X, T, k)
         elif MODELSELECTION == "LOO":
-            self.__class__ = ELM_LOO
+            self.__class__ = MSS_LOO
             self._train(X, T)
         else:
             self._train(X, T)

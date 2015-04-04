@@ -7,3 +7,4 @@ Created on Sat Feb 21 20:46:31 2015
 
 from .mrsr import mrsr
 from .mrsr2 import mrsr2
+from .hdf5_tools import make_hdf5, normalize_hdf5
