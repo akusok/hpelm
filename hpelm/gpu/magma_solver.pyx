@@ -19,6 +19,7 @@ cdef extern from "gpu_solver.h":
         void add_data( int m, double* X, double* T )
         void get_corr( double* XX, double* XT )
         void solve( double* X )
+        void finalize()
 
 
 cdef class GPUSolver:
@@ -34,8 +35,8 @@ cdef class GPUSolver:
         A.ravel()[::self.n+1] += norm
         self.solverptr = new GpuSolver( self.n, self.nrhs, &A[0,0], &B[0,0] )
 
-    def __del__(self):
-        del self.solver
+    def finalize(self):
+        self.solverptr.finalize()
         
     def add_data(self,
                  np.ndarray[double, ndim=2, mode="c"] X not None,
@@ -50,7 +51,9 @@ cdef class GPUSolver:
         cdef np.ndarray[double, ndim=2, mode="c"] XX = np.empty((self.n, self.n))
         cdef np.ndarray[double, ndim=2, mode="c"] XT = np.empty((self.nrhs, self.n))
         self.solverptr.get_corr( &XX[0,0], &XT[0,0] )
-        return np.ascontiguousarray(XX.T), np.ascontiguousarray(XT.T)
+        XX = np.ascontiguousarray(XX.T)
+        XT = np.ascontiguousarray(XT.T)
+        return XX, XT
         
     def solve(self):
         cdef np.ndarray[double, ndim=2, mode="c"] B = np.empty((self.nrhs, self.n))
@@ -68,7 +71,8 @@ def gpu_solve(np.ndarray[double, ndim=2, mode="c"] XX not None,
     XX.ravel()[::n+1] += norm
     XT = XT.T.reshape(n,nrhs)  # transpose and cast to 'c' ordering
     solve_corr(n, nrhs, &XX[0,0], &XT[0,0], &B[0,0])
-    return B.reshape(nrhs,n).T  # transpose
+    B = B.reshape(nrhs,n).T
+    return B  # transpose
 
 
 

@@ -1,13 +1,20 @@
 High Performance ELM
 --------
 
-Extreme Learning Machine (ELM) with regularization for very large models.
- 
-Uses MPI for distributed computing, iterative computation for limiting memory 
-consumption, and fast system solvers.
+Extreme Learning Machine (ELM) with model selection and regularizations.
+
+In-memory ELM works, check hpelm/tests folder.
+MAGMA acceleration works, check setup_gpu.py.
+
+Out-of-memory in development.
 
 
 Example usage::
 
     >>> from hpelm import ELM
-    >>> error = ELM(X,Y)
+    >>> elm = ELM(X.shape[1], T.shape[1])
+    >>> elm.add_neurons(20, "sigm")
+    >>> elm.add_neurons(10, "rbf_l2")
+    >>> elm.train(X, T, "LOO")
+    >>> Y = elm.predict(X)
+

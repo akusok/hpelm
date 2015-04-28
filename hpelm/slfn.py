@@ -7,50 +7,94 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 import numexpr as ne
+from tables import open_file
 from scipy.spatial.distance import cdist
+from scipy.linalg import solve as cpu_solve
+from multiprocessing import Pool, cpu_count
 import cPickle
+import os, platform
+
+
+def cd(a):
+    x, w, kind, idx = a
+    return cdist(x, w, kind)**2, idx
 
 
 class SLFN(object):
     """Single-hidden Layer Feed-forward Network.
     """
 
-    inputs = 0
-    targets = 0
-    # cannot use a dictionary for neurons, because its iteration order is not defined
-    neurons = None  # list of all neurons with their types (= transformantion functions)
-    Beta = None
-    flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")
-
-    def __init__(self, inputs, outputs):
+    def __init__(self, inputs, targets, batch=100, accelerator=""):
         """Initializes a SLFN with an empty hidden layer.
 
         :param inputs: number of features in input samples (input dimensionality)
         :param outputs: number of simultaneous predicted outputs
         """
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
-        assert isinstance(outputs, (int, long)), "Number of outputs must be integer"
+        assert isinstance(targets, (int, long)), "Number of outputs must be integer"
+        assert batch > 0, "Batch should be positive"
 
-        # set default argument values
         self.inputs = inputs
-        self.targets = outputs
-        self.neurons = []  # create a separate list for each object
+        self.targets = targets
+        # cannot use a dictionary for neurons, because its iteration order is not defined
+        self.neurons = []  # list of all neurons with their types (= transformantion functions)
+        self.Beta = None
+        self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")
+        self.norm = 1E-9  # normalization for H'H solution
+        self.batch = int(batch)  # smallest batch for batch processing
+        self.accelerator = None  # None, "GPU", "PHI"
+        if accelerator == "GPU":
+            self.accelerator = "GPU"
+            self.magma_solver = __import__('gpu.magma_solver', globals(), locals(), ['gpu_solve'], -1)
+            print "using GPU"
+        # init other stuff
+        self.opened_hdf5 = []
+        self.classification = None  # c / wc / mc
+        self.weights_wc = None
+        self.tprint = 5
+
+    def __del__(self):
+        """Close HDF5 files opened during HPELM usage.
+        """
+        if len(self.opened_hdf5) > 0:
+            for h5 in self.opened_hdf5:
+                h5.close()
 
     def _checkdata(self, X, T):
         """Checks data variables and fixes matrix dimensionality issues.
         """
         if X is not None:
-            assert isinstance(X, np.ndarray) and X.dtype.kind not in "OSU", "X must be a numerical numpy array"
-            if len(X.shape) == 1:
-                X = X.reshape(-1, 1)
-            assert len(X.shape) == 2, "X must be 2-dimensional matrix"
+            if isinstance(X, basestring):  # open HDF5 file
+                try:
+                    h5 = open_file(X, "r")
+                    self.opened_hdf5.append(h5)
+                    for node in h5.walk_nodes():
+                        pass  # find a node with whatever name
+                    X = node
+                except:
+                    raise IOError("Cannot read HDF5 file at %s" % X)
+            else:
+                assert isinstance(X, np.ndarray) and X.dtype.kind not in "OSU", "X must be a numerical numpy array"
+                if len(X.shape) == 1:
+                    X = X.reshape(-1, 1)
+            assert len(X.shape) == 2, "X must have 2 dimensions"
             assert X.shape[1] == self.inputs, "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
 
         if T is not None:
-            assert isinstance(T, np.ndarray) and T.dtype.kind not in "OSU", "T must be a numerical numpy array"
-            if len(T.shape) == 1:
-                T = T.reshape(-1, 1)
-            assert len(X.shape) == 2, "T must be 1- or 2-dimensional matrix"
+            if isinstance(T, basestring):  # open HDF5 file
+                try:
+                    h5 = open_file(T, "r")
+                    self.opened_hdf5.append(h5)
+                    for node in h5.walk_nodes():
+                        pass  # find a node with whatever name
+                    T = node
+                except:
+                    raise IOError("Cannot read HDF5 file at %s" % T)
+            else:
+                assert isinstance(T, np.ndarray) and T.dtype.kind not in "OSU", "T must be a numerical numpy array"
+                if len(T.shape) == 1:
+                    T = T.reshape(-1, 1)
+            assert len(T.shape) == 2, "T must have 2 dimensions"
             assert T.shape[1] == self.targets, "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
 
         if (X is not None) and (T is not None):
@@ -85,11 +129,11 @@ class SLFN(object):
                     W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
         if B is None:
             B = np.random.randn(number)
-            # the following causes errors with very high dimensional inputs
-            #if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
-                #B = (np.abs(B) * self.inputs) ** 0.5  # high dimensionality fix
-                #B = B * (self.inputs ** 0.5)  # high dimensionality fix
-                #pass
+            if func in ("rbf_l2", "rbf_l1", "rbf_linf"):
+                B = np.abs(B)
+                B = B * self.inputs
+            if func == "lin":
+                B = np.zeros((number,))
         assert W.shape == (self.inputs, number), "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
         assert B.shape == (number,), "B must be size [neurons] (expected [%d])" % number
 
@@ -106,19 +150,33 @@ class SLFN(object):
             # create a new neuron type
             self.neurons.append((func, number, W, B))
 
+
     def project(self, X):
         # assemble hidden layer output with all kinds of neurons
         assert len(self.neurons) > 0, "Model must have hidden neurons"
+
         X, _ = self._checkdata(X, None)
         H = []
+        cdkinds = {"rbf_l2": "euclidean", "rbf_l1": "cityblock", "rbf_linf": "chebyshev"}
         for func, _, W, B in self.neurons:
             # projection
-            if func == "rbf_l2":
-                H0 = cdist(X, W.T, "sqeuclidean") / (-2 * (B ** 2))
-            elif func == "rbf_l1":
-                H0 = cdist(X, W.T, "cityblock") / (-2 * (B ** 2))
-            elif func == "rbf_linf":
-                H0 = cdist(X, W.T, "chebyshev") / (-2 * (B ** 2))
+            if "rbf" in func:
+                self._affinityfix()
+                N = X.shape[0]
+                k = cpu_count()
+                jobs = [(X[idx], W.T, cdkinds[func], idx) for idx in np.array_split(np.arange(N), k*10)]
+                p = Pool(k)
+                H0 = np.empty((N, W.shape[1]))
+                for h0, idx in p.imap(cd, jobs):
+                    H0[idx] = h0
+                p.close()
+                H0 = - H0 / B
+#            if func == "rbf_l2":
+#                H0 = - cdist(X, W.T, "euclidean")**2 / B
+#            elif func == "rbf_l1":
+#                H0 = - cdist(X, W.T, "cityblock")**2 / B
+#            elif func == "rbf_linf":
+#                H0 = - cdist(X, W.T, "chebyshev")**2 / B
             else:
                 H0 = X.dot(W) + B
 
@@ -135,7 +193,11 @@ class SLFN(object):
                 H0 = func(H0)  # custom <numpy.ufunc>
             H.append(H0)
 
-        H = np.hstack(H)
+        if len(H) == 1:
+            H = H[0]
+        else:
+            H = np.hstack(H)
+#        print (H > 0.01).sum(0)
         return H
 
     def predict(self, X):
@@ -148,8 +210,90 @@ class SLFN(object):
         Y = H.dot(self.Beta)
         return Y
 
+    def error(self, Y, T):
+        """Calculate error of model predictions.
+        """
+        return self._error(Y, T)
+
+    def confusion(self, Y1, T1):
+        """Compute confusion matrix for the given classification, iteratively.
+        """
+        _, Y = self._checkdata(None, Y1)
+        _, T = self._checkdata(None, T1)
+        nn = np.sum([n1[1] for n1 in self.neurons])
+        N = T.shape[0]
+        batch = max(self.batch, nn)
+        nb = N / batch  # number of batches
+        if batch > N * nb:
+            nb += 1
+
+        C = self.targets
+        conf = np.zeros((C, C))
+
+        if self.classification in ("c", "wc"):
+            for b in xrange(nb):
+                start = b*batch
+                stop = min((b+1)*batch, N)
+                Tb = np.array(T[start:stop]).argmax(1)
+                Yb = np.array(Y[start:stop]).argmax(1)
+                for c1 in xrange(C):
+                    for c1h in xrange(C):
+                        conf[c1, c1h] += np.sum((Tb == c1) * (Yb == c1h))
+        elif self.classification == "mc":
+            for b in xrange(nb):
+                start = b*batch
+                stop = min((b+1)*batch, N)
+                Tb = np.array(T[start:stop]) > 0.5
+                Yb = np.array(Y[start:stop]) > 0.5
+                for c1 in xrange(C):
+                    for c1h in xrange(C):
+                        conf[c1, c1h] += np.sum(Tb[:, c1] * Yb[:, c1h])
+        else:  # No confusion matrix
+            conf = None
+        return conf
+
     ######################
     ### helper methods ###
+
+    def _prune(self, idx):
+        """Leave only neurons with the given indexes.
+        """
+        idx = list(idx)
+        neurons = []
+        for nold in self.neurons:
+            k = nold[1]  # number of neurons
+            ix1 = [i for i in idx if i < k]  # index for current neuron type
+            idx = [i-k for i in idx if i >= k]
+            func = nold[0]
+            number = len(ix1)
+            W = nold[2][:, ix1]
+            bias = nold[3][ix1]
+            neurons.append((func, number, W, bias))
+        self.neurons = neurons
+
+    def _ranking(self, nn):
+        """Returns a random ranking of hidden neurons.
+        """
+        rank = np.arange(nn)
+        np.random.shuffle(rank)
+        return rank, nn
+
+    def _solve_corr(self, HH, HT):
+        """Solve a linear system from correlation matrices.
+        """
+        if self.accelerator == "GPU":
+            Beta = self.magma_solver.gpu_solve(HH, HT, self.norm)
+        else:
+            Beta = cpu_solve(HH, HT, sym_pos=True)
+        return Beta
+
+    def _error(self, Y, T, R=None):
+        """Returns regression/classification/multiclass error, also for PRESS.
+        """
+        raise NotImplementedError("SLFN does not know the use case to compute an error")
+
+    def _train(self, X, T):
+        raise NotImplementedError("SLFN does not know the use case to train a network")
 
     def __str__(self):
         s = "SLFN with %d inputs and %d outputs\n" % (self.inputs, self.targets)
@@ -159,27 +303,41 @@ class SLFN(object):
         s = s[:-2]
         return s
 
-    def save(self, model):
-        assert isinstance(model, basestring), "Model file name must be a string"
+    def _affinityfix(self):
+        # Numpy processor affinity fix
+        if "Linux" in platform.system():
+            a = np.random.rand(3, 1)
+            np.dot(a.T, a)
+            pid = os.getpid()
+            os.system("taskset -p 0xffffffff %d >/dev/null" % pid)
+
+    def save(self, fname):
+        assert isinstance(fname, basestring), "Model file name must be a string"
         m = {"inputs": self.inputs,
              "outputs": self.targets,
              "neurons": self.neurons,
-             "Beta": self.Beta}
+             "Beta": self.Beta,
+             "Norm": self.norm,
+             "Classification": self.classification,
+             "Weights_WC": self.weights_wc}
         try:
-            cPickle.dump(m, open(model, "wb"), -1)
+            cPickle.dump(m, open(fname, "wb"), -1)
         except IOError:
-            raise IOError("Cannot create a model file at: %s" % model)
+            raise IOError("Cannot create a model file at: %s" % fname)
 
-    def load(self, model):
-        assert isinstance(model, basestring), "Model file name must be a string"
+    def load(self, fname):
+        assert isinstance(fname, basestring), "Model file name must be a string"
         try:
-            m = cPickle.load(open(model, "rb"))
+            m = cPickle.load(open(fname, "rb"))
         except IOError:
-            raise IOError("Model file not found: %s" % model)
+            raise IOError("Model file not found: %s" % fname)
         self.inputs = m["inputs"]
         self.targets = m["outputs"]
         self.neurons = m["neurons"]
         self.Beta = m["Beta"]
+        self.norm = m["Norm"]
+        self.classification = m["Classification"]
+        self.weights_wc = m["Weights_WC"]
 
 
 

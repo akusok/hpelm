@@ -6,3 +6,4 @@ Created on Aug 18, 2014
 
 from .slfn import SLFN
 from .elm import ELM
+from .hpelm import HPELM

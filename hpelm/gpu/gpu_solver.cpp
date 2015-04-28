@@ -15,6 +15,7 @@ class GpuSolver {
         void add_data( magma_int_t m, magmaDouble_ptr X, magmaDouble_ptr T );
         void get_corr( magmaDouble_ptr XX, magmaDouble_ptr XT );
         void solve( magmaDouble_ptr X );
+        void finalize();
 };
 
 
@@ -36,7 +37,6 @@ GpuSolver::GpuSolver ( int nn, int outs, magmaDouble_ptr A, magmaDouble_ptr B ) 
 };
 
 
-
 // update covariance matrices with new data
 void GpuSolver::add_data ( magma_int_t m, magmaDouble_ptr X, magmaDouble_ptr T ) {
 
@@ -46,7 +46,7 @@ void GpuSolver::add_data ( magma_int_t m, magmaDouble_ptr X, magmaDouble_ptr T )
     magma_dmalloc( &dX, m*n );
     magma_dmalloc( &dT, m*nrhs );
     if ( dX == NULL || dT == NULL ) {
-        fprintf( stderr, "malloc failed - not enough GPU or system memory?\n" );
+        fprintf( stderr, "malloc failed - not enough GPU memory?\n" );
         goto cleanup;
     }
 
@@ -63,8 +63,7 @@ void GpuSolver::add_data ( magma_int_t m, magmaDouble_ptr X, magmaDouble_ptr T )
                     dX, m,
                  1, dA, n );
     time = magma_sync_wtime( NULL ) - time;
-    fprintf( stdout, "added data in %f sec\n", time );
-
+    // fprintf( stdout, "added data in %f sec\n", time );
 
   cleanup:
     magma_free( dX );
@@ -80,6 +79,14 @@ void GpuSolver::get_corr ( magmaDouble_ptr XX, magmaDouble_ptr XT ) {
     magma_dgetmatrix( n, nrhs, dB, n, XT, n );
 };
 
+
+
+// free memory
+void GpuSolver::finalize( ) {
+    magma_free( dA );
+    magma_free( dB );
+    magma_finalize();
+}
 
 
 // Solve dA * dX = dB, where dA and dX are stored in GPU device memory.
@@ -114,6 +121,8 @@ void GpuSolver::solve( magmaDouble_ptr X )
     
 cleanup:
     magma_free( dX );
+    magma_free( dWORKD );
+    magma_free( dWORKS );
 }
     
 
@@ -164,6 +173,8 @@ cleanup:
     magma_free( dA );
     magma_free( dB );
     magma_free( dX );
+    magma_free( dWORKD );
+    magma_free( dWORKS );
     magma_finalize();
 }
 

@@ -24,7 +24,7 @@ def classification_accuracy(folder, nn, ntype="sigm"):
         # train ELM
         elm = hpelm.ELM(Xtr.shape[1], Ttr.shape[1])
         elm.add_neurons(nn, ntype)
-        elm.train(Xtr, Ttr)
+        elm.train(Xtr, Ttr, 'c')
         Yts = elm.predict(Xts)
         # evaluate classification results
         Tts = np.argmax(Tts, 1)
@@ -101,7 +101,7 @@ class TestAllDatasets(TestCase):
 
     def test_ClassificationBenchmark_Wisconsin(self):
         target = 95.6 / 100  # from OP-ELM paper
-        acc = classification_accuracy("Classification-Wisconsin_Breast_Cancer", 10)
+        acc = classification_accuracy("Classification-Wisconsin_Breast_Cancer", 20)
         self.assertGreater(acc.mean(), target / self.tolerance)
 
     def test_RegressionBenchmark_Abalone(self):

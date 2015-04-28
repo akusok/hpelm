@@ -45,6 +45,7 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
             std = (E_x2 - E2_x)**0.5
             node.attrs.mean = mean
             node.attrs.std = std
+            return mean, std
         else:  # data is already normalized
             print "data was already normalized, returning 'mean', 'std' parameters"
             print "if you want to run normalization anyway, call the function with 'mean' and 'std' params"
@@ -68,20 +69,20 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
     return mean, std
 
 
-def oversample(data, targets, classes):
-    pass
+#def oversample(data, targets, classes):
+#    pass
 
 
 def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_level=0):
     """Makes an HDF5 file from whatever given data.
 
-    :param data: - input data in Numpy.ndarray or filename
+    :param data: - input data in Numpy.ndarray or filename, or a shape tuple
     :param h5file: - name (and path) of the output HDF5 file
     :param delimiter: - data delimiter for text, csv files
     :param comp_level: - compression level of the HDF5 file
     """
     assert comp_level < 10, "Compression level must be 0-9 (0 for no compression)"
-    iters = False
+    fill = ""
 
     # open data file
     if isinstance(data, np.ndarray):
@@ -92,7 +93,7 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
         X = np.loadtxt(data, dtype=dtype, delimiter=delimiter, skiprows=skiprows)
     elif isinstance(data, basestring) and data[-3:] in ['txt', 'csv']:
         # iterative out-of-memory loader for huge .csv/.txt files
-        iters = True
+        fill = "iter"
         # check data dimensionality
         with open(data, "rU") as f:
             for _ in xrange(skiprows):
@@ -101,6 +102,9 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
             for line in reader:
                 X = np.fromiter(line, dtype=dtype)
                 break
+    elif isinstance(data, tuple) and len(data) == 2:
+        X = np.empty(data)
+        fill = "empty"
     else:
         assert False, "Input data must be Numpy ndarray, .npy file, or .txt/.csv text file (compressed .gz/.bz2)"
 
@@ -114,9 +118,9 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
     else:
         flt = Filters(complevel=0)
     h5 = open_file(h5file, "w")
-    a = Atom.from_dtype(np.dtype(dtype))
+    a = Atom.from_dtype(np.dtype(dtype), dflt=0)
     # write data to hdf5 file
-    if iters:  # iteratively fill the data
+    if fill == "iter":  # iteratively fill the data
         h5data = h5.create_earray(h5.root, "data", a, (0, X.shape[0]), filters=flt)
         with open(data, "rU") as f:
             for _ in xrange(skiprows):
@@ -125,6 +129,8 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
             for line in reader:
                 row = np.fromiter(line, dtype=dtype)
                 h5data.append(row[np.newaxis, :])
+    elif fill == "empty":  # no fill at all
+        h5data = h5.create_carray(h5.root, "data", a, X.shape, filters=flt)
     else:  # write whole data matrix
         h5data = h5.create_carray(h5.root, "data", a, X.shape, filters=flt)
         h5data[:] = X

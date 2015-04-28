@@ -47,8 +47,22 @@ for a in f:
     b = g.next()
     print a,b  # only F finalizes!
 
+print "#################"
+print "#################"
+class C1():
+    a = 3
+    def pa(self):
+        print "local a is", self.a
+    def pb(self):
+        print "non-local b is", self.b
+class C2(C1):
+    b = 5
 
-
+c2 = C2()
+c2.pa()
+c2.pb()
+c1 = C1()
+c1.pa()
 
 
     
