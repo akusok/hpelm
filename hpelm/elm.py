@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 27 17:48:33 2014
 
@@ -7,7 +7,7 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 from slfn import SLFN
-from modules import mrsr, mrsr2
+from hpelm.modules import mrsr, mrsr2
 from mss_v import train_v
 from mss_cv import train_cv
 from mss_loo import train_loo
@@ -136,7 +136,7 @@ class ELM(SLFN):
 
         # GPU script
         def proj_gpu(self, X, T, getBeta, nn, nb):
-            s = self.magma_solver.GPUSolver(nn, self.targets, self.norm)
+            s = self.magma_solver.GPUSolver(nn, self.targets, self.alpha)
             for X0, T0 in zip(np.array_split(X, nb, axis=0),
                               np.array_split(T, nb, axis=0)):
                 H0 = self.project(X0)
@@ -152,7 +152,7 @@ class ELM(SLFN):
         def proj_cpu(self, X, T, getBeta, nn, nb):
             HH = np.zeros((nn, nn))
             HT = np.zeros((nn, self.targets))
-            HH.ravel()[::nn+1] += self.norm  # add to matrix diagonal trick
+            HH.ravel()[::nn+1] += self.alpha  # add to matrix diagonal trick
             for X0, T0 in zip(np.array_split(X, nb, axis=0),
                               np.array_split(T, nb, axis=0)):
                 H0 = self.project(X0)

@@ -40,12 +40,12 @@ class SLFN(object):
         self.neurons = []  # list of all neurons with their types (= transformantion functions)
         self.Beta = None
         self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")
-        self.norm = 1E-9  # normalization for H'H solution
+        self.alpha = 1E-9  # normalization for H'H solution
         self.batch = int(batch)  # smallest batch for batch processing
         self.accelerator = None  # None, "GPU", "PHI"
         if accelerator == "GPU":
             self.accelerator = "GPU"
-            self.magma_solver = __import__('gpu.magma_solver', globals(), locals(), ['gpu_solve'], -1)
+            self.magma_solver = __import__('acc.magma_solver', globals(), locals(), ['gpu_solve'], -1)
             print "using GPU"
         # init other stuff
         self.opened_hdf5 = []
@@ -74,7 +74,7 @@ class SLFN(object):
                 except:
                     raise IOError("Cannot read HDF5 file at %s" % X)
             else:
-                assert isinstance(X, np.ndarray) and X.dtype.kind not in "OSU", "X must be a numerical numpy array"
+                # assert isinstance(X, np.ndarray) and X.dtype.kind not in "OSU", "X must be a numerical numpy array"
                 if len(X.shape) == 1:
                     X = X.reshape(-1, 1)
             assert len(X.shape) == 2, "X must have 2 dimensions"
@@ -91,7 +91,7 @@ class SLFN(object):
                 except:
                     raise IOError("Cannot read HDF5 file at %s" % T)
             else:
-                assert isinstance(T, np.ndarray) and T.dtype.kind not in "OSU", "T must be a numerical numpy array"
+                # assert isinstance(T, np.ndarray) and T.dtype.kind not in "OSU", "T must be a numerical numpy array"
                 if len(T.shape) == 1:
                     T = T.reshape(-1, 1)
             assert len(T.shape) == 2, "T must have 2 dimensions"
@@ -149,6 +149,7 @@ class SLFN(object):
         else:
             # create a new neuron type
             self.neurons.append((func, number, W, B))
+        self.Beta = None  # need to re-train network after adding neurons
 
 
     def project(self, X):
@@ -164,7 +165,7 @@ class SLFN(object):
                 self._affinityfix()
                 N = X.shape[0]
                 k = cpu_count()
-                jobs = [(X[idx], W.T, cdkinds[func], idx) for idx in np.array_split(np.arange(N), k*10)]
+                jobs = [(X[idx], W.T, cdkinds[func], idx) for idx in np.array_split(np.arange(N), k*10)]  #### ERROR HERE!!!
                 p = Pool(k)
                 H0 = np.empty((N, W.shape[1]))
                 for h0, idx in p.imap(cd, jobs):
@@ -213,6 +214,8 @@ class SLFN(object):
     def error(self, Y, T):
         """Calculate error of model predictions.
         """
+        _, Y = self._checkdata(None, Y)
+        _, T = self._checkdata(None, T)
         return self._error(Y, T)
 
     def confusion(self, Y1, T1):
@@ -282,7 +285,7 @@ class SLFN(object):
         """Solve a linear system from correlation matrices.
         """
         if self.accelerator == "GPU":
-            Beta = self.magma_solver.gpu_solve(HH, HT, self.norm)
+            Beta = self.magma_solver.gpu_solve(HH, HT, self.alpha)
         else:
             Beta = cpu_solve(HH, HT, sym_pos=True)
         return Beta
@@ -317,7 +320,7 @@ class SLFN(object):
              "outputs": self.targets,
              "neurons": self.neurons,
              "Beta": self.Beta,
-             "Norm": self.norm,
+             "alpha": self.alpha,
              "Classification": self.classification,
              "Weights_WC": self.weights_wc}
         try:
@@ -335,7 +338,7 @@ class SLFN(object):
         self.targets = m["outputs"]
         self.neurons = m["neurons"]
         self.Beta = m["Beta"]
-        self.norm = m["Norm"]
+        self.alpha = m["alpha"]
         self.classification = m["Classification"]
         self.weights_wc = m["Weights_WC"]
 

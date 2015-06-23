@@ -6,7 +6,7 @@ Created on Sat Oct 18 17:21:12 2014
 """
 
 from setuptools import setup
-
+#from distutils.core import setup
 
 def readme():
     with open('README.rst') as f:
@@ -14,7 +14,7 @@ def readme():
 
 
 setup(name='hpelm',
-      version='0.5.0',
+      version='0.6.6',
       description='High-Performance implementation of an\
                    Extreme Learning Machine',
       long_description=readme(),
@@ -33,9 +33,13 @@ setup(name='hpelm',
       author='Anton Akusok',
       author_email='akusok.a@gmail.com',
       license='BSD (3-clause)',
-      packages=['hpelm'],
+      packages=['hpelm',
+                'hpelm.modules',
+                'hpelm.tests',
+                'hpelm.acc'],
       install_requires=[
           'numpy',
+          'numexpr',
           'scipy>=0.12',
           'tables',
           'cython'
