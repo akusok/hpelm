@@ -16,4 +16,4 @@ Example usage::
     >>> elm.train(X, T, "LOO")
     >>> Y = elm.predict(X)
 
-If you use the toolbox, cite our paper that will be published in IEEE Access.
+If you use the toolbox, cite our paper "High Performance Extreme Learning Machines: A Complete Toolbox for Big Data Applications" that will be published in IEEE Access.
