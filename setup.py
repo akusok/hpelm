@@ -5,16 +5,15 @@ Created on Sat Oct 18 17:21:12 2014
 @author: akusok
 """
 
-from setuptools import setup
+from setuptools import setup, Extension
 #from distutils.core import setup
 
 def readme():
     with open('README.rst') as f:
         return f.read()
 
-
 setup(name='hpelm',
-      version='0.6.6',
+      version='0.6.10',
       description='High-Performance implementation of an\
                    Extreme Learning Machine',
       long_description=readme(),

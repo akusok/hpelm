@@ -1,2 +1,2 @@
 include README.rst
-include datasets/*
+include acc/gpu_code.cpp acc/gpu_code.h acc/gpu_solver.pyx
