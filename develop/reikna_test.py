@@ -12,7 +12,7 @@ from reikna.linalg import MatrixMul
 import time
 
 
-@profile
+#@profile
 def run():
 
     api = cluda.ocl_api()

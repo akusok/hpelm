@@ -105,21 +105,21 @@ class HPELM(SLFN):
         nn = np.sum([n1[1] for n1 in self.neurons])
         batch = max(self.batch, nn)
         nb = N / batch  # number of batches
-        if batch > N * nb:
+        if N > batch * nb:
             nb += 1
         t = time()
         t0 = time()
         eta = 0
         for b in xrange(nb):
-            eta = int(((time()-t0) / (b+0.0000001)) * (nb-b))
-            if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
-                t = time()
             start = b*batch
             stop = min((b+1)*batch, N)
             Xb = X[start:stop].astype(np.float64)
             Hb = self.project(Xb)
             Y[start:stop] = Hb.dot(self.Beta)
+            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
+            if time() - t > self.tprint:
+                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                t = time()
         # close HDF5 for Y1
         h5 = self.opened_hdf5.pop()
         h5.close()
@@ -138,7 +138,7 @@ class HPELM(SLFN):
         batch = max(self.batch, nn)
         N = X.shape[0]
         nb = N / batch  # number of batches
-        if batch > N * nb:
+        if N > batch * nb:
             nb += 1
         HH = np.zeros((nn, nn))  # init data holders
         HT = np.zeros((nn, self.targets))
@@ -221,7 +221,7 @@ class HPELM(SLFN):
         N = T.shape[0]
         batch = max(self.batch, nn)
         nb = N / batch  # number of batches
-        if batch > N * nb:
+        if N > batch * nb:
             nb += 1
 
         if self.classification == "c":
@@ -301,7 +301,7 @@ class HPELM(SLFN):
 
         batch = max(self.batch, nn)
         nb = N / batch  # number of batches
-        if batch > N * nb:
+        if N > batch * nb:
             nb += 1
 
         Betas = []  # keep all betas in memory
@@ -351,7 +351,7 @@ class HPELM(SLFN):
 
         batch = max(self.batch, nn)
         nb = N / batch  # number of batches
-        if batch > N * nb:
+        if N > batch * nb:
             nb += 1
 
         Betas = []  # keep all betas in memory

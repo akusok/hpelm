@@ -103,7 +103,7 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
                 X = np.fromiter(line, dtype=dtype)
                 break
     elif isinstance(data, tuple) and len(data) == 2:
-        X = np.empty(data)
+        X = np.empty((1, 1))
         fill = "empty"
     else:
         assert False, "Input data must be Numpy ndarray, .npy file, or .txt/.csv text file (compressed .gz/.bz2)"
@@ -130,7 +130,7 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
                 row = np.fromiter(line, dtype=dtype)
                 h5data.append(row[np.newaxis, :])
     elif fill == "empty":  # no fill at all
-        h5data = h5.create_carray(h5.root, "data", a, X.shape, filters=flt)
+        h5data = h5.create_carray(h5.root, "data", a, data, filters=flt)
     else:  # write whole data matrix
         h5data = h5.create_carray(h5.root, "data", a, X.shape, filters=flt)
         h5data[:] = X
