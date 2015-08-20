@@ -6,10 +6,11 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
+import multiprocessing as mp
 import Queue
 import threading
 from time import time
-from hpelm.modules import make_hdf5, ireader, iwriter
+from hpelm.modules import make_hdf5, ireader, iwriter, ireader2
 from tables import open_file
 from slfn import SLFN
 
@@ -138,7 +139,11 @@ class HPELM(SLFN):
             stop = min((b+1)*batch, N)
 
             # get data
+            t2 = time()
+            print "tic"
             Xb = X[start:stop].astype(np.float64)
+            print "toc %.2f" % (time()-t2)
+            print
             # process data
             Hb = self.project(Xb)
             Yb = Hb.dot(self.Beta)
@@ -155,7 +160,6 @@ class HPELM(SLFN):
         h5.close()
 
 
-    @profile
     def predict_async(self, fX, fY):
         """Iterative predict which saves data to HDF5, with asynchronous I/O by separate processes.
         """
@@ -165,13 +169,13 @@ class HPELM(SLFN):
         make_hdf5((N, self.targets), fY)
 
         # start async reader and writer for HDF5 files
-        qr_in = Queue.Queue()
-        qr_out = Queue.Queue(1)
-        reader = threading.Thread(target=ireader, args=(fX, qr_in, qr_out))
+        qr_in = mp.Queue()
+        qr_out = mp.Queue(1)
+        reader = mp.Process(target=ireader, args=(fX, qr_in, qr_out))
         reader.daemon = True
         reader.start()
-        qw_in = Queue.Queue(1)
-        writer = threading.Thread(target=iwriter, args=(fY, qw_in))
+        qw_in = mp.Queue(1)
+        writer = mp.Process(target=iwriter, args=(fY, qw_in))
         writer.daemon = True
         writer.start()
 
@@ -193,7 +197,9 @@ class HPELM(SLFN):
 
             if b > 0:  # first iteration only prefetches data
                 # get data
+                t2 = time()
                 Xb = qr_out.get()
+                print "toc %.2f" % (time()-t2)
                 Xb = Xb.astype(np.float64)
                 # process data
                 Hb = self.project(Xb)
@@ -287,6 +293,7 @@ class HPELM(SLFN):
             return HH, HT
 
 
+
     def _project_async(self, fX, fT, X, T, solve=False, wwc=None):
         """Create HH, HT matrices and computes solution Beta, copy of _project but with async I/O.
 
@@ -320,16 +327,18 @@ class HPELM(SLFN):
             HH.ravel()[::nn+1] += self.alpha  # add to matrix diagonal trick
 
         # start async reader and writer for HDF5 files
-        qX_in = Queue.Queue()
-        qX_out = Queue.Queue(1)
-        readerX = threading.Thread(target=ireader, args=(fX, qX_in, qX_out))
-        readerX.daemon = True
-        readerX.start()
-        qT_in = Queue.Queue()
-        qT_out = Queue.Queue(1)
-        readerT = threading.Thread(target=ireader, args=(fT, qT_in, qT_out))
-        readerT.daemon = True
-        readerT.start()
+#        q_in = mp.Queue()
+#        q_out = mp.Queue(1)
+#        reader = mp.Process(target=ireader2, args=(fX, fT, q_in, q_out))
+#        reader.daemon = True
+#        reader.start()
+
+        # try with threads
+        q_in = Queue.Queue()
+        q_out = Queue.Queue(1)
+        reader = threading.Thread(target=ireader2, args=(fX, fT, q_in, q_out))
+        reader.daemon = True
+        reader.start()
 
         t = time()
         t0 = time()
@@ -340,16 +349,18 @@ class HPELM(SLFN):
             start_next = b*batch
             stop_next = min((b+1)*batch, N)
             # prefetch data
-            qX_in.put((start_next, stop_next))  # asyncronous reading of next data batch
-            qT_in.put((start_next, stop_next))
+            q_in.put((start_next, stop_next))  # asyncronous reading of next data batch
 
             if b > 0:  # first iteration only prefetches data
-                Xb = qX_out.get()
-                Tb = qT_out.get()
+                # get data
+                print ">>"
+                Xb, Tb = q_out.get()
+                print "<<"
                 Xb = Xb.astype(np.float64)
                 Tb = Tb.astype(np.float64)
 
                 # process data
+                print ">>>>"
                 Hb = self.project(Xb)
                 if self.classification == "wc":  # apply per-sample weighting
                     ci = Tb.argmax(1)
@@ -360,14 +371,15 @@ class HPELM(SLFN):
                 else:
                     HH += np.dot(Hb.T, Hb)
                     HT += np.dot(Hb.T, Tb)
+                print "<<<<"
+                print
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
 
-        readerX.join()
-        readerT.join()
+        reader.join()
 
         # get computed matrices back
         if self.accelerator == "GPU":

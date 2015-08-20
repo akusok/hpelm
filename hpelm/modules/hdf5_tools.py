@@ -8,6 +8,7 @@ Created on Thu Apr  2 21:12:46 2015
 import numpy as np
 import csv
 from tables import open_file, Atom, Filters
+from time import time
 
 
 def normalize_hdf5(h5file, mean=None, std=None, batch=None):
@@ -139,6 +140,45 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
     h5data.attrs.std = None
     h5.flush()
     h5.close()
+
+
+def ireader(fX, q_in, q_out):
+    """Asyncronous reader for an HDF5 file.
+
+    q_in - a (start, stop) tuple of read indexes; if start >= stop then reader terminates
+    q_out - a queue for chunks red from a disk
+    """
+    assert isinstance(fX, basestring), "Asyncronous I/O only supported with HDF5 data files"
+    hX = open_file(fX, "r")
+    for X in hX.walk_nodes():
+        pass  # find a node with whatever name
+
+    while True:  # returning data chunks on demand
+        start, stop = q_in.get()
+        if start >= stop:
+            break
+        q_out.put(X[start:stop])
+    hX.close()
+
+
+def iwriter(fX, q_in):
+    """Asyncronous writer for an HDF5 file.
+
+    q_in - a (Xbatch, start, stop) tuple of data to write indexes; if q_in is None then writer terminates
+    """
+    assert isinstance(fX, basestring), "Asyncronous I/O only supported with HDF5 data files"
+    hX = open_file(fX, "a")
+    for X in hX.walk_nodes():
+        pass  # find a node with whatever name
+
+    while True:  # returning data chunks on demand
+        data = q_in.get()
+        if data is None:
+            break
+        Xb, start, stop = data
+        X[start:stop] = Xb
+    X.flush()
+    hX.close()
 
 
 if __name__ == "__main__":

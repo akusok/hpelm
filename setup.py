@@ -13,7 +13,7 @@ def readme():
         return f.read()
 
 setup(name='hpelm',
-      version='0.6.13',
+      version='0.6.17',
       description='High-Performance implementation of an\
                    Extreme Learning Machine',
       long_description=readme(),
