@@ -155,7 +155,6 @@ class HPELM(SLFN):
         h5.close()
 
 
-    @profile
     def predict_async(self, fX, fY):
         """Iterative predict which saves data to HDF5, with asynchronous I/O by separate processes.
         """
