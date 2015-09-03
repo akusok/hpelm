@@ -13,6 +13,10 @@ All changes to 'hpelm' toolbox will be documented in this file.
 ### Fixed
 - Asyncronous HDF5 file reading now setting "async_io=True" in HPELM.predict(). On Windows, make sure you use 'if __name__ == "__main__"' construction in your main code, or async reader will not start.
 
-## [0.6.18] - 20-08-2015
+## [0.6.20] - 20-08-2015
 ### New
-- Real Working Asyncronous I/O! for HDF5 files with threading. Use HPELM.train_async() and HPELM.predict_async() 
+- Working Asyncronous I/O! for HDF5 files with multiprocessing. Use HPELM.train_async() and HPELM.predict_async() 
+
+## [0.6.21] - 03-09-2015
+### New
+- Fixed a small GPU function name bug

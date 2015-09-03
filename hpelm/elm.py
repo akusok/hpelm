@@ -244,7 +244,7 @@ class ELM(SLFN):
                 self.kmax_op = nn
             else:  # or set a limited number of neurons
                 nn = self.kmax_op
-            if T.shape[1] > 10:  # fast mrsr for less outputs but O(2^t) in outputs
+            if T.shape[1] < 10:  # fast mrsr for less outputs but O(2^t) in outputs
                 rank = mrsr(H, T, self.kmax_op)
             else:  # slow mrsr for many outputs but O(t) in outputs
                 rank = mrsr2(H, T, self.kmax_op)

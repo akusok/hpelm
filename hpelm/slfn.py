@@ -45,7 +45,7 @@ class SLFN(object):
         self.accelerator = None  # None, "GPU", "PHI"
         if accelerator == "GPU":
             self.accelerator = "GPU"
-            self.magma_solver = __import__('acc.magma_solver', globals(), locals(), ['gpu_solve'], -1)
+            self.magma_solver = __import__('acc.gpu_solver', globals(), locals(), ['gpu_solve'], -1)
             print "using GPU"
         # init other stuff
         self.opened_hdf5 = []
