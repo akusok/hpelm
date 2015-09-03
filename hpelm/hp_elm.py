@@ -6,8 +6,9 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
-import Queue
-import threading
+import multiprocessing as mp
+#import Queue
+#import threading
 from time import time
 from hpelm.modules import make_hdf5, ireader, iwriter
 from tables import open_file
@@ -161,16 +162,18 @@ class HPELM(SLFN):
         assert self.Beta is not None, "Train ELM before predicting"
         X, _ = self._checkdata(fX, None)
         N = X.shape[0]
+        h5 = self.opened_hdf5.pop()
+        h5.close()
         make_hdf5((N, self.targets), fY)
 
         # start async reader and writer for HDF5 files
-        qr_in = Queue.Queue()
-        qr_out = Queue.Queue(1)
-        reader = threading.Thread(target=ireader, args=(fX, qr_in, qr_out))
+        qr_in = mp.Queue()
+        qr_out = mp.Queue(1)
+        reader = mp.Process(target=ireader, args=(fX, qr_in, qr_out))
         reader.daemon = True
         reader.start()
-        qw_in = Queue.Queue(1)
-        writer = threading.Thread(target=iwriter, args=(fY, qw_in))
+        qw_in = mp.Queue(1)
+        writer = mp.Process(target=iwriter, args=(fY, qw_in))
         writer.daemon = True
         writer.start()
 
@@ -318,15 +321,21 @@ class HPELM(SLFN):
         else:
             HH.ravel()[::nn+1] += self.alpha  # add to matrix diagonal trick
 
+        # close X and T files
+        h5 = self.opened_hdf5.pop()
+        h5.close()
+        h5 = self.opened_hdf5.pop()
+        h5.close()
+
         # start async reader and writer for HDF5 files
-        qX_in = Queue.Queue()
-        qX_out = Queue.Queue(1)
-        readerX = threading.Thread(target=ireader, args=(fX, qX_in, qX_out))
+        qX_in = mp.Queue()
+        qX_out = mp.Queue(1)
+        readerX = mp.Process(target=ireader, args=(fX, qX_in, qX_out))
         readerX.daemon = True
         readerX.start()
-        qT_in = Queue.Queue()
-        qT_out = Queue.Queue(1)
-        readerT = threading.Thread(target=ireader, args=(fT, qT_in, qT_out))
+        qT_in = mp.Queue()
+        qT_out = mp.Queue(1)
+        readerT = mp.Process(target=ireader, args=(fT, qT_in, qT_out))
         readerT.daemon = True
         readerT.start()
 
