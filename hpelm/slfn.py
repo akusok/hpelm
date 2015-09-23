@@ -172,12 +172,6 @@ class SLFN(object):
                     H0[idx] = h0
                 p.close()
                 H0 = - H0 / B
-#            if func == "rbf_l2":
-#                H0 = - cdist(X, W.T, "euclidean")**2 / B
-#            elif func == "rbf_l1":
-#                H0 = - cdist(X, W.T, "cityblock")**2 / B
-#            elif func == "rbf_linf":
-#                H0 = - cdist(X, W.T, "chebyshev")**2 / B
             else:
                 H0 = X.dot(W) + B
 
