@@ -52,7 +52,6 @@ class ELM(SLFN):
 
         # kind of "enumerators", try to use only inside that script
         MODELSELECTION = None  # V / CV / MCCV / LOO / None
-        ADAPTIVE = False  # batch / None
 
         # reset parameters
         self.ranking = None
@@ -62,8 +61,8 @@ class ELM(SLFN):
 
         # check exclusive parameters
         assert len(set(args).intersection(set(["V", "CV", "LOO"]))) <= 1, "Use only one of V / CV / LOO"
-        assert len(set(args).intersection(set(["C", "WC", "MC"]))) <= 1, "Use only one of \
-            C (classification) / MC (multiclass) / WC (weighted classification)"
+        msg = "Use only one of: C (classification) / MC (multiclass) / WC (weighted classification)"
+        assert len(set(args).intersection(set(["C", "WC", "MC"]))) <= 1, msg
 
         # parse parameters
         for a in args:
@@ -103,6 +102,7 @@ class ELM(SLFN):
             #     batch = kwargs['batch']
             #     ADAPTIVE = True
 
+        self.solver.reset()  # remove previous training
         # use "train_x" method which borrows _project(), _error() from the "self" object
         if MODELSELECTION == "V":
             train_v(self, X, T, Xv, Tv)
@@ -111,88 +111,35 @@ class ELM(SLFN):
         elif MODELSELECTION == "LOO":
             train_loo(self, X, T)
         else:
-            self._train(X, T)
+            # basic training algorithm
+            self.add_batch(X, T)
+            self.solver.solve()
 
-    def _train(self, X, T):
-        """Most basic training algorithm for an ELM.
-        """
-        self.Beta = self._project(X, T, solve=True)[2]
 
-    def _project(self, X, T, solve=False):
-        """Create HH, HT matrices and computes solution Beta.
+    def add_batch(self, X, T):
+        """Update HH, HT matrices with training data (X,T).
 
-        An ELM-specific projection for all usage cases.
-        Returns solution Beta if solve=True.
-        Runs on GPU if self.accelerator="GPU".
         Performs balanced classification if self.classification="cb".
         """
-        # initialize
-        nn = sum([n1[1] for n1 in self.neurons])
-        batch = max(self.batch, nn)
-        if X.shape[0] % batch > 0:
-            nb = X.shape[0]/batch + 1
-        else:
-            nb = X.shape[0]/batch
-
-        # GPU script
-        def proj_gpu(self, X, T, getBeta, nn, nb):
-            s = self.magma_solver.GPUSolver(nn, self.targets, self.alpha)
-            for X0, T0 in zip(np.array_split(X, nb, axis=0),
-                              np.array_split(T, nb, axis=0)):
-                H0 = self.project(X0)
-                s.add_data(H0, T0)
-            HH, HT = s.get_corr()
-            if getBeta:
-                Beta = s.solve()
-            else:
-                Beta = None
-            return HH, HT, Beta
-
-        # CPU script
-        def proj_cpu(self, X, T, getBeta, nn, nb):
-            HH = np.zeros((nn, nn))
-            HT = np.zeros((nn, self.targets))
-            HH.ravel()[::nn+1] += self.alpha  # add to matrix diagonal trick
-            for X0, T0 in zip(np.array_split(X, nb, axis=0),
-                              np.array_split(T, nb, axis=0)):
-                H0 = self.project(X0)
-                HH += np.dot(H0.T, H0)
-                HT += np.dot(H0.T, T0)
-            if getBeta:
-                Beta = self._solve_corr(HH, HT)
-            else:
-                Beta = None
-            return HH, HT, Beta
+        # initialize batch size
+        nb = int(np.ceil(float(X.shape[0]) / self.batch))
 
         # run scripts
         if self.classification == "cb":  # balanced classification wrapper
-            ns = T.sum(axis=0).astype(np.float64)  # number of samples in classes
+            ns = T.sum(axis=0).astype(self.solver.precision)  # number of samples in classes
             wc = (ns / ns.sum())**-1  # weights of classes
-            HH = np.zeros((nn, nn))  # init data holders
-            HT = np.zeros((nn, self.targets))
             for i in range(wc.shape[0]):  # iterate over each particular class
                 idxc = T[:, i] == 1
                 Xc = X[idxc]
                 Tc = T[idxc]
-                if self.accelerator == "GPU":
-                    HHc, HTc, _ = proj_gpu(self, Xc, Tc, False, nn, nb)
-                else:
-                    HHc, HTc, _ = proj_cpu(self, Xc, Tc, False, nn, nb)
-                HH += HHc * wc[i]
-                HT += HTc * wc[i]
-            if solve:  # obtain solution
-                Beta = self._solve_corr(HH, HT)
+                for X0, T0 in zip(np.array_split(Xc, nb, axis=0),
+                                  np.array_split(Tc, nb, axis=0)):
+                    self.solver.add_batch(X0, T0, wc[i])
         else:
-            if self.accelerator == "GPU":
-                HH, HT, Beta = proj_gpu(self, X, T, solve, nn, nb)
-            else:
-                HH, HT, Beta = proj_cpu(self, X, T, solve, nn, nb)
+            for X0, T0 in zip(np.array_split(X, nb, axis=0),
+                              np.array_split(T, nb, axis=0)):
+                self.solver.add_batch(X0, T0)
 
-        # return results
-        if solve:
-            return HH, HT, Beta
-        else:
-            return HH, HT
 
     def _error(self, Y, T, R=None):
         """Returns regression/classification/multiclass error, also for PRESS.
@@ -235,6 +182,7 @@ class ELM(SLFN):
                 err = np.mean(err**2)
         assert not np.isnan(err), "Error is NaN at %s" % self.classification
         return err
+
 
     def _ranking(self, nn, H=None, T=None):
         """Return ranking of hidden neurons; random or OP.

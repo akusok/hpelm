@@ -105,7 +105,8 @@ if __name__ == "__main__":
 
     j = int(sys.argv[1])
     f1, c1 = datas[j]
-    f1 = "/Users/akusok/Dropbox/Documents/X-ELM/hpelm/datasets/" + f1
+    print f1
+    f1 = "/home/akusok/Dropbox/Documents/X-ELM/hpelm/dataset_tests/" + f1
     trainer(f1, c1)
 
 

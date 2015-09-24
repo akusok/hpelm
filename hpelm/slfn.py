@@ -6,29 +6,23 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
-import numexpr as ne
 from tables import open_file
-from scipy.spatial.distance import cdist
-from scipy.linalg import solve as cpu_solve
-from multiprocessing import Pool, cpu_count
 import cPickle
-import os, platform
-
-
-def cd(a):
-    x, w, kind, idx = a
-    return cdist(x, w, kind)**2, idx
+import os
+import platform
+from solver.solver import Solver
 
 
 class SLFN(object):
     """Single-hidden Layer Feed-forward Network.
     """
 
-    def __init__(self, inputs, targets, batch=100, accelerator=""):
+    def __init__(self, inputs, targets, batch=1000, accelerator=None):
         """Initializes a SLFN with an empty hidden layer.
 
         :param inputs: number of features in input samples (input dimensionality)
         :param outputs: number of simultaneous predicted outputs
+        :param batch: batch size, ELM always runs in batch mode
         """
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
         assert isinstance(targets, (int, long)), "Number of outputs must be integer"
@@ -37,21 +31,24 @@ class SLFN(object):
         self.inputs = inputs
         self.targets = targets
         # cannot use a dictionary for neurons, because its iteration order is not defined
-        self.neurons = []  # list of all neurons with their types (= transformantion functions)
-        self.Beta = None
+        self.neurons = []  # list of all neurons in normal Numpy form
         self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")
-        self.alpha = 1E-9  # normalization for H'H solution
-        self.batch = int(batch)  # smallest batch for batch processing
-        self.accelerator = None  # None, "GPU", "PHI"
-        if accelerator == "GPU":
-            self.accelerator = "GPU"
-            self.magma_solver = __import__('acc.gpu_solver', globals(), locals(), ['gpu_solve'], -1)
-            print "using GPU"
+        self.batch = int(batch)
+
+        # init solver to solve ELM
+        if accelerator is None:  # double precision Numpy solver
+            self.solver = Solver(targets)
+#        if accelerator == "GPU":
+#            self.accelerator = "GPU"
+#            self.magma_solver = __import__('acc.gpu_solver', globals(), locals(), ['gpu_solve'], -1)
+#            print "using GPU"
+
         # init other stuff
         self.opened_hdf5 = []
         self.classification = None  # c / wc / mc
         self.weights_wc = None
         self.tprint = 5
+
 
     def __del__(self):
         """Close HDF5 files opened during HPELM usage.
@@ -59,6 +56,7 @@ class SLFN(object):
         if len(self.opened_hdf5) > 0:
             for h5 in self.opened_hdf5:
                 h5.close()
+
 
     def _checkdata(self, X, T):
         """Checks data variables and fixes matrix dimensionality issues.
@@ -74,11 +72,13 @@ class SLFN(object):
                 except:
                     raise IOError("Cannot read HDF5 file at %s" % X)
             else:
-                # assert isinstance(X, np.ndarray) and X.dtype.kind not in "OSU", "X must be a numerical numpy array"
+                # assert isinstance(X, np.ndarray) and
+                assert X.dtype.kind not in "OSU", "X must be a numerical numpy array"
                 if len(X.shape) == 1:
                     X = X.reshape(-1, 1)
             assert len(X.shape) == 2, "X must have 2 dimensions"
-            assert X.shape[1] == self.inputs, "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
+            msg = "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
+            assert X.shape[1] == self.inputs, msg
 
         if T is not None:
             if isinstance(T, basestring):  # open HDF5 file
@@ -91,16 +91,19 @@ class SLFN(object):
                 except:
                     raise IOError("Cannot read HDF5 file at %s" % T)
             else:
-                # assert isinstance(T, np.ndarray) and T.dtype.kind not in "OSU", "T must be a numerical numpy array"
+                # assert isinstance(T, np.ndarray) and
+                assert T.dtype.kind not in "OSU", "T must be a numerical numpy array"
                 if len(T.shape) == 1:
                     T = T.reshape(-1, 1)
             assert len(T.shape) == 2, "T must have 2 dimensions"
-            assert T.shape[1] == self.targets, "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
+            msg = "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
+            assert T.shape[1] == self.targets, msg
 
         if (X is not None) and (T is not None):
             assert X.shape[0] == T.shape[0], "X and T cannot have different number of samples"
 
         return X, T
+
 
     def add_neurons(self, number, func, W=None, B=None):
         """Add neurons of a specific type to the SLFN.
@@ -114,7 +117,8 @@ class SLFN(object):
         :param B: - bias vector or ("rbf_xx") a vector of sigmas
         """
         assert isinstance(number, int), "Number of neurons must be integer"
-        assert func in self.flist or isinstance(func, np.ufunc), "Use standard neuron function or a custom <numpy.ufunc>"
+        assert (func in self.flist or isinstance(func, np.ufunc)),\
+            "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
         assert isinstance(W, (np.ndarray, type(None))), "Projection matrix (W) must be a Numpy ndarray"
         assert isinstance(B, (np.ndarray, type(None))), "Bias vector (B) must be a Numpy ndarray"
 
@@ -134,7 +138,8 @@ class SLFN(object):
                 B = B * self.inputs
             if func == "lin":
                 B = np.zeros((number,))
-        assert W.shape == (self.inputs, number), "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
+        msg = "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
+        assert W.shape == (self.inputs, number), msg
         assert B.shape == (number,), "B must be size [neurons] (expected [%d])" % number
 
         ntypes = [nr[0] for nr in self.neurons]  # existing types of neurons
@@ -150,60 +155,24 @@ class SLFN(object):
             # create a new neuron type
             self.neurons.append((func, number, W, B))
         self.Beta = None  # need to re-train network after adding neurons
+        self.solver.set_neurons(self.neurons)  # send new neurons to solver
 
 
     def project(self, X):
-        # assemble hidden layer output with all kinds of neurons
-        assert len(self.neurons) > 0, "Model must have hidden neurons"
-
+        """Call solver's function.
+        """
         X, _ = self._checkdata(X, None)
-        H = []
-        cdkinds = {"rbf_l2": "euclidean", "rbf_l1": "cityblock", "rbf_linf": "chebyshev"}
-        for func, _, W, B in self.neurons:
-            # projection
-            if "rbf" in func:
-                self._affinityfix()
-                N = X.shape[0]
-                k = cpu_count()
-                jobs = [(X[idx], W.T, cdkinds[func], idx) for idx in np.array_split(np.arange(N), k*10)]  #### ERROR HERE!!!
-                p = Pool(k)
-                H0 = np.empty((N, W.shape[1]))
-                for h0, idx in p.imap(cd, jobs):
-                    H0[idx] = h0
-                p.close()
-                H0 = - H0 / B
-            else:
-                H0 = X.dot(W) + B
-
-            # transformation
-            if func == "lin":
-                pass
-            elif "rbf" in func:
-                ne.evaluate('exp(H0)', out=H0)
-            elif func == "sigm":
-                ne.evaluate("1/(1+exp(-H0))", out=H0)
-            elif func == "tanh":
-                ne.evaluate('tanh(H0)', out=H0)
-            else:
-                H0 = func(H0)  # custom <numpy.ufunc>
-            H.append(H0)
-
-        if len(H) == 1:
-            H = H[0]
-        else:
-            H = np.hstack(H)
-#        print (H > 0.01).sum(0)
+        H = self.solver.project(X)
         return H
+
 
     def predict(self, X):
         """Predict targets for the given inputs X.
-
-        :param X: - model inputs
         """
-        assert self.Beta is not None, "Train ELM before predicting"
-        H = self.project(X)
-        Y = H.dot(self.Beta)
+        X, _ = self._checkdata(X, None)
+        Y = self.solver.predict(X)
         return Y
+
 
     def error(self, Y, T):
         """Calculate error of model predictions.
@@ -211,6 +180,7 @@ class SLFN(object):
         _, Y = self._checkdata(None, Y)
         _, T = self._checkdata(None, T)
         return self._error(Y, T)
+
 
     def confusion(self, Y1, T1):
         """Compute confusion matrix for the given classification, iteratively.
@@ -249,8 +219,8 @@ class SLFN(object):
             conf = None
         return conf
 
-    ######################
-    ### helper methods ###
+    ##################
+    # helper methods #
 
     def _prune(self, idx):
         """Leave only neurons with the given indexes.
@@ -267,6 +237,7 @@ class SLFN(object):
             bias = nold[3][ix1]
             neurons.append((func, number, W, bias))
         self.neurons = neurons
+        self.solver.set_neurons(self.neurons)  # send new neurons to solver
 
     def _ranking(self, nn):
         """Returns a random ranking of hidden neurons.
@@ -275,22 +246,10 @@ class SLFN(object):
         np.random.shuffle(rank)
         return rank, nn
 
-    def _solve_corr(self, HH, HT):
-        """Solve a linear system from correlation matrices.
-        """
-        if self.accelerator == "GPU":
-            Beta = self.magma_solver.gpu_solve(HH, HT, self.alpha)
-        else:
-            Beta = cpu_solve(HH, HT, sym_pos=True)
-        return Beta
-
     def _error(self, Y, T, R=None):
         """Returns regression/classification/multiclass error, also for PRESS.
         """
         raise NotImplementedError("SLFN does not know the use case to compute an error")
-
-    def _train(self, X, T):
-        raise NotImplementedError("SLFN does not know the use case to train a network")
 
     def __str__(self):
         s = "SLFN with %d inputs and %d outputs\n" % (self.inputs, self.targets)
@@ -313,8 +272,8 @@ class SLFN(object):
         m = {"inputs": self.inputs,
              "outputs": self.targets,
              "neurons": self.neurons,
-             "Beta": self.Beta,
-             "alpha": self.alpha,
+             "norm": self.solver.norm,
+             "Beta": self.solver.getBeta,
              "Classification": self.classification,
              "Weights_WC": self.weights_wc}
         try:
@@ -331,8 +290,11 @@ class SLFN(object):
         self.inputs = m["inputs"]
         self.targets = m["outputs"]
         self.neurons = m["neurons"]
-        self.Beta = m["Beta"]
-        self.alpha = m["alpha"]
+        try:
+            self.solver.norm = m["norm"]
+        except:
+            pass
+        self.solver.Beta = m["Beta"]
         self.classification = m["Classification"]
         self.weights_wc = m["Weights_WC"]
 

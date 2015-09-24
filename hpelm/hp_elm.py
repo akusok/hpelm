@@ -85,7 +85,9 @@ class HPELM(SLFN):
         X, T = self._checkdata(fX, fT)
         self._parse_args(args, kwargs, X, T)
         # traing the model
-        self.Beta = self._project(X, T, solve=True)[2]
+        self.solver.reset()
+        self.add_batch(X, T)
+        self.solver.solve()
 
 
     def train_async(self, fX, fT, *args, **kwargs):
@@ -97,7 +99,9 @@ class HPELM(SLFN):
         X, T = self._checkdata(fX, fT)
         self._parse_args(args, kwargs, X, T)
         # traing the model
-        self.Beta = self._project_async(fX, fT, X, T, solve=True)[2]
+        self.solver.reset()
+        self.add_batch_async(fX, fT, X, T)
+        self.solver.solve()
 
 
     def _makeh5(self, h5name, N, d):
@@ -114,7 +118,7 @@ class HPELM(SLFN):
     def predict(self, fX, fY):
         """Iterative predict which saves data to HDF5, sequential version.
         """
-        assert self.Beta is not None, "Train ELM before predicting"
+        assert self.solver.Beta is not None, "Train ELM before predicting"
         X, _ = self._checkdata(fX, None)
         N = X.shape[0]
         make_hdf5((N, self.targets), fY)
@@ -123,26 +127,20 @@ class HPELM(SLFN):
         self.opened_hdf5.append(h5)
         for Y in h5.walk_nodes():
             pass  # find a node with whatever name
-
-        nn = np.sum([n1[1] for n1 in self.neurons])
-        batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
+        nb = int(np.ceil(float(N) / self.batch))
 
         t = time()
         t0 = time()
         eta = 0
 
         for b in xrange(0, nb):
-            start = b*batch
-            stop = min((b+1)*batch, N)
+            start = b*self.batch
+            stop = min((b+1)*self.batch, N)
 
             # get data
             Xb = X[start:stop].astype(np.float64)
             # process data
-            Hb = self.project(Xb)
-            Yb = Hb.dot(self.Beta)
+            Yb = self.solver.predict(Xb)
             # write data
             Y[start:stop] = Yb
 
@@ -165,6 +163,7 @@ class HPELM(SLFN):
         h5 = self.opened_hdf5.pop()
         h5.close()
         make_hdf5((N, self.targets), fY)
+        nb = int(np.ceil(float(N) / self.batch))
 
         # start async reader and writer for HDF5 files
         qr_in = mp.Queue()
@@ -177,19 +176,13 @@ class HPELM(SLFN):
         writer.daemon = True
         writer.start()
 
-        nn = np.sum([n1[1] for n1 in self.neurons])
-        batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
-
         t = time()
         t0 = time()
         eta = 0
 
         for b in xrange(0, nb+1):
-            start_next = b*batch
-            stop_next = min((b+1)*batch, N)
+            start_next = b*self.batch
+            stop_next = min((b+1)*self.batch, N)
             # prefetch data
             qr_in.put((start_next, stop_next))  # asyncronous reading of next data batch
 
@@ -198,8 +191,7 @@ class HPELM(SLFN):
                 Xb = qr_out.get()
                 Xb = Xb.astype(np.float64)
                 # process data
-                Hb = self.project(Xb)
-                Yb = Hb.dot(self.Beta)
+                Yb = self.solver.predict(Xb)
                 # save data
                 qw_in.put((Yb, start, stop))
 
@@ -216,8 +208,8 @@ class HPELM(SLFN):
         writer.join()
 
 
-    def _project(self, X, T, solve=False, wwc=None):
-        """Create HH, HT matrices and computes solution Beta.
+    def add_batch(self, X, T):
+        """Create HH, HT matrices.
 
         HPELM-specific parallel projection.
         Returns solution Beta if solve=True.
@@ -225,28 +217,13 @@ class HPELM(SLFN):
         Performs balanced classification if self.classification="cb".
         """
         # initialize
-        nn = np.sum([n1[1] for n1 in self.neurons])
-        batch = max(self.batch, nn)
         N = X.shape[0]
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
-        HH = np.zeros((nn, nn))  # init data holders
-        HT = np.zeros((nn, self.targets))
+        nb = int(np.ceil(float(N) / self.batch))
         if self.classification == "wc":  # weighted classification initialization
             ns = np.zeros((self.targets,))
             for b in xrange(nb):  # batch sum is much faster
-                ns += T[b*batch: (b+1)*batch].sum(axis=0)
+                ns += T[b*self.batch: (b+1)*self.batch].sum(axis=0)
             wc = (float(ns.sum()) / ns) * self.weights_wc  # class weights normalized to number of samples
-            wc = wc**0.5  # because it gets applied twice
-
-        if wwc is not None:
-            wc = wwc
-
-        if self.accelerator == "GPU":
-            s = self.magma_solver.GPUSolver(nn, self.targets, self.alpha)
-        else:
-            HH.ravel()[::nn+1] += self.alpha  # add to matrix diagonal trick
 
         # main loop over all the data
         t = time()
@@ -257,40 +234,25 @@ class HPELM(SLFN):
             if time() - t > self.tprint:
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
-            start = b*batch
-            stop = min((b+1)*batch, N)
-            Xb = X[start:stop].astype(np.float64)
-            Tb = T[start:stop].astype(np.float64)
-            Hb = self.project(Xb)
+            start = b*self.batch
+            stop = min((b+1)*self.batch, N)
+            Xb = X[start:stop]
+            Tb = T[start:stop]
 
-            if self.classification == "wc":  # apply per-sample weighting
-                ci = Tb.argmax(1)
-                Hb *= wc[ci, None]
-                Tb *= wc[ci, None]
-            if self.accelerator == "GPU":
-                s.add_data(Hb, Tb)
+            if self.classification != "wc":
+                self.solver.add_batch(Xb, Tb)
             else:
-                HH += np.dot(Hb.T, Hb)
-                HT += np.dot(Hb.T, Tb)
-
-        # get computed matrices back
-        if self.accelerator == "GPU":
-            HH, HT = s.get_corr()
-            if solve:
-                Beta = s.solve()
-            s.finalize()
-        elif solve:
-            Beta = self._solve_corr(HH, HT)
-
-        # return results
-        if solve:
-            return HH, HT, Beta
-        else:
-            return HH, HT
+                # weighted classification, split batch per classes
+                for i in range(wc.shape[0]):
+                    idxc = Tb[:, i] == 1
+                    if idxc.sum() > 0:  # if batch contains class i
+                        Xbc = Xb[idxc]
+                        Tbc = Tb[idxc]
+                        self.solver.add_batch(Xbc, Tbc, wc[i])
 
 
-    def _project_async(self, fX, fT, X, T, solve=False, wwc=None):
-        """Create HH, HT matrices and computes solution Beta, copy of _project but with async I/O.
+    def add_batch_async(self, fX, fT, X, T):
+        """Create HH, HT matrices with async I/O.
 
         HPELM-specific parallel projection.
         Returns solution Beta if solve=True.
@@ -298,28 +260,13 @@ class HPELM(SLFN):
         Performs balanced classification if self.classification="cb".
         """
         # initialize
-        nn = np.sum([n1[1] for n1 in self.neurons])
-        batch = max(self.batch, nn)
         N = X.shape[0]
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
-        HH = np.zeros((nn, nn))  # init data holders
-        HT = np.zeros((nn, self.targets))
+        nb = int(np.ceil(float(N) / self.batch))
         if self.classification == "wc":  # weighted classification initialization
             ns = np.zeros((self.targets,))
             for b in xrange(nb):  # batch sum is much faster
-                ns += T[b*batch: (b+1)*batch].sum(axis=0)
+                ns += T[b*self.batch: (b+1)*self.batch].sum(axis=0)
             wc = (float(ns.sum()) / ns) * self.weights_wc  # class weights normalized to number of samples
-            wc = wc**0.5  # because it gets applied twice
-
-        if wwc is not None:
-            wc = wwc
-
-        if self.accelerator == "GPU":
-            s = self.magma_solver.GPUSolver(nn, self.targets, self.alpha)
-        else:
-            HH.ravel()[::nn+1] += self.alpha  # add to matrix diagonal trick
 
         # close X and T files
         h5 = self.opened_hdf5.pop()
@@ -345,8 +292,8 @@ class HPELM(SLFN):
 
         # main loop over all the data
         for b in xrange(0, nb+1):
-            start_next = b*batch
-            stop_next = min((b+1)*batch, N)
+            start_next = b*self.batch
+            stop_next = min((b+1)*self.batch, N)
             # prefetch data
             qX_in.put((start_next, stop_next))  # asyncronous reading of next data batch
             qT_in.put((start_next, stop_next))
@@ -354,20 +301,18 @@ class HPELM(SLFN):
             if b > 0:  # first iteration only prefetches data
                 Xb = qX_out.get()
                 Tb = qT_out.get()
-                Xb = Xb.astype(np.float64)
-                Tb = Tb.astype(np.float64)
 
                 # process data
-                Hb = self.project(Xb)
-                if self.classification == "wc":  # apply per-sample weighting
-                    ci = Tb.argmax(1)
-                    Hb *= wc[ci, None]
-                    Tb *= wc[ci, None]
-                if self.accelerator == "GPU":
-                    s.add_data(Hb, Tb)
+                if self.classification != "wc":
+                    self.solver.add_batch(Xb, Tb)
                 else:
-                    HH += np.dot(Hb.T, Hb)
-                    HT += np.dot(Hb.T, Tb)
+                    # weighted classification, split batch per classes
+                    for i in range(wc.shape[0]):
+                        idxc = Tb[:, i] == 1
+                        if idxc.sum() > 0:  # if batch contains class i
+                            Xbc = Xb[idxc]
+                            Tbc = Tb[idxc]
+                            self.solver.add_batch(Xbc, Tbc, wc[i])
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
@@ -376,21 +321,6 @@ class HPELM(SLFN):
 
         readerX.join()
         readerT.join()
-
-        # get computed matrices back
-        if self.accelerator == "GPU":
-            HH, HT = s.get_corr()
-            if solve:
-                Beta = s.solve()
-            s.finalize()
-        elif solve:
-            Beta = self._solve_corr(HH, HT)
-
-        # return results
-        if solve:
-            return HH, HT, Beta
-        else:
-            return HH, HT
 
 
     def _error(self, Y1, T1, H1=None, Beta=None, rank=None):
@@ -493,15 +423,11 @@ class HPELM(SLFN):
         print nns
         k = nns.shape[0]
         err = np.zeros((k,))  # errors for these numbers of neurons
-
-        batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
+        nb = int(np.ceil(float(N) / self.batch))
 
         Betas = []  # keep all betas in memory
         for l in nns:
-            Betas.append(self._solve_corr(HH[:l, :l], HT[:l, :]))
+            Betas.append(self.solver.solve_corr(HH[:l, :l], HT[:l, :]))
 
         t = time()
         t0 = time()
@@ -511,12 +437,12 @@ class HPELM(SLFN):
             if time() - t > self.tprint:
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
-            start = b*batch
-            stop = min((b+1)*batch, N)
+            start = b*self.batch
+            stop = min((b+1)*self.batch, N)
             alpha = float(stop-start)/N
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
-            Hb = self.project(Xb)
+            Hb = self.solver.project(Xb)
             for i in xrange(k):
                 hb1 = Hb[:, :nns[i]]
                 Yb = np.dot(hb1, Betas[i])
@@ -525,7 +451,7 @@ class HPELM(SLFN):
         k_opt = np.argmin(err)
         best_nn = nns[k_opt]
         self._prune(np.arange(best_nn))
-        self.Beta = Betas[k_opt]
+        self.solver.B = Betas[k_opt]
         del Betas
         print "%d of %d neurons selected with a validation set" % (best_nn, nn)
         if best_nn > nn*0.9:
@@ -543,15 +469,11 @@ class HPELM(SLFN):
         nns = np.unique(nns)  # numbers of neurons to check
         k = nns.shape[0]
         err = np.zeros((k, 2, 2))  # errors for these numbers of neurons
-
-        batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
+        nb = int(np.ceil(float(N) / self.batch))
 
         Betas = []  # keep all betas in memory
         for l in nns:
-            Betas.append(self._solve_corr(HH[:l, :l], HT[:l, :]))
+            Betas.append(self.solver.solve_corr(HH[:l, :l], HT[:l, :]))
 
         t = time()
         t0 = time()
@@ -561,11 +483,11 @@ class HPELM(SLFN):
             if time() - t > self.tprint:
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
-            start = b*batch
-            stop = min((b+1)*batch, N)
+            start = b*self.batch
+            stop = min((b+1)*self.batch, N)
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
-            Hb = self.project(Xb)
+            Hb = self.solver.project(Xb)
             Tc = np.argmax(Tb, axis=1)
             for i in xrange(k):
                 hb1 = Hb[:, :nns[i]]
