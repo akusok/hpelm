@@ -18,11 +18,68 @@ class SLFN(object):
     """
 
     def __init__(self, inputs, targets, batch=1000, accelerator=None):
-        """Initializes a SLFN with an empty hidden layer.
+        r"""Initializes a SLFN with an empty hidden layer.
+        
+        Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself
+        is a training algorithm for SLFN. The network needs to know a dimensionality
+        of its `inputs` and `targets` (outputs), don't confuse with the number
+        of data samples! It is fixed for the given SLFN/ELM model and never changes.
+        It also takes a preferred `batch` size and a type of `accelerator`, 
+        but they can be changed later.
 
-        :param inputs: number of features in input samples (input dimensionality)
-        :param outputs: number of simultaneous predicted outputs
-        :param batch: batch size, ELM always runs in batch mode
+        Parameters
+        ----------
+        inputs : int
+            A dimensionality of input data, or a number of data features. Stays
+            constant for a given SLFN and ELM model.
+        targets : int
+            A dimensionality of target data; also a number of classes in multi-class
+            problems. Stays constant.
+        batch : int, optional
+            Dataset is processed in `batch`-size chunks, reducing memory requirements.
+            Especially important for GPUs. A `batch` size less that 100 slows down
+            processing speed.
+        accelerator : {'GPU', 'SKCuda'}, optional
+            An accelerator card to speed up computations, like Nvidia Tesla. The
+            corresponding program must be installed in the system. 'SKCuda' and
+            'Numba' are Python libraries and don't require compiling HPELM code,
+            while others require to compile the corresponding code in 'hpelm/acc'
+            folder. P.S. don't expect speedup on low-power laptop cards (needs
+            at least GTX-series); also majority of cards speedup only single
+            precision (32-bit float) computations --- exceptions are Nvidia Tesla
+            series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000
+            and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi
+            accelerator card.
+            
+        Returns
+        -------
+        SLFN
+            Returns nothing, this is a superclass for ELM implementation.
+            
+        Raises
+        ------
+        AssertionError
+            If you have wrong data dimensionality (see `inputs` and `targets`).
+            
+        Notes
+        -----
+        SLFN is created without any neurons, which are added later.
+        
+        Multiple types of neurons may be used.
+        
+        Neurons of one type may be added multiple times; they are joined
+        together by the model for better performance.
+
+        Examples
+        -------
+        Example of creating an SLFN and adding neurons if you want to classify
+        Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called
+        directly, but it's subclass ELM or HPELM is called.
+
+        >>> from hpelm import ELM, HPELM
+        >>> model = ELM(4, 3)
+        >>> model.add_neurons(5, 'sigm')
+        
         """
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
         assert isinstance(targets, (int, long)), "Number of outputs must be integer"

@@ -9,6 +9,9 @@ but the training time is up to 6 orders of magnitude smaller. (yes, a million ti
 ELMs are suitable for processing huge datasets and dealing with Big Data,
 and this toolbox is created as their fastest and most scalable implementation.
 
+Documentation is available here: http://hpelm.readthedocs.org, 
+it uses Numpydocs.
+
 Highlights:
     - Efficient matrix math implementation without bottlenecks
     - Efficient data storage (HDF5 file format)
