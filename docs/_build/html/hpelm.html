@@ -30,7 +30,9 @@
   
 
   
-    <link rel="top" title="hpelm 0.6.22 documentation" href="index.html"/> 
+    <link rel="top" title="hpelm 0.6.22 documentation" href="index.html"/>
+        <link rel="next" title="hpelm.acc package" href="hpelm.acc.html"/>
+        <link rel="prev" title="Welcome to hpelm’s documentation!" href="index.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -61,7 +63,20 @@
         
           
           
-              <ul class="simple">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">hpelm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.elm">hpelm.elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_v">hpelm.mss_v module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.slfn">hpelm.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hpelm">Module contents</a></li>
+</ul>
+</li>
 </ul>
 
           
@@ -331,13 +346,66 @@ Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
 </div>
 <div class="section" id="module-hpelm.slfn">
 <span id="hpelm-slfn-module"></span><h2>hpelm.slfn module<a class="headerlink" href="#module-hpelm.slfn" title="Permalink to this headline">¶</a></h2>
-<p>Created on Mon Oct 27 17:48:33 2014</p>
-<p>&#64;author: akusok</p>
+<p>Single hidden Layer Feed-forward neural Network.</p>
+<p>SLFN neural network, which is trained by ELM algorithm. Stores parameters of a
+network, keeps and operates neurons, saves and loads Neural Network model.
+Keeps a connection with the <cite>solver</cite> object which implements fast computational math.</p>
 <dl class="class">
 <dt id="hpelm.slfn.SLFN">
 <em class="property">class </em><code class="descclassname">hpelm.slfn.</code><code class="descname">SLFN</code><span class="sig-paren">(</span><em>inputs</em>, <em>targets</em>, <em>batch=1000</em>, <em>accelerator=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/slfn.html#SLFN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.slfn.SLFN" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Single-hidden Layer Feed-forward Network.</p>
+<p>Initializes a SLFN with an empty hidden layer.</p>
+<p>Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself
+is a training algorithm for SLFN. The network needs to know a dimensionality
+of its <cite>inputs</cite> and <cite>targets</cite> (outputs), don&#8217;t confuse with the number
+of data samples! It is fixed for the given SLFN/ELM model and never changes.
+It also takes a preferred <cite>batch</cite> size and a type of <cite>accelerator</cite>,
+but they can be changed later.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inputs</strong> (<em>int</em>) &#8211; A dimensionality of input data, or a number of data features. Stays
+constant for a given SLFN and ELM model.</li>
+<li><strong>targets</strong> (<em>int</em>) &#8211; A dimensionality of target data; also a number of classes in multi-class
+problems. Stays constant.</li>
+<li><strong>batch</strong> (<em>int, optional</em>) &#8211; Dataset is processed in <cite>batch</cite>-size chunks, reducing memory requirements.
+Especially important for GPUs. A <cite>batch</cite> size less that 100 slows down
+processing speed.</li>
+<li><strong>accelerator</strong> (<em>{&#8216;GPU&#8217;, &#8216;SKCuda&#8217;}, optional</em>) &#8211; An accelerator card to speed up computations, like Nvidia Tesla. The
+corresponding program must be installed in the system. &#8216;SKCuda&#8217; and
+&#8216;Numba&#8217; are Python libraries and don&#8217;t require compiling HPELM code,
+while others require to compile the corresponding code in &#8216;hpelm/acc&#8217;
+folder. P.S. don&#8217;t expect speedup on low-power laptop cards (needs
+at least GTX-series); also majority of cards speedup only single
+precision (32-bit float) computations &#8212; exceptions are Nvidia Tesla
+series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000
+and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi
+accelerator card.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> &#8211;
+If you have wrong data dimensionality (see <cite>inputs</cite> and <cite>targets</cite>).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>SLFN is created without any neurons, which are added later.</p>
+<p>Multiple types of neurons may be used.</p>
+<p>Neurons of one type may be added multiple times; they are joined
+together by the model for better performance.</p>
+<p class="rubric">Example</p>
+<p>Example of creating an SLFN and adding neurons if you want to classify
+Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called
+directly, but it&#8217;s subclass ELM or HPELM is called.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">hpelm</span> <span class="kn">import</span> <span class="n">ELM</span><span class="p">,</span> <span class="n">HPELM</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;sigm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="hpelm.slfn.SLFN.__del__">
 <code class="descname">__del__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/slfn.html#SLFN.__del__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.slfn.SLFN.__del__" title="Permalink to this definition">¶</a></dt>
@@ -347,7 +415,27 @@ Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
 <dl class="method">
 <dt id="hpelm.slfn.SLFN.add_neurons">
 <code class="descname">add_neurons</code><span class="sig-paren">(</span><em>number</em>, <em>func</em>, <em>W=None</em>, <em>B=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/slfn.html#SLFN.add_neurons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.slfn.SLFN.add_neurons" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Add neurons to the SLFN.</p>
+<p>Adds a number of specific neurons to SLFN network. Weights and biases
+are generated automatically if not provided, but they assume that input
+data is normalized (input data features have zero mean and unit variance).</p>
+<p>If neurons of such type already exist, they are merged together.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>number</strong> (<em>int</em>) &#8211; A number of new neurons to add</li>
+<li><strong>func</strong> (<em>{&#8216;lin&#8217;, &#8216;sigm&#8217;, &#8216;tanh&#8217;, &#8216;rbf_l1&#8217;, &#8216;rbf_l2&#8217;, &#8216;rbf_linf&#8217;}</em>) &#8211; Transformation function of hidden layer. Linear function leads
+to a linear model.</li>
+<li><strong>W</strong> (<em>array_like, optional</em>) &#8211; A 2-D matrix of neuron weights, size (<cite>inputs</cite>, <cite>number</cite>)</li>
+<li><strong>B</strong> (<em>array_like, optional</em>) &#8211; A 1-D vector of neuron biases, size (<cite>number</cite>, )</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hpelm.slfn.SLFN.confusion">
@@ -397,6 +485,15 @@ Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="hpelm.acc.html" class="btn btn-neutral float-right" title="hpelm.acc package">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to hpelm’s documentation!"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
   <hr/>
 
@@ -432,6 +529,7 @@ Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

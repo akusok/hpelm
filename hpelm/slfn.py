@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Oct 27 17:48:33 2014
+"""Single hidden Layer Feed-forward neural Network.
 
-@author: akusok
+SLFN neural network, which is trained by ELM algorithm. Stores parameters of a
+network, keeps and operates neurons, saves and loads Neural Network model.
+Keeps a connection with the `solver` object which implements fast computational math.
 """
 
 import numpy as np
@@ -14,73 +15,69 @@ from solver.solver import Solver
 
 
 class SLFN(object):
-    """Single-hidden Layer Feed-forward Network.
+    """Initializes a SLFN with an empty hidden layer.
+    
+    Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself
+    is a training algorithm for SLFN. The network needs to know a dimensionality
+    of its `inputs` and `targets` (outputs), don't confuse with the number
+    of data samples! It is fixed for the given SLFN/ELM model and never changes.
+    It also takes a preferred `batch` size and a type of `accelerator`, 
+    but they can be changed later.
+
+    Parameters
+    ----------
+    inputs : int
+        A dimensionality of input data, or a number of data features. Stays
+        constant for a given SLFN and ELM model.
+    targets : int
+        A dimensionality of target data; also a number of classes in multi-class
+        problems. Stays constant.
+    batch : int, optional
+        Dataset is processed in `batch`-size chunks, reducing memory requirements.
+        Especially important for GPUs. A `batch` size less that 100 slows down
+        processing speed.
+    accelerator : {'GPU', 'SKCuda'}, optional
+        An accelerator card to speed up computations, like Nvidia Tesla. The
+        corresponding program must be installed in the system. 'SKCuda' and
+        'Numba' are Python libraries and don't require compiling HPELM code,
+        while others require to compile the corresponding code in 'hpelm/acc'
+        folder. P.S. don't expect speedup on low-power laptop cards (needs
+        at least GTX-series); also majority of cards speedup only single
+        precision (32-bit float) computations --- exceptions are Nvidia Tesla
+        series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000
+        and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi
+        accelerator card.
+        
+    Raises
+    ------
+    AssertionError
+        If you have wrong data dimensionality (see `inputs` and `targets`).
+        
+    Notes
+    -----
+    SLFN is created without any neurons, which are added later.
+    
+    Multiple types of neurons may be used.
+    
+    Neurons of one type may be added multiple times; they are joined
+    together by the model for better performance.
+
+    Example
+    -------
+    Example of creating an SLFN and adding neurons if you want to classify
+    Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called
+    directly, but it's subclass ELM or HPELM is called.
+
+    >>> from hpelm import ELM, HPELM
+    >>> model = ELM(4, 3)
+    >>> model.add_neurons(5, 'sigm')
+    
     """
 
     def __init__(self, inputs, targets, batch=1000, accelerator=None):
-        """Initializes a SLFN with an empty hidden layer.
-        
-        Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself
-        is a training algorithm for SLFN. The network needs to know a dimensionality
-        of its `inputs` and `targets` (outputs), don't confuse with the number
-        of data samples! It is fixed for the given SLFN/ELM model and never changes.
-        It also takes a preferred `batch` size and a type of `accelerator`, 
-        but they can be changed later.
-
-        Parameters
-        ----------
-        inputs : int
-            A dimensionality of input data, or a number of data features. Stays
-            constant for a given SLFN and ELM model.
-        targets : int
-            A dimensionality of target data; also a number of classes in multi-class
-            problems. Stays constant.
-        batch : int, optional
-            Dataset is processed in `batch`-size chunks, reducing memory requirements.
-            Especially important for GPUs. A `batch` size less that 100 slows down
-            processing speed.
-        accelerator : {'GPU', 'SKCuda'}, optional
-            An accelerator card to speed up computations, like Nvidia Tesla. The
-            corresponding program must be installed in the system. 'SKCuda' and
-            'Numba' are Python libraries and don't require compiling HPELM code,
-            while others require to compile the corresponding code in 'hpelm/acc'
-            folder. P.S. don't expect speedup on low-power laptop cards (needs
-            at least GTX-series); also majority of cards speedup only single
-            precision (32-bit float) computations --- exceptions are Nvidia Tesla
-            series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000
-            and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi
-            accelerator card.
-            
-        Returns
-        -------
-        SLFN
-            Returns nothing, this is a superclass for ELM implementation.
-            
-        Raises
-        ------
-        AssertionError
-            If you have wrong data dimensionality (see `inputs` and `targets`).
-            
-        Notes
-        -----
-        SLFN is created without any neurons, which are added later.
-        
-        Multiple types of neurons may be used.
-        
-        Neurons of one type may be added multiple times; they are joined
-        together by the model for better performance.
-
-        Examples
-        -------
-        Example of creating an SLFN and adding neurons if you want to classify
-        Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called
-        directly, but it's subclass ELM or HPELM is called.
-
-        >>> from hpelm import ELM, HPELM
-        >>> model = ELM(4, 3)
-        >>> model.add_neurons(5, 'sigm')
-        
+        """Single-hidden Layer Feed-forward Network.
         """
+
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
         assert isinstance(targets, (int, long)), "Number of outputs must be integer"
         assert batch > 0, "Batch should be positive"
@@ -163,16 +160,26 @@ class SLFN(object):
 
 
     def add_neurons(self, number, func, W=None, B=None):
-        #"""Add neurons of a specific type to the SLFN.
+        """Add neurons to the SLFN.
 
-        #If neurons of such type exist, merges them together.
-        #:param number: - number of neurons to add
-        #:param func: - transformation function of those neurons,
-        #               "lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf"
-        #               or a custom function of type <numpy.ufunc>
-        #:param W: - projection matrix or ("rbf_xx") a list of centroids
-        #:param B: - bias vector or ("rbf_xx") a vector of sigmas
-        #"""
+        Adds a number of specific neurons to SLFN network. Weights and biases
+        are generated automatically if not provided, but they assume that input
+        data is normalized (input data features have zero mean and unit variance).
+        
+        If neurons of such type already exist, they are merged together.
+        
+        Parameters
+        ----------
+            number : int
+                A number of new neurons to add
+            func : {'lin', 'sigm', 'tanh', 'rbf_l1', 'rbf_l2', 'rbf_linf'}
+                Transformation function of hidden layer. Linear function leads
+                to a linear model.
+            W : array_like, optional
+                A 2-D matrix of neuron weights, size (`inputs`, `number`)
+            B : array_like, optional
+                A 1-D vector of neuron biases, size (`number`, )
+        """
         assert isinstance(number, int), "Number of neurons must be integer"
         assert (func in self.flist or isinstance(func, np.ufunc)),\
             "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
@@ -247,9 +254,7 @@ class SLFN(object):
         nn = np.sum([n1[1] for n1 in self.neurons])
         N = T.shape[0]
         batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if batch > N * nb:
-            nb += 1
+        nb = int(np.ceil(float(N) / self.batch))  # number of batches
 
         C = self.targets
         conf = np.zeros((C, C))

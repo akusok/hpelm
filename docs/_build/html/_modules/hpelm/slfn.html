@@ -62,7 +62,20 @@
         
           
           
-              <ul class="simple">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../hpelm.html">hpelm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.elm">hpelm.elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_v">hpelm.mss_v module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.slfn">hpelm.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm">Module contents</a></li>
+</ul>
+</li>
 </ul>
 
           
@@ -100,10 +113,11 @@
             
   <h1>Source code for hpelm.slfn</h1><div class="highlight"><pre>
 <span class="c"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Created on Mon Oct 27 17:48:33 2014</span>
+<span class="sd">&quot;&quot;&quot;Single hidden Layer Feed-forward neural Network.</span>
 
-<span class="sd">@author: akusok</span>
+<span class="sd">SLFN neural network, which is trained by ELM algorithm. Stores parameters of a</span>
+<span class="sd">network, keeps and operates neurons, saves and loads Neural Network model.</span>
+<span class="sd">Keeps a connection with the `solver` object which implements fast computational math.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -115,73 +129,69 @@
 
 
 <div class="viewcode-block" id="SLFN"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN">[docs]</a><span class="k">class</span> <span class="nc">SLFN</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Single-hidden Layer Feed-forward Network.</span>
+    <span class="sd">&quot;&quot;&quot;Initializes a SLFN with an empty hidden layer.</span>
+<span class="sd">    </span>
+<span class="sd">    Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself</span>
+<span class="sd">    is a training algorithm for SLFN. The network needs to know a dimensionality</span>
+<span class="sd">    of its `inputs` and `targets` (outputs), don&#39;t confuse with the number</span>
+<span class="sd">    of data samples! It is fixed for the given SLFN/ELM model and never changes.</span>
+<span class="sd">    It also takes a preferred `batch` size and a type of `accelerator`, </span>
+<span class="sd">    but they can be changed later.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inputs : int</span>
+<span class="sd">        A dimensionality of input data, or a number of data features. Stays</span>
+<span class="sd">        constant for a given SLFN and ELM model.</span>
+<span class="sd">    targets : int</span>
+<span class="sd">        A dimensionality of target data; also a number of classes in multi-class</span>
+<span class="sd">        problems. Stays constant.</span>
+<span class="sd">    batch : int, optional</span>
+<span class="sd">        Dataset is processed in `batch`-size chunks, reducing memory requirements.</span>
+<span class="sd">        Especially important for GPUs. A `batch` size less that 100 slows down</span>
+<span class="sd">        processing speed.</span>
+<span class="sd">    accelerator : {&#39;GPU&#39;, &#39;SKCuda&#39;}, optional</span>
+<span class="sd">        An accelerator card to speed up computations, like Nvidia Tesla. The</span>
+<span class="sd">        corresponding program must be installed in the system. &#39;SKCuda&#39; and</span>
+<span class="sd">        &#39;Numba&#39; are Python libraries and don&#39;t require compiling HPELM code,</span>
+<span class="sd">        while others require to compile the corresponding code in &#39;hpelm/acc&#39;</span>
+<span class="sd">        folder. P.S. don&#39;t expect speedup on low-power laptop cards (needs</span>
+<span class="sd">        at least GTX-series); also majority of cards speedup only single</span>
+<span class="sd">        precision (32-bit float) computations --- exceptions are Nvidia Tesla</span>
+<span class="sd">        series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000</span>
+<span class="sd">        and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi</span>
+<span class="sd">        accelerator card.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    AssertionError</span>
+<span class="sd">        If you have wrong data dimensionality (see `inputs` and `targets`).</span>
+<span class="sd">        </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    SLFN is created without any neurons, which are added later.</span>
+<span class="sd">    </span>
+<span class="sd">    Multiple types of neurons may be used.</span>
+<span class="sd">    </span>
+<span class="sd">    Neurons of one type may be added multiple times; they are joined</span>
+<span class="sd">    together by the model for better performance.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Example of creating an SLFN and adding neurons if you want to classify</span>
+<span class="sd">    Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called</span>
+<span class="sd">    directly, but it&#39;s subclass ELM or HPELM is called.</span>
+
+<span class="sd">    &gt;&gt;&gt; from hpelm import ELM, HPELM</span>
+<span class="sd">    &gt;&gt;&gt; model = ELM(4, 3)</span>
+<span class="sd">    &gt;&gt;&gt; model.add_neurons(5, &#39;sigm&#39;)</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initializes a SLFN with an empty hidden layer.</span>
-<span class="sd">        </span>
-<span class="sd">        Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself</span>
-<span class="sd">        is a training algorithm for SLFN. The network needs to know a dimensionality</span>
-<span class="sd">        of its `inputs` and `targets` (outputs), don&#39;t confuse with the number</span>
-<span class="sd">        of data samples! It is fixed for the given SLFN/ELM model and never changes.</span>
-<span class="sd">        It also takes a preferred `batch` size and a type of `accelerator`, </span>
-<span class="sd">        but they can be changed later.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        inputs : int</span>
-<span class="sd">            A dimensionality of input data, or a number of data features. Stays</span>
-<span class="sd">            constant for a given SLFN and ELM model.</span>
-<span class="sd">        targets : int</span>
-<span class="sd">            A dimensionality of target data; also a number of classes in multi-class</span>
-<span class="sd">            problems. Stays constant.</span>
-<span class="sd">        batch : int, optional</span>
-<span class="sd">            Dataset is processed in `batch`-size chunks, reducing memory requirements.</span>
-<span class="sd">            Especially important for GPUs. A `batch` size less that 100 slows down</span>
-<span class="sd">            processing speed.</span>
-<span class="sd">        accelerator : {&#39;GPU&#39;, &#39;SKCuda&#39;}, optional</span>
-<span class="sd">            An accelerator card to speed up computations, like Nvidia Tesla. The</span>
-<span class="sd">            corresponding program must be installed in the system. &#39;SKCuda&#39; and</span>
-<span class="sd">            &#39;Numba&#39; are Python libraries and don&#39;t require compiling HPELM code,</span>
-<span class="sd">            while others require to compile the corresponding code in &#39;hpelm/acc&#39;</span>
-<span class="sd">            folder. P.S. don&#39;t expect speedup on low-power laptop cards (needs</span>
-<span class="sd">            at least GTX-series); also majority of cards speedup only single</span>
-<span class="sd">            precision (32-bit float) computations --- exceptions are Nvidia Tesla</span>
-<span class="sd">            series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000</span>
-<span class="sd">            and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi</span>
-<span class="sd">            accelerator card.</span>
-<span class="sd">            </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        SLFN</span>
-<span class="sd">            Returns nothing, this is a superclass for ELM implementation.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        AssertionError</span>
-<span class="sd">            If you have wrong data dimensionality (see `inputs` and `targets`).</span>
-<span class="sd">            </span>
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        SLFN is created without any neurons, which are added later.</span>
-<span class="sd">        </span>
-<span class="sd">        Multiple types of neurons may be used.</span>
-<span class="sd">        </span>
-<span class="sd">        Neurons of one type may be added multiple times; they are joined</span>
-<span class="sd">        together by the model for better performance.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        -------</span>
-<span class="sd">        Example of creating an SLFN and adding neurons if you want to classify</span>
-<span class="sd">        Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called</span>
-<span class="sd">        directly, but it&#39;s subclass ELM or HPELM is called.</span>
-
-<span class="sd">        &gt;&gt;&gt; from hpelm import ELM, HPELM</span>
-<span class="sd">        &gt;&gt;&gt; model = ELM(4, 3)</span>
-<span class="sd">        &gt;&gt;&gt; model.add_neurons(5, &#39;sigm&#39;)</span>
-<span class="sd">        </span>
+        <span class="sd">&quot;&quot;&quot;Single-hidden Layer Feed-forward Network.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)),</span> <span class="s">&quot;Number of inputs must be integer&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)),</span> <span class="s">&quot;Number of outputs must be integer&quot;</span>
         <span class="k">assert</span> <span class="n">batch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;Batch should be positive&quot;</span>
@@ -264,16 +274,26 @@
 
 
 <div class="viewcode-block" id="SLFN.add_neurons"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.add_neurons">[docs]</a>    <span class="k">def</span> <span class="nf">add_neurons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="c">#&quot;&quot;&quot;Add neurons of a specific type to the SLFN.</span>
+        <span class="sd">&quot;&quot;&quot;Add neurons to the SLFN.</span>
 
-        <span class="c">#If neurons of such type exist, merges them together.</span>
-        <span class="c">#:param number: - number of neurons to add</span>
-        <span class="c">#:param func: - transformation function of those neurons,</span>
-        <span class="c">#               &quot;lin&quot;, &quot;sigm&quot;, &quot;tanh&quot;, &quot;rbf_l1&quot;, &quot;rbf_l2&quot;, &quot;rbf_linf&quot;</span>
-        <span class="c">#               or a custom function of type &lt;numpy.ufunc&gt;</span>
-        <span class="c">#:param W: - projection matrix or (&quot;rbf_xx&quot;) a list of centroids</span>
-        <span class="c">#:param B: - bias vector or (&quot;rbf_xx&quot;) a vector of sigmas</span>
-        <span class="c">#&quot;&quot;&quot;</span>
+<span class="sd">        Adds a number of specific neurons to SLFN network. Weights and biases</span>
+<span class="sd">        are generated automatically if not provided, but they assume that input</span>
+<span class="sd">        data is normalized (input data features have zero mean and unit variance).</span>
+<span class="sd">        </span>
+<span class="sd">        If neurons of such type already exist, they are merged together.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            number : int</span>
+<span class="sd">                A number of new neurons to add</span>
+<span class="sd">            func : {&#39;lin&#39;, &#39;sigm&#39;, &#39;tanh&#39;, &#39;rbf_l1&#39;, &#39;rbf_l2&#39;, &#39;rbf_linf&#39;}</span>
+<span class="sd">                Transformation function of hidden layer. Linear function leads</span>
+<span class="sd">                to a linear model.</span>
+<span class="sd">            W : array_like, optional</span>
+<span class="sd">                A 2-D matrix of neuron weights, size (`inputs`, `number`)</span>
+<span class="sd">            B : array_like, optional</span>
+<span class="sd">                A 1-D vector of neuron biases, size (`number`, )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s">&quot;Number of neurons must be integer&quot;</span>
         <span class="k">assert</span> <span class="p">(</span><span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flist</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ufunc</span><span class="p">)),</span>\
             <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; neurons not suppored: use a standard neuron function or a custom &lt;numpy.ufunc&gt;&quot;</span> <span class="o">%</span> <span class="n">func</span>
@@ -496,6 +516,7 @@
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
