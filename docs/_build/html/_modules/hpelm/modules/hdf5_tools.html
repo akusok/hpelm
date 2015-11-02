@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.modules.hdf5_tools &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../../index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="simple">
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>hpelm.modules.hdf5_tools</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for hpelm.modules.hdf5_tools</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Apr  2 21:12:46 2015</span>
+
+<span class="sd">@author: akusok</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">tables</span> <span class="kn">import</span> <span class="n">open_file</span><span class="p">,</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Filters</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+
+<div class="viewcode-block" id="normalize_hdf5"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.hdf5_tools.normalize_hdf5">[docs]</a><span class="k">def</span> <span class="nf">normalize_hdf5</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates and applies normalization to data in HDF5 file.</span>
+
+<span class="sd">    :param mean: - known vector of mean values</span>
+<span class="sd">    :param std: - known vector of standard deviations</span>
+<span class="sd">    :param batch: - number of rows to read at once, default is a native batch size</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span>  <span class="c"># HDF5 files are transposed, for Matlab compatibility</span>
+    <span class="k">if</span> <span class="n">batch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">chunkshape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nb</span> <span class="o">=</span> <span class="n">N</span><span class="o">/</span><span class="n">batch</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">nb</span><span class="o">*</span><span class="n">batch</span><span class="p">:</span>
+        <span class="n">nb</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c"># add last incomplete step</span>
+
+    <span class="k">if</span> <span class="n">mean</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">std</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mean</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># data was not normalized before</span>
+            <span class="k">print</span> <span class="s">&quot;calculating mean and standard deviation of data&quot;</span>
+            <span class="n">E_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">E_x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+                <span class="n">X1</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">start</span><span class="o">+</span><span class="n">step</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">E_x</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">step</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
+                <span class="n">E_x2</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X1</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">step</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">E_x</span>
+            <span class="n">E2_x</span> <span class="o">=</span> <span class="n">E_x</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="p">(</span><span class="n">E_x2</span> <span class="o">-</span> <span class="n">E2_x</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="n">std</span>
+            <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># data is already normalized</span>
+            <span class="k">print</span> <span class="s">&quot;data was already normalized, returning &#39;mean&#39;, &#39;std&#39; parameters&quot;</span>
+            <span class="k">print</span> <span class="s">&quot;if you want to run normalization anyway, call the function with &#39;mean&#39; and &#39;std&#39; params&quot;</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">std</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span> <span class="o">==</span> <span class="n">d</span><span class="p">,</span> <span class="s">&quot;Incorrect lenght of a vector of means: </span><span class="si">%d</span><span class="s"> expected, </span><span class="si">%d</span><span class="s"> found&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mean</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">std</span><span class="p">)</span> <span class="o">==</span> <span class="n">d</span><span class="p">,</span> <span class="s">&quot;Incorrect lenght of a vector of standard deviations: </span><span class="si">%d</span><span class="s"> expected, </span><span class="si">%d</span><span class="s"> found&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">std</span><span class="p">))</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="n">std</span>
+    <span class="n">std</span><span class="p">[</span><span class="n">std</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># prevent division by zero for std=0</span>
+
+    <span class="k">print</span> <span class="s">&quot;applying normalization&quot;</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">start</span><span class="o">+</span><span class="n">step</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+        <span class="n">node</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">start</span><span class="o">+</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+    <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c"># closing file</span>
+    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span>
+
+
+<span class="c">#def oversample(data, targets, classes):</span>
+<span class="c">#    pass</span>
+
+</div>
+<div class="viewcode-block" id="make_hdf5"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.hdf5_tools.make_hdf5">[docs]</a><span class="k">def</span> <span class="nf">make_hdf5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">h5file</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comp_level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Makes an HDF5 file from whatever given data.</span>
+
+<span class="sd">    :param data: - input data in Numpy.ndarray or filename, or a shape tuple</span>
+<span class="sd">    :param h5file: - name (and path) of the output HDF5 file</span>
+<span class="sd">    :param delimiter: - data delimiter for text, csv files</span>
+<span class="sd">    :param comp_level: - compression level of the HDF5 file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">comp_level</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;Compression level must be 0-9 (0 for no compression)&quot;</span>
+    <span class="n">fill</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+    <span class="c"># open data file</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;npy&#39;</span><span class="p">]:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;.gz&#39;</span><span class="p">,</span> <span class="s">&#39;bz2&#39;</span><span class="p">]:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;txt&#39;</span><span class="p">,</span> <span class="s">&#39;csv&#39;</span><span class="p">]:</span>
+        <span class="c"># iterative out-of-memory loader for huge .csv/.txt files</span>
+        <span class="n">fill</span> <span class="o">=</span> <span class="s">&quot;iter&quot;</span>
+        <span class="c"># check data dimensionality</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&quot;rU&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">skiprows</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="k">break</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">fill</span> <span class="o">=</span> <span class="s">&quot;empty&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&quot;Input data must be Numpy ndarray, .npy file, or .txt/.csv text file (compressed .gz/.bz2)&quot;</span>
+
+    <span class="c"># process data</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;Data in Numpy ndarray must have 2 dimensions&quot;</span>
+    <span class="c"># create hdf5 file</span>
+    <span class="k">if</span> <span class="n">comp_level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">flt</span> <span class="o">=</span> <span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="n">comp_level</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">flt</span> <span class="o">=</span> <span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">Atom</span><span class="o">.</span><span class="n">from_dtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dflt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c"># write data to hdf5 file</span>
+    <span class="k">if</span> <span class="n">fill</span> <span class="o">==</span> <span class="s">&quot;iter&quot;</span><span class="p">:</span>  <span class="c"># iteratively fill the data</span>
+        <span class="n">h5data</span> <span class="o">=</span> <span class="n">h5</span><span class="o">.</span><span class="n">create_earray</span><span class="p">(</span><span class="n">h5</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">filters</span><span class="o">=</span><span class="n">flt</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&quot;rU&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">skiprows</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">h5data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="k">elif</span> <span class="n">fill</span> <span class="o">==</span> <span class="s">&quot;empty&quot;</span><span class="p">:</span>  <span class="c"># no fill at all</span>
+        <span class="n">h5data</span> <span class="o">=</span> <span class="n">h5</span><span class="o">.</span><span class="n">create_carray</span><span class="p">(</span><span class="n">h5</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">flt</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c"># write whole data matrix</span>
+        <span class="n">h5data</span> <span class="o">=</span> <span class="n">h5</span><span class="o">.</span><span class="n">create_carray</span><span class="p">(</span><span class="n">h5</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">flt</span><span class="p">)</span>
+        <span class="n">h5data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">X</span>
+    <span class="c"># close the file</span>
+    <span class="n">h5data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">h5data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">h5</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="ireader"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.hdf5_tools.ireader">[docs]</a><span class="k">def</span> <span class="nf">ireader</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">q_in</span><span class="p">,</span> <span class="n">q_out</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Asyncronous reader for an HDF5 file.</span>
+
+<span class="sd">    q_in - a (start, stop) tuple of read indexes; if start &gt;= stop then reader terminates</span>
+<span class="sd">    q_out - a queue for chunks red from a disk</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">),</span> <span class="s">&quot;Asyncronous I/O only supported with HDF5 data files&quot;</span>
+    <span class="n">hX</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">X</span> <span class="ow">in</span> <span class="n">hX</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c"># returning data chunks on demand</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">q_in</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">stop</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">q_out</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+    <span class="n">hX</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="iwriter"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.hdf5_tools.iwriter">[docs]</a><span class="k">def</span> <span class="nf">iwriter</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">q_in</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Asyncronous writer for an HDF5 file.</span>
+
+<span class="sd">    q_in - a (Xbatch, start, stop) tuple of data to write indexes; if q_in is None then writer terminates</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">),</span> <span class="s">&quot;Asyncronous I/O only supported with HDF5 data files&quot;</span>
+    <span class="n">hX</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">X</span> <span class="ow">in</span> <span class="n">hX</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c"># returning data chunks on demand</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">q_in</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">Xb</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="n">Xb</span>
+    <span class="n">X</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">hX</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c"># def make_hdf5(data, h5file, dtype=np.float64, delimiter=&quot; &quot;, skiprows=0, comp_level=0):</span>
+    <span class="c"># make_hdf5(&quot;textfile.txt&quot;, &quot;text.h5&quot;)</span>
+    <span class="c"># make_hdf5(&quot;textfile.txt&quot;, &quot;textz.h5&quot;, comp_level=3)</span>
+    <span class="n">normalize_hdf5</span><span class="p">(</span><span class="s">&quot;text.h5&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;Done!&quot;</span>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

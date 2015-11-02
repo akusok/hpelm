@@ -1,0 +1,282 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.modules.mrsr2 &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../../index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="simple">
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>hpelm.modules.mrsr2</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for hpelm.modules.mrsr2</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Better MRSR implementation according to:</span>
+<span class="sd">&#39;Common subset selection of inputs in multiresponse regression&quot; by</span>
+<span class="sd">Timo Similä and Jarkko Tikka, </span>
+<span class="sd">International Joint Conference on Neural Networks 2006</span>
+
+<span class="sd">Linear complexity with the number of targets.</span>
+
+<span class="sd">Created on Sun Jan 26 13:48:54 2014</span>
+<span class="sd">@author: Anton Akusok</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">lu_factor</span><span class="p">,</span> <span class="n">lu_solve</span>
+
+
+<div class="viewcode-block" id="mrsr2"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.mrsr2.mrsr2">[docs]</a><span class="k">def</span> <span class="nf">mrsr2</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">kmax</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+
+    <span class="c"># initializing</span>
+    <span class="n">ins</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">outs</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span>  <span class="c"># Fortran ordering is good for operating columns </span>
+    <span class="n">XA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span>
+    <span class="n">XX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>        
+    <span class="n">XT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># active inputs list</span>
+    <span class="n">nonrank</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ins</span><span class="p">,</span> <span class="n">outs</span><span class="p">))</span>  <span class="c"># current projection estimator</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c"># current target estimator</span>
+    <span class="n">Yk1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">Wk1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">outs</span><span class="p">))</span>
+    <span class="n">j_current</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># currently added input dimension</span>
+    <span class="n">kmax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">kmax</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>    
+    
+    <span class="c"># get ranking</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">kmax</span><span class="p">):</span>
+        
+        <span class="c"># first step</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">c_max</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">nonrank</span><span class="p">:</span>
+                <span class="n">c_kj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span><span class="n">j</span><span class="p">]),</span> <span class="n">norm</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">c_kj</span> <span class="o">&gt;</span> <span class="n">c_max</span><span class="p">:</span>
+                    <span class="n">c_max</span> <span class="o">=</span> <span class="n">c_kj</span>
+                    <span class="n">j_max</span> <span class="o">=</span> <span class="n">j</span>
+            <span class="n">j_current</span> <span class="o">=</span> <span class="n">j_max</span>  
+            <span class="c"># save new input</span>
+            <span class="n">rank</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j_current</span><span class="p">)</span>
+            <span class="n">nonrank</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">j_current</span><span class="p">)</span>
+            <span class="c"># swap columns</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+            <span class="n">XA</span><span class="p">[:,</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">j_current</span><span class="p">]</span>
+            <span class="n">y_min</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="c"># last step</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonrank</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">Yk1</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">rank</span><span class="p">]</span> <span class="o">=</span> <span class="n">Wk1</span>
+            <span class="n">y_min</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c"># intermediate step        </span>
+        <span class="k">else</span><span class="p">:</span>  
+            <span class="n">Yk2</span> <span class="o">=</span> <span class="p">(</span><span class="n">Yk1</span> <span class="o">-</span> <span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">T2</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            
+            <span class="n">X9</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">j_current</span><span class="p">]</span>
+            <span class="n">c_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">T2</span><span class="p">,</span> <span class="n">X9</span><span class="p">),</span> <span class="n">norm</span><span class="p">)</span>
+            <span class="c">#c_max = np.linalg.norm(np.dot(T2, X[:, j_current]), norm)</span>
+            
+            <span class="c">#fun = lambda y,x_new: (1-y)*c_max - np.linalg.norm(T2.dot(x_new) - y*Yk2.dot(x_new))</span>
+            <span class="n">fun_p</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">y</span><span class="p">,</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">c_max</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p1</span> <span class="o">-</span> <span class="n">y</span><span class="o">*</span><span class="n">p2</span><span class="p">)</span>  <span class="c"># super fast parametrized function</span>
+    
+            <span class="c"># find optimal step (minimum over possible additional inputs) </span>
+            <span class="n">y_min</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># upper interval</span>
+            <span class="k">for</span> <span class="n">j_new</span> <span class="ow">in</span> <span class="n">nonrank</span><span class="p">:</span>
+                <span class="n">x_new</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span><span class="n">j_new</span><span class="p">]</span>
+                <span class="c"># pre-calculate constant parts of the optimization function for the given x_new</span>
+                <span class="n">p1</span> <span class="o">=</span> <span class="n">T2</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_new</span><span class="p">)</span>
+                <span class="n">p2</span> <span class="o">=</span> <span class="n">Yk2</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_new</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">y_min</span><span class="p">)</span><span class="o">*</span><span class="n">c_max</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p1</span> <span class="o">-</span> <span class="n">y_min</span><span class="o">*</span><span class="n">p2</span><span class="p">):</span>  <span class="c"># skip optimization if min(fun) &gt; y_min</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">zero</span> <span class="o">=</span> <span class="mf">1E-15</span>  <span class="c"># finding a value greater than zero</span>
+                        <span class="n">y_kj</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">brentq</span><span class="p">(</span><span class="n">fun_p</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">1E-6</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">))</span>
+                        <span class="n">y_min</span> <span class="o">=</span> <span class="n">y_kj</span>
+                        <span class="n">j_min</span> <span class="o">=</span> <span class="n">j_new</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  
+                        <span class="c"># ValueError: f(a) and f(b) must have different signs</span>
+                        <span class="c"># here f(a) &lt; 0 and f(b) &lt; 0; does not fit our purposes anyway </span>
+                        <span class="c"># ignoring this case</span>
+                        <span class="k">pass</span>                  
+                    
+            <span class="k">if</span> <span class="n">y_min</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c"># if no suitable solution was found</span>
+                <span class="n">j_min</span> <span class="o">=</span> <span class="n">j_new</span>
+            <span class="n">j_current</span> <span class="o">=</span> <span class="n">j_min</span>
+
+            <span class="c"># add new input into model</span>
+            <span class="n">rank</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j_current</span><span class="p">)</span>
+            <span class="n">nonrank</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">j_current</span><span class="p">)</span>
+            <span class="c"># add new input to X matrix</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+            <span class="n">XA</span><span class="p">[:,</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span><span class="n">j_current</span><span class="p">]</span>
+
+        <span class="c"># post-update ELM estimation with current set of inputs, with LU-ELM</span>
+        <span class="n">XtX</span> <span class="o">=</span> <span class="n">XX</span><span class="p">[</span><span class="n">rank</span><span class="p">,:][:,</span><span class="n">rank</span><span class="p">]</span>
+        <span class="n">XtT</span> <span class="o">=</span> <span class="n">XT</span><span class="p">[</span><span class="n">rank</span><span class="p">,:]</span>
+        <span class="n">LU</span><span class="p">,</span> <span class="n">piv</span> <span class="o">=</span> <span class="n">lu_factor</span><span class="p">(</span><span class="n">XtX</span><span class="p">)</span><span class="c">#, overwrite_a=True)</span>
+        <span class="n">Wk1</span> <span class="o">=</span> <span class="n">lu_solve</span><span class="p">((</span><span class="n">LU</span><span class="p">,</span> <span class="n">piv</span><span class="p">),</span> <span class="n">XtT</span><span class="p">)</span><span class="c">#, overwrite_b=True)</span>
+        <span class="n">X1</span> <span class="o">=</span> <span class="n">XA</span><span class="p">[:,:</span><span class="nb">len</span><span class="p">(</span><span class="n">rank</span><span class="p">)]</span>  <span class="c"># replace fancy indexing with simple one</span>
+        <span class="n">Yk1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">Wk1</span><span class="p">)</span>  
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># perform variable length step</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">y_min</span><span class="p">)</span><span class="o">*</span><span class="n">Y</span> <span class="o">+</span> <span class="n">y_min</span><span class="o">*</span><span class="n">Yk1</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">y_min</span><span class="p">)</span><span class="o">*</span><span class="n">W</span>     
+            <span class="n">W</span><span class="p">[</span><span class="n">rank</span><span class="p">]</span> <span class="o">+=</span> <span class="n">y_min</span><span class="o">*</span><span class="n">Wk1</span>   
+               
+    <span class="c"># done, return ranking</span>
+    <span class="k">return</span> <span class="n">rank</span>
+
+        
+</pre></div></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

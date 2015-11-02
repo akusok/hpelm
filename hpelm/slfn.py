@@ -18,7 +18,7 @@ class SLFN(object):
     """
 
     def __init__(self, inputs, targets, batch=1000, accelerator=None):
-        r"""Initializes a SLFN with an empty hidden layer.
+        """Initializes a SLFN with an empty hidden layer.
         
         Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself
         is a training algorithm for SLFN. The network needs to know a dimensionality
@@ -163,16 +163,16 @@ class SLFN(object):
 
 
     def add_neurons(self, number, func, W=None, B=None):
-        """Add neurons of a specific type to the SLFN.
+        #"""Add neurons of a specific type to the SLFN.
 
-        If neurons of such type exist, merges them together.
-        :param number: - number of neurons to add
-        :param func: - transformation function of those neurons,
-                       "lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf"
-                       or a custom function of type <numpy.ufunc>
-        :param W: - projection matrix or ("rbf_xx") a list of centroids
-        :param B: - bias vector or ("rbf_xx") a vector of sigmas
-        """
+        #If neurons of such type exist, merges them together.
+        #:param number: - number of neurons to add
+        #:param func: - transformation function of those neurons,
+        #               "lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf"
+        #               or a custom function of type <numpy.ufunc>
+        #:param W: - projection matrix or ("rbf_xx") a list of centroids
+        #:param B: - bias vector or ("rbf_xx") a vector of sigmas
+        #"""
         assert isinstance(number, int), "Number of neurons must be integer"
         assert (func in self.flist or isinstance(func, np.ufunc)),\
             "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
