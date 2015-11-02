@@ -226,9 +226,7 @@ class SLFN(object):
         nn = np.sum([n1[1] for n1 in self.neurons])
         N = T.shape[0]
         batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if batch > N * nb:
-            nb += 1
+        nb = int(np.ceil(float(N) / self.batch))  # number of batches
 
         C = self.targets
         conf = np.zeros((C, C))
