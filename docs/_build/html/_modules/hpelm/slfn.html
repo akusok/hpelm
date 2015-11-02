@@ -1,0 +1,517 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.slfn &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="simple">
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>hpelm.slfn</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for hpelm.slfn</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Oct 27 17:48:33 2014</span>
+
+<span class="sd">@author: akusok</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tables</span> <span class="kn">import</span> <span class="n">open_file</span>
+<span class="kn">import</span> <span class="nn">cPickle</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">from</span> <span class="nn">solver.solver</span> <span class="kn">import</span> <span class="n">Solver</span>
+
+
+<div class="viewcode-block" id="SLFN"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN">[docs]</a><span class="k">class</span> <span class="nc">SLFN</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Single-hidden Layer Feed-forward Network.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">r&quot;&quot;&quot;Initializes a SLFN with an empty hidden layer.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates a Single Layer Feed-forward neural Network (SLFN). An ELM itself</span>
+<span class="sd">        is a training algorithm for SLFN. The network needs to know a dimensionality</span>
+<span class="sd">        of its `inputs` and `targets` (outputs), don&#39;t confuse with the number</span>
+<span class="sd">        of data samples! It is fixed for the given SLFN/ELM model and never changes.</span>
+<span class="sd">        It also takes a preferred `batch` size and a type of `accelerator`, </span>
+<span class="sd">        but they can be changed later.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : int</span>
+<span class="sd">            A dimensionality of input data, or a number of data features. Stays</span>
+<span class="sd">            constant for a given SLFN and ELM model.</span>
+<span class="sd">        targets : int</span>
+<span class="sd">            A dimensionality of target data; also a number of classes in multi-class</span>
+<span class="sd">            problems. Stays constant.</span>
+<span class="sd">        batch : int, optional</span>
+<span class="sd">            Dataset is processed in `batch`-size chunks, reducing memory requirements.</span>
+<span class="sd">            Especially important for GPUs. A `batch` size less that 100 slows down</span>
+<span class="sd">            processing speed.</span>
+<span class="sd">        accelerator : {&#39;GPU&#39;, &#39;SKCuda&#39;}, optional</span>
+<span class="sd">            An accelerator card to speed up computations, like Nvidia Tesla. The</span>
+<span class="sd">            corresponding program must be installed in the system. &#39;SKCuda&#39; and</span>
+<span class="sd">            &#39;Numba&#39; are Python libraries and don&#39;t require compiling HPELM code,</span>
+<span class="sd">            while others require to compile the corresponding code in &#39;hpelm/acc&#39;</span>
+<span class="sd">            folder. P.S. don&#39;t expect speedup on low-power laptop cards (needs</span>
+<span class="sd">            at least GTX-series); also majority of cards speedup only single</span>
+<span class="sd">            precision (32-bit float) computations --- exceptions are Nvidia Tesla</span>
+<span class="sd">            series, Nvidia Titan/Titan Black (not Titan X), AMD FirePro s9000</span>
+<span class="sd">            and up, Mac Pro with medium- and high-tier GPUs, and Intel Xeon Phi</span>
+<span class="sd">            accelerator card.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SLFN</span>
+<span class="sd">            Returns nothing, this is a superclass for ELM implementation.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AssertionError</span>
+<span class="sd">            If you have wrong data dimensionality (see `inputs` and `targets`).</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        SLFN is created without any neurons, which are added later.</span>
+<span class="sd">        </span>
+<span class="sd">        Multiple types of neurons may be used.</span>
+<span class="sd">        </span>
+<span class="sd">        Neurons of one type may be added multiple times; they are joined</span>
+<span class="sd">        together by the model for better performance.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        -------</span>
+<span class="sd">        Example of creating an SLFN and adding neurons if you want to classify</span>
+<span class="sd">        Iris dataset with 4 inputs and 3 classes. Note that SLFN is not called</span>
+<span class="sd">        directly, but it&#39;s subclass ELM or HPELM is called.</span>
+
+<span class="sd">        &gt;&gt;&gt; from hpelm import ELM, HPELM</span>
+<span class="sd">        &gt;&gt;&gt; model = ELM(4, 3)</span>
+<span class="sd">        &gt;&gt;&gt; model.add_neurons(5, &#39;sigm&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)),</span> <span class="s">&quot;Number of inputs must be integer&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)),</span> <span class="s">&quot;Number of outputs must be integer&quot;</span>
+        <span class="k">assert</span> <span class="n">batch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;Batch should be positive&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span>
+        <span class="c"># cannot use a dictionary for neurons, because its iteration order is not defined</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># list of all neurons in normal Numpy form</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flist</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;lin&quot;</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="s">&quot;tanh&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+        <span class="c"># init solver to solve ELM</span>
+        <span class="k">if</span> <span class="n">accelerator</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># double precision Numpy solver</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<span class="c">#        if accelerator == &quot;GPU&quot;:</span>
+<span class="c">#            self.accelerator = &quot;GPU&quot;</span>
+<span class="c">#            self.magma_solver = __import__(&#39;acc.gpu_solver&#39;, globals(), locals(), [&#39;gpu_solve&#39;], -1)</span>
+<span class="c">#            print &quot;using GPU&quot;</span>
+
+        <span class="c"># init other stuff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># c / wc / mc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+<div class="viewcode-block" id="SLFN.__del__"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.__del__">[docs]</a>    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close HDF5 files opened during HPELM usage.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">h5</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="p">:</span>
+                <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_checkdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks data variables and fixes matrix dimensionality issues.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>  <span class="c"># open HDF5 file</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+                        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+                    <span class="n">X</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot read HDF5 file at </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">X</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># assert isinstance(X, np.ndarray) and</span>
+                <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&quot;OSU&quot;</span><span class="p">,</span> <span class="s">&quot;X must be a numerical numpy array&quot;</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;X must have 2 dimensions&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;X has wrong dimensionality: expected </span><span class="si">%d</span><span class="s">, found </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">msg</span>
+
+        <span class="k">if</span> <span class="n">T</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>  <span class="c"># open HDF5 file</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+                        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+                    <span class="n">T</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot read HDF5 file at </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">T</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># assert isinstance(T, np.ndarray) and</span>
+                <span class="k">assert</span> <span class="n">T</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&quot;OSU&quot;</span><span class="p">,</span> <span class="s">&quot;T must be a numerical numpy array&quot;</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">T</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;T must have 2 dimensions&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;T has wrong dimensionality: expected </span><span class="si">%d</span><span class="s">, found </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">assert</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="n">msg</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">T</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;X and T cannot have different number of samples&quot;</span>
+
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span>
+
+
+<div class="viewcode-block" id="SLFN.add_neurons"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.add_neurons">[docs]</a>    <span class="k">def</span> <span class="nf">add_neurons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c">#&quot;&quot;&quot;Add neurons of a specific type to the SLFN.</span>
+
+        <span class="c">#If neurons of such type exist, merges them together.</span>
+        <span class="c">#:param number: - number of neurons to add</span>
+        <span class="c">#:param func: - transformation function of those neurons,</span>
+        <span class="c">#               &quot;lin&quot;, &quot;sigm&quot;, &quot;tanh&quot;, &quot;rbf_l1&quot;, &quot;rbf_l2&quot;, &quot;rbf_linf&quot;</span>
+        <span class="c">#               or a custom function of type &lt;numpy.ufunc&gt;</span>
+        <span class="c">#:param W: - projection matrix or (&quot;rbf_xx&quot;) a list of centroids</span>
+        <span class="c">#:param B: - bias vector or (&quot;rbf_xx&quot;) a vector of sigmas</span>
+        <span class="c">#&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s">&quot;Number of neurons must be integer&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flist</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ufunc</span><span class="p">)),</span>\
+            <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; neurons not suppored: use a standard neuron function or a custom &lt;numpy.ufunc&gt;&quot;</span> <span class="o">%</span> <span class="n">func</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">))),</span> <span class="s">&quot;Projection matrix (W) must be a Numpy ndarray&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">))),</span> <span class="s">&quot;Bias vector (B) must be a Numpy ndarray&quot;</span>
+
+        <span class="c"># initialize skipped arguments</span>
+        <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">func</span> <span class="o">==</span> <span class="s">&quot;lin&quot;</span><span class="p">:</span>  <span class="c"># copying input features for linear neurons</span>
+                <span class="n">number</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span>  <span class="c"># cannot have more linear neurons than features</span>
+                <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">func</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">):</span>
+                    <span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c"># high dimensionality fix</span>
+        <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">func</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">):</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">B</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
+            <span class="k">if</span> <span class="n">func</span> <span class="o">==</span> <span class="s">&quot;lin&quot;</span><span class="p">:</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">number</span><span class="p">,))</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;W must be size [inputs, neurons] (expected [</span><span class="si">%d</span><span class="s">,</span><span class="si">%d</span><span class="s">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">number</span><span class="p">),</span> <span class="n">msg</span>
+        <span class="k">assert</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">number</span><span class="p">,),</span> <span class="s">&quot;B must be size [neurons] (expected [</span><span class="si">%d</span><span class="s">])&quot;</span> <span class="o">%</span> <span class="n">number</span>
+
+        <span class="n">ntypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">nr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">nr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">]</span>  <span class="c"># existing types of neurons</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">ntypes</span><span class="p">:</span>
+            <span class="c"># add to an existing neuron type</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">ntypes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">nn0</span><span class="p">,</span> <span class="n">W0</span><span class="p">,</span> <span class="n">B0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="n">nn0</span> <span class="o">+</span> <span class="n">number</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">W0</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">B0</span><span class="p">,</span> <span class="n">B</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># create a new neuron type</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">func</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">B</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Beta</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># need to re-train network after adding neurons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">set_neurons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">)</span>  <span class="c"># send new neurons to solver</span>
+
+</div>
+<div class="viewcode-block" id="SLFN.project"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call solver&#39;s function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">H</span>
+
+</div>
+<div class="viewcode-block" id="SLFN.predict"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict targets for the given inputs X.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Y</span>
+
+</div>
+<div class="viewcode-block" id="SLFN.error"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate error of model predictions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SLFN.confusion"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.confusion">[docs]</a>    <span class="k">def</span> <span class="nf">confusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y1</span><span class="p">,</span> <span class="n">T1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute confusion matrix for the given classification, iteratively.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">Y1</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">T1</span><span class="p">)</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">n1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">n1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">])</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="n">N</span> <span class="o">/</span> <span class="n">batch</span>  <span class="c"># number of batches</span>
+        <span class="k">if</span> <span class="n">batch</span> <span class="o">&gt;</span> <span class="n">N</span> <span class="o">*</span> <span class="n">nb</span><span class="p">:</span>
+            <span class="n">nb</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="s">&quot;wc&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">c1h</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+                        <span class="n">conf</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c1h</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Tb</span> <span class="o">==</span> <span class="n">c1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">Yb</span> <span class="o">==</span> <span class="n">c1h</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;mc&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+                <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+                <span class="k">for</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">c1h</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+                        <span class="n">conf</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c1h</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Tb</span><span class="p">[:,</span> <span class="n">c1</span><span class="p">]</span> <span class="o">*</span> <span class="n">Yb</span><span class="p">[:,</span> <span class="n">c1h</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># No confusion matrix</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">conf</span>
+
+    <span class="c">##################</span>
+    <span class="c"># helper methods #</span>
+</div>
+    <span class="k">def</span> <span class="nf">_prune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Leave only neurons with the given indexes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="n">neurons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">nold</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">nold</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># number of neurons</span>
+            <span class="n">ix1</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">]</span>  <span class="c"># index for current neuron type</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">k</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">nold</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ix1</span><span class="p">)</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">nold</span><span class="p">[</span><span class="mi">2</span><span class="p">][:,</span> <span class="n">ix1</span><span class="p">]</span>
+            <span class="n">bias</span> <span class="o">=</span> <span class="n">nold</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="n">ix1</span><span class="p">]</span>
+            <span class="n">neurons</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">func</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">bias</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span> <span class="o">=</span> <span class="n">neurons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">set_neurons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">)</span>  <span class="c"># send new neurons to solver</span>
+
+    <span class="k">def</span> <span class="nf">_ranking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nn</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a random ranking of hidden neurons.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rank</span><span class="p">,</span> <span class="n">nn</span>
+
+    <span class="k">def</span> <span class="nf">_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns regression/classification/multiclass error, also for PRESS.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;SLFN does not know the use case to compute an error&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;SLFN with </span><span class="si">%d</span><span class="s"> inputs and </span><span class="si">%d</span><span class="s"> outputs</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;Hidden layer neurons: &quot;</span>
+        <span class="k">for</span> <span class="n">func</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s"> </span><span class="si">%s</span><span class="s">, &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">_affinityfix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Numpy processor affinity fix</span>
+        <span class="k">if</span> <span class="s">&quot;Linux&quot;</span> <span class="ow">in</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">():</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&quot;taskset -p 0xffffffff </span><span class="si">%d</span><span class="s"> &gt;/dev/null&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SLFN.save"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">),</span> <span class="s">&quot;Model file name must be a string&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;inputs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+             <span class="s">&quot;outputs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span>
+             <span class="s">&quot;neurons&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">,</span>
+             <span class="s">&quot;norm&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span>
+             <span class="s">&quot;Beta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">get_B</span><span class="p">(),</span>
+             <span class="s">&quot;Classification&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span><span class="p">,</span>
+             <span class="s">&quot;Weights_WC&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cPickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&quot;wb&quot;</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot create a model file at: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SLFN.load"><a class="viewcode-back" href="../../hpelm.html#hpelm.slfn.SLFN.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">),</span> <span class="s">&quot;Model file name must be a string&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Model file not found: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;inputs&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;outputs&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;neurons&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">set_neurons</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s">&quot;neurons&quot;</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;norm&quot;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;Beta&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;Classification&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s">&quot;Weights_WC&quot;</span><span class="p">]</span>
+</pre></div></div></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

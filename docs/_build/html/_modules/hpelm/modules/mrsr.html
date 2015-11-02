@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.modules.mrsr &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../../index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="simple">
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>hpelm.modules.mrsr</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for hpelm.modules.mrsr</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Multiresponse Sparse Regression algorithm in Python</span>
+
+<span class="sd">Uses np library from Python</span>
+
+<span class="sd">| Input:</span>
+<span class="sd">| **T**    is an (n x p) matrix of targets. The columns of T should</span>
+<span class="sd">      have zero mean and same scale (e.g. equal variance).</span>
+<span class="sd">| **X**    is an (n x m) matrix of regressors. The columns of X should</span>
+<span class="sd">      have zero mean and same scale (e.g. equal variance).</span>
+<span class="sd">| **kmax** is an integer fixing the number of steps to be run, which</span>
+<span class="sd">      equals to the maximum number of regressors in the model.</span>
+<span class="sd">  </span>
+<span class="sd">| Output:</span>
+<span class="sd">| **W**    is an (m x p*kmax) sparse matrix of regression</span>
+<span class="sd">      coefficients. It can be converted to full matrix by command   </span>
+<span class="sd">      full(W). Regression coefficients of the k:th step are given</span>
+<span class="sd">      by W(:,(k-1)*p+1:k*p).</span>
+<span class="sd">| **i1**   is a (1 x kmax) vector of indices revealing the order in</span>
+<span class="sd">      which the regressors enter model. </span>
+<span class="sd"> </span>
+<span class="sd">The estimates for T may be obtained by Y = X*W, where the k:th</span>
+<span class="sd">estimate Y(:,(k-1)*p+1:k*p) uses k regressors.</span>
+<span class="sd">  </span>
+<span class="sd">| Reference: </span>
+<span class="sd">| Timo Simila, Jarkko Tikka. Multiresponse sparse regression with</span>
+<span class="sd"> application to multidimensional scaling. International Conference</span>
+<span class="sd"> on Artificial Neural Networks (ICANN). Warsaw, Poland. September</span>
+<span class="sd"> 11-15, 2005. LNCS 3697, pp. 97-102.</span>
+
+<span class="sd">Copyright (C) 2005 by Timo Simila and Jarkko Tikka.</span>
+
+<span class="sd">This function is free software; you can redistribute it and/or</span>
+<span class="sd">modify it under the terms of the GNU General Public License as</span>
+<span class="sd">published by the Free Software Foundation; either version 2 of</span>
+<span class="sd">the License, or any later version.   </span>
+
+<span class="sd">The function is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU</span>
+<span class="sd">General Public License  &lt;http://www.gnu.org/copyleft/gpl.html&gt;`_  </span>
+<span class="sd">for more details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="mrsr"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.mrsr.mrsr">[docs]</a><span class="k">def</span> <span class="nf">mrsr</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">kmax</span><span class="p">):</span>
+
+    <span class="n">n</span><span class="p">,</span><span class="n">m</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">kmax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">kmax</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">15</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Too many targets (</span><span class="si">%d</span><span class="s">) - MRSR has O(2^targets) complexity&quot;</span>
+    <span class="sd">&quot;&quot;&quot;    print &quot;Reducing to 15 randomly selected targets (6x slowdown)&quot;</span>
+<span class="sd">        print &quot;Using max 10 targets (1.08x slowdown) recommended&quot;</span>
+<span class="sd">        ti = np.arange(p)</span>
+<span class="sd">        np.random.shuffle(ti)</span>
+<span class="sd">        ti = ti[:15]</span>
+<span class="sd">        T = T[:,ti]</span>
+<span class="sd">        p = 15</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">XT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">XX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">])</span>
+	
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">2</span><span class="o">**</span><span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="p">])</span>
+    <span class="n">S</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="n">S</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">S</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="n">p</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="n">p</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+	
+	
+	
+    <span class="c"># Make the first step</span>
+	
+    <span class="n">A</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">XT</span><span class="p">)</span>
+    <span class="n">cmax</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">cind</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">A</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">cind</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ind</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i2</span><span class="p">[</span><span class="n">cind</span><span class="p">])</span>
+    <span class="n">i2</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">cind</span><span class="p">)</span>
+    <span class="n">i1</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">ind</span><span class="p">)</span>
+    <span class="c"># here Xi1 and Xi2 are just faster alternatives to X[:,i1] and X[:,i2]</span>
+    <span class="n">Xi2</span>   <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span>  <span class="c"># column-contiguous copy of X</span>
+    <span class="n">Xi2</span><span class="p">[:,</span> <span class="n">cind</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Xi2</span><span class="p">[:,</span> <span class="n">cind</span><span class="o">+</span><span class="mi">1</span><span class="p">:];</span>  <span class="n">Xi2</span>   <span class="o">=</span> <span class="n">Xi2</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># delete &lt;cind&gt; col</span>
+    <span class="n">Xi1</span>   <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>  <span class="c"># add 1 column at a time</span>
+
+    <span class="n">XX</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">([</span><span class="n">ind</span><span class="p">],</span> <span class="p">[</span><span class="n">ind</span><span class="p">])]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">ind</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span><span class="n">ind</span><span class="p">])</span>
+    
+    <span class="n">invXX</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">XX</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="p">:][</span><span class="n">ind</span><span class="p">]</span>
+    <span class="n">Wols</span>  <span class="o">=</span> <span class="n">invXX</span> <span class="o">*</span> <span class="n">XT</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">Yols</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Xi1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Wols</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="n">B</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Yols</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Xi2</span><span class="p">)</span>
+    <span class="n">G</span>     <span class="o">=</span> <span class="p">(</span><span class="n">cmax</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">S</span><span class="p">,</span><span class="n">A</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">cmax</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">S</span><span class="p">,</span><span class="n">B</span><span class="p">))</span>
+    <span class="n">g</span>     <span class="o">=</span> <span class="n">G</span><span class="p">[</span><span class="n">G</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">g</span><span class="o">*</span><span class="n">Yols</span>
+	
+    <span class="c"># Rest of the steps</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">kmax</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c">#print &quot;calculating rank %d/%d&quot; % (k-1, kmax)		</span>
+        <span class="c">#print &quot;mrsr %d/%d&quot; % (k+1, kmax)</span>
+  
+        <span class="n">A</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">T</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Xi2</span><span class="p">)</span>  <span class="c"># true slow</span>
+        <span class="n">cmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">cind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">A</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">cind</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ind</span>  <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i2</span><span class="p">[</span><span class="n">cind</span><span class="p">])</span>
+        <span class="n">i2</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">cind</span><span class="p">)</span>
+        <span class="n">i1</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">ind</span><span class="p">)</span>
+        <span class="c">#Xi1  = np.hstack((Xi1, X[:,ind].reshape((n,1), order=&#39;C&#39;)))  # slow for large k</span>
+        <span class="n">Xi1</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">Xi1</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))))</span>  <span class="c"># slow for large k</span>
+        <span class="n">xX</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Xi1</span><span class="p">)</span>
+		
+        <span class="n">XX</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">([</span><span class="n">ind</span><span class="p">],</span> <span class="n">i1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">xX</span>
+        <span class="n">XX</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="p">[</span><span class="n">ind</span><span class="p">])]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">xX</span><span class="p">,</span> <span class="p">(</span><span class="n">i1</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+	
+        <span class="n">v3</span> <span class="o">=</span> <span class="n">XX</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># XX[i1, :][:, i1]</span>
+        <span class="c">#v3 = XX[i1, :][:, i1]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">invXX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">v3</span><span class="p">)</span>	   
+        <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;got singular matrix, using pinv()&#39;</span><span class="p">,</span> <span class="n">i1</span>
+            <span class="n">invXX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">v3</span><span class="p">)</span>
+    
+        <span class="n">Wols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">invXX</span><span class="p">,</span> <span class="n">XT</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">Yols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Xi1</span><span class="p">,</span> <span class="n">Wols</span><span class="p">)</span>  <span class="c"># true slow</span>
+        <span class="c"># deletes [cind] row, slow for large k</span>
+        <span class="n">Xi2</span><span class="p">[:,</span> <span class="n">cind</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Xi2</span><span class="p">[:,</span> <span class="n">cind</span><span class="o">+</span><span class="mi">1</span><span class="p">:];</span>  <span class="n">Xi2</span> <span class="o">=</span> <span class="n">Xi2</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">B</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">Yols</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Xi2</span><span class="p">)</span>  <span class="c"># true slow</span>
+        
+        <span class="n">G</span>    <span class="o">=</span> <span class="p">(</span><span class="n">cmax</span> <span class="o">+</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">cmax</span> <span class="o">+</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">))</span>  <span class="c"># true slow for many outputs</span>
+        <span class="c"># now we remove that line using a condition:</span>
+        <span class="c"># G = numpy.concatenate(([2*(k==m)-1], G.flatten()), 1)</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">kmax</span><span class="p">:</span>  <span class="c"># G[G&gt;=0] is empty if k==kmax; empty.min() will give error</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">Yols</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">G</span><span class="p">[</span><span class="n">G</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">g</span><span class="p">)</span><span class="o">*</span><span class="n">Y</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="n">Yols</span>
+		
+    <span class="k">return</span> <span class="n">i1</span>
+	</div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
