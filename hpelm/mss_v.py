@@ -14,7 +14,7 @@ def train_v(self, X, T, Xv, Tv):
     Hv = self.solver.project(Xv)
     nn = Hv.shape[1]
     e = np.ones((nn+1,)) * -1  # errors for all numbers of neurons
-    rank, nn = self._ranking(nn, Xv, Tv)  # create ranking of neurons
+    rank, nn = self._ranking(nn, Hv, Tv)  # create ranking of neurons
 
     Yv = np.dot(Hv, Beta)
     err = self._error(Yv, Tv)

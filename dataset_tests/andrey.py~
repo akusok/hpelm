@@ -1,0 +1,60 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr 14 20:15:12 2015
+
+@author: akusok
+"""
+
+import numpy as np
+import os
+import hpelm
+import cPickle
+import sys
+from time import time
+
+
+def elm(folder, i, nn):
+    # get file names
+    Xtr = np.load(os.path.join(folder, "xtrain_%d.npy" % (i + 1)))
+    Xts = np.load(os.path.join(folder, "xtest_%d.npy" % (i + 1)))
+    Ttr = np.load(os.path.join(folder, "ytrain_%d.npy" % (i + 1)))
+    Tts = np.load(os.path.join(folder, "ytest_%d.npy" % (i + 1)))
+    print Xtr.shape
+
+    # build ELM
+    elm = hpelm.ELM(Xtr.shape[1], Ttr.shape[1])
+    elm.add_neurons(1, "sigm")
+    errs = []
+    for _ in xrange(nn-1):
+        elm.add_neurons(1, "sigm")
+        elm.train(Xtr, Ttr, "c", "loo")
+
+        H = elm.solver.project(Xtr)
+        HH, HT = elm.solver.get_batch(Xtr, Ttr)
+        N = Xtr.shape[0]
+
+        P = np.linalg.inv(HH)
+        Bt = np.dot(P, HT)
+        R = np.ones((N,)) - np.einsum('ij,ji->i', np.dot(H, P), H.T)
+        Y = np.dot(H, Bt)
+        errs.append(elm._error(Y, Ttr, R))
+
+    return errs
+
+
+def trainer():
+    f1 = "/home/akusok/Dropbox/Documents/X-ELM/hpelm/dataset_tests/Classification-Iris"
+    nn = 20
+    from matplotlib import pyplot
+    for j in range(10):
+        errs = np.array(elm(f1, j, nn))
+        pyplot.plot(range(len(errs)), errs)
+
+    pyplot.show()
+
+
+if __name__ == "__main__":
+    trainer()
+
+
+

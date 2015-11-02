@@ -11,17 +11,20 @@ from scipy.linalg import lapack
 
 from pycuda import gpuarray, cumath
 from pycuda.compiler import SourceModule
-from skcuda import linalg, misc, cublas, cusolver, cula
+from skcuda import linalg, misc, cublas
 
 
 class SolverSkcuda(Solver):
 
     def __init__(self, neurons, c, norm=None, precision=np.float64, nDevice=0):
+        raise NotImplementedError("Need to update like in solver_python")
+
+
         """Initialize matrices, functions and GPU stuff.
         """
         assert precision in (np.float32, np.float64), \
             "Only single or double precision (numpy.float32, numpy.float64) are supported"
-        super(SolverSkcuda, self).__init__(neurons, c, norm, precision)
+        super(SolverSkcuda, self).__init__(c, norm, precision)
 
         # startup GPU
         self.ctx = misc.init_context(misc.init_device(nDevice))

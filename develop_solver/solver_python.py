@@ -14,10 +14,10 @@ import numexpr as ne
 
 class SolverPython(Solver):
 
-    def __init__(self, neurons, c, norm=None, precision=np.float64):
+    def __init__(self, c, norm=None, precision=np.float64):
         """Do all differences in initialization.
         """
-        super(SolverPython, self).__init__(neurons, c, norm, precision)
+        super(SolverPython, self).__init__(c, norm, precision)
 
         # get correct BLAS/LAPACK functions for precision
         if precision is np.float32:
@@ -30,12 +30,12 @@ class SolverPython(Solver):
             raise NotImplementedError("Only single and double precision supported")
 
         # transformation functions in HPELM, accessible by name
-        self.func['sigm'] = lambda a: ne.evaluate("1/(1+exp(-a))").astype(precision)
+#        self.func['sigm'] = lambda a: ne.evaluate("1/(1+exp(-a))").astype(precision)
 
         # persisitent storage, triangular symmetric matrix
-        self.HH = np.zeros((self.L, self.L), dtype=precision, order='F')
-        self.HT = np.zeros((self.L, self.c), dtype=precision, order='F')
-        np.fill_diagonal(self.HH, self.norm)
+#        self.HH = np.zeros((self.L, self.L), dtype=precision, order='F')
+#        self.HT = np.zeros((self.L, self.c), dtype=precision, order='F')
+#        np.fill_diagonal(self.HH, self.norm)
 
     def add_batch(self, X, T):
         """Add a batch of data to iterative solution
@@ -59,34 +59,37 @@ class SolverPython(Solver):
 
 
 if __name__ == "__main__":
-    N = 99
-    d = 3
+    N = 3000
+    d = 30
     k = 1
-    L = 99
-    c = 2
+    L = 10
+    c = 5
 
-    neurons = [('tanh', L, np.random.randn(d, L)/10, np.random.rand(L))]#,
-               #('lin', L, np.random.randn(d, L), np.random.rand(L)),
-               #('lin', L, np.random.randn(d, L), np.random.rand(L))]
+    neurons = [('lin', L, np.random.randn(d, L)/10, np.random.rand(L)),
+               ('tanh', L, np.random.randn(d, L), np.random.rand(L)),
+               ('sigm', L, np.random.randn(d, L), np.random.rand(L))]
 
-    sl = SolverPython(neurons, c, precision=np.float64)
+    sl = SolverPython(c, precision=np.float64)
+    sl.set_neurons(neurons)
     for _ in xrange(k):
-        X = np.hstack((np.random.rand(N, d-1), np.ones((N,1))))
+        X = np.random.rand(N, d)
         T = np.random.rand(N, c)
         sl.add_batch(X, T)
 
-    B = sl.solve()         
-    Y = sl.predict(X)
-    print (T - Y).shape
-    print np.mean((T - Y)**2)
+    B = sl.solve()
+    for b1 in B:
+        sl.B = b1
+        print b1.shape
+        Y = sl.predict(X)
+        print np.mean((T - Y)**2)
     
-    print "########################"
-    H = sl._project(X)
-    HH = H.T.dot(H)
-    HT = H.T.dot(T)
-    A = np.linalg.solve(HH, HT)
-    Y = H.dot(A)
-    print np.mean((T - Y)**2)
+#    print "########################"
+#    H = sl._project(X)
+#    HH = H.T.dot(H)
+#    HT = H.T.dot(T)
+#    A = np.linalg.solve(HH, HT)
+#    Y = H.dot(A)
+#    print np.mean((T - Y)**2)
     
     
 #    print T-Y2

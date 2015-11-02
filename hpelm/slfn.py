@@ -273,7 +273,7 @@ class SLFN(object):
              "outputs": self.targets,
              "neurons": self.neurons,
              "norm": self.solver.norm,
-             "Beta": self.solver.getBeta,
+             "Beta": self.solver.get_B(),
              "Classification": self.classification,
              "Weights_WC": self.weights_wc}
         try:
@@ -290,11 +290,12 @@ class SLFN(object):
         self.inputs = m["inputs"]
         self.targets = m["outputs"]
         self.neurons = m["neurons"]
+        self.solver.set_neurons(m["neurons"])
         try:
             self.solver.norm = m["norm"]
         except:
             pass
-        self.solver.Beta = m["Beta"]
+        self.solver.B = m["Beta"]
         self.classification = m["Classification"]
         self.weights_wc = m["Weights_WC"]
 
