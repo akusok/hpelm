@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.tests.test_correctness &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../../index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../hpelm.html">hpelm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.elm">hpelm.elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_v">hpelm.mss_v module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.slfn">hpelm.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>hpelm.tests.test_correctness</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for hpelm.tests.test_correctness</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Oct 27 14:12:41 2014</span>
+
+<span class="sd">@author: akusok</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">TestCase</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">hpelm</span> <span class="kn">import</span> <span class="n">ELM</span>
+
+
+<div class="viewcode-block" id="TestCorrectness"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness">[docs]</a><span class="k">class</span> <span class="nc">TestCorrectness</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestCorrectness.test_1_NonNumpyInputs_RaiseError"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_1_NonNumpyInputs_RaiseError">[docs]</a>    <span class="k">def</span> <span class="nf">test_1_NonNumpyInputs_RaiseError</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="s">&#39;2&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;3&#39;</span><span class="p">,</span> <span class="s">&#39;4&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;5&#39;</span><span class="p">,</span> <span class="s">&#39;6&#39;</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_2_NonNumpyTargets_RaiseError"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_2_NonNumpyTargets_RaiseError">[docs]</a>    <span class="k">def</span> <span class="nf">test_2_NonNumpyTargets_RaiseError</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="s">&#39;a&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;c&#39;</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_3_OneDimensionInputs_RunsCorrectly"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_3_OneDimensionInputs_RunsCorrectly">[docs]</a>    <span class="k">def</span> <span class="nf">test_3_OneDimensionInputs_RunsCorrectly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_4_OneDimensionTargets_RunsCorrectly"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_4_OneDimensionTargets_RunsCorrectly">[docs]</a>    <span class="k">def</span> <span class="nf">test_4_OneDimensionTargets_RunsCorrectly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_5_WrongDimensionalityInputs_RaiseError"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_5_WrongDimensionalityInputs_RaiseError">[docs]</a>    <span class="k">def</span> <span class="nf">test_5_WrongDimensionalityInputs_RaiseError</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_6_WrongDimensionalityTargets_RaiseError"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_6_WrongDimensionalityTargets_RaiseError">[docs]</a>    <span class="k">def</span> <span class="nf">test_6_WrongDimensionalityTargets_RaiseError</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_7_ZeroInputs_RunsCorrectly"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_7_ZeroInputs_RunsCorrectly">[docs]</a>    <span class="k">def</span> <span class="nf">test_7_ZeroInputs_RunsCorrectly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_8_OneDimensionTargets_RunsCorrectly"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_8_OneDimensionTargets_RunsCorrectly">[docs]</a>    <span class="k">def</span> <span class="nf">test_8_OneDimensionTargets_RunsCorrectly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_9_TrainWithoutNeurons_RaiseError"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_9_TrainWithoutNeurons_RaiseError">[docs]</a>    <span class="k">def</span> <span class="nf">test_9_TrainWithoutNeurons_RaiseError</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_10_DifferentNumberOfSamples_RaiseError"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_10_DifferentNumberOfSamples_RaiseError">[docs]</a>    <span class="k">def</span> <span class="nf">test_10_DifferentNumberOfSamples_RaiseError</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_11_LinearNeurons_MoreThanInputs_Truncated"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_11_LinearNeurons_MoreThanInputs_Truncated">[docs]</a>    <span class="k">def</span> <span class="nf">test_11_LinearNeurons_MoreThanInputs_Truncated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_12_LinearNeurons_DefaultMatrix_Identity"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_12_LinearNeurons_DefaultMatrix_Identity">[docs]</a>    <span class="k">def</span> <span class="nf">test_12_LinearNeurons_DefaultMatrix_Identity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_13_SLFN_AddLinearNeurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_13_SLFN_AddLinearNeurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_13_SLFN_AddLinearNeurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="s">&quot;lin&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_14_SLFN_AddSigmoidalNeurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_14_SLFN_AddSigmoidalNeurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_14_SLFN_AddSigmoidalNeurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_15_SLFN_AddTanhNeurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_15_SLFN_AddTanhNeurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_15_SLFN_AddTanhNeurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;tanh&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="s">&quot;tanh&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_16_SLFN_AddRbfL1Neurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_16_SLFN_AddRbfL1Neurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_16_SLFN_AddRbfL1Neurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;rbf_l1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_17_SLFN_AddRbfL2Neurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_17_SLFN_AddRbfL2Neurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_17_SLFN_AddRbfL2Neurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;rbf_l2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_18_SLFN_AddRbfLinfNeurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_18_SLFN_AddRbfLinfNeurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_18_SLFN_AddRbfLinfNeurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="s">&quot;rbf_linf&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_19_SLFN_AddUfuncNeurons_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_19_SLFN_AddUfuncNeurons_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_19_SLFN_AddUfuncNeurons_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIs</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_20_SLFN_AddTwoNeuronTypes_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_20_SLFN_AddTwoNeuronTypes_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_20_SLFN_AddTwoNeuronTypes_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">))</span>
+        <span class="n">ntypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">nr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">nr</span> <span class="ow">in</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s">&quot;lin&quot;</span><span class="p">,</span> <span class="n">ntypes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="n">ntypes</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_21_SLFN_AddNeuronsTwice_GotThem"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_21_SLFN_AddNeuronsTwice_GotThem">[docs]</a>    <span class="k">def</span> <span class="nf">test_21_SLFN_AddNeuronsTwice_GotThem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;lin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_22_AddNeurons_InitBias_BiasInModel"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_22_AddNeurons_InitBias_BiasInModel">[docs]</a>    <span class="k">def</span> <span class="nf">test_22_AddNeurons_InitBias_BiasInModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_23_AddNeurons_InitW_WInModel"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_23_AddNeurons_InitW_WInModel">[docs]</a>    <span class="k">def</span> <span class="nf">test_23_AddNeurons_InitW_WInModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_24_AddNeurons_InitDefault_BiasWNotZero"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_24_AddNeurons_InitDefault_BiasWNotZero">[docs]</a>    <span class="k">def</span> <span class="nf">test_24_AddNeurons_InitDefault_BiasWNotZero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">W</span><span class="p">)),</span> <span class="mf">0.001</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">bias</span><span class="p">)),</span> <span class="mf">0.001</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCorrectness.test_25_AddNeurons_InitTwiceBiasW_CorrectlyMerged"><a class="viewcode-back" href="../../../hpelm.tests.html#hpelm.tests.test_correctness.TestCorrectness.test_25_AddNeurons_InitTwiceBiasW_CorrectlyMerged">[docs]</a>    <span class="k">def</span> <span class="nf">test_25_AddNeurons_InitTwiceBiasW_CorrectlyMerged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">elm</span> <span class="o">=</span> <span class="n">ELM</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">W1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">W2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">bias1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+        <span class="n">bias2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="n">W1</span><span class="p">,</span> <span class="n">bias1</span><span class="p">)</span>
+        <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="n">W2</span><span class="p">,</span> <span class="n">bias2</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">W1</span><span class="p">,</span> <span class="n">W2</span><span class="p">)),</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">bias1</span><span class="p">,</span> <span class="n">bias2</span><span class="p">)),</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+</pre></div></div></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

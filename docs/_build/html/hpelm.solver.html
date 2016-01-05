@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.solver package &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="index.html"/>
+        <link rel="up" title="hpelm package" href="hpelm.html"/>
+        <link rel="next" title="hpelm.tests package" href="hpelm.tests.html"/>
+        <link rel="prev" title="hpelm.modules package" href="hpelm.modules.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="hpelm.html">hpelm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="hpelm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.elm">hpelm.elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_v">hpelm.mss_v module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.slfn">hpelm.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="hpelm.html">hpelm package</a> &raquo;</li>
+      
+    <li>hpelm.solver package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/hpelm.solver.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="hpelm-solver-package">
+<h1>hpelm.solver package<a class="headerlink" href="#hpelm-solver-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-hpelm.solver.solver">
+<span id="hpelm-solver-solver-module"></span><h2>hpelm.solver.solver module<a class="headerlink" href="#module-hpelm.solver.solver" title="Permalink to this headline">¶</a></h2>
+<p>HP-ELM iterative solver, just interface.</p>
+<p>Created on Sun Sep  6 11:18:55 2015
+&#64;author: akusok</p>
+<dl class="class">
+<dt id="hpelm.solver.solver.Solver">
+<em class="property">class </em><code class="descclassname">hpelm.solver.solver.</code><code class="descname">Solver</code><span class="sig-paren">(</span><em>c</em>, <em>norm=None</em>, <em>precision=&lt;type 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.add_batch">
+<code class="descname">add_batch</code><span class="sig-paren">(</span><em>X</em>, <em>T</em>, <em>w=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.add_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.add_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a weighted batch of data to an iterative solution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>w</strong> &#8211; can be one number or a vector of weights.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.get_B">
+<code class="descname">get_B</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.get_B"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.get_B" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return B as a numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.get_batch">
+<code class="descname">get_batch</code><span class="sig-paren">(</span><em>X</em>, <em>T</em>, <em>w=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.get_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and return a weighted batch of data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>w</strong> &#8211; can be one number or a vector of weights.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.get_corr">
+<code class="descname">get_corr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.get_corr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.get_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return current correlation matrices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict a batch of data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.project">
+<code class="descname">project</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Projects X to H and returns a Numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset current HH, HT and Beta but keep neurons.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.set_corr">
+<code class="descname">set_corr</code><span class="sig-paren">(</span><em>HH</em>, <em>HT</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.set_corr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.set_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set pre-computed correlation matrices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.set_neurons">
+<code class="descname">set_neurons</code><span class="sig-paren">(</span><em>neurons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.set_neurons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.set_neurons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new neurons in solver.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute output weights B, with fix for unstable solution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.solver.solver.Solver.solve_corr">
+<code class="descname">solve_corr</code><span class="sig-paren">(</span><em>HH</em>, <em>HT</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/solver/solver.html#Solver.solve_corr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.solver.solver.Solver.solve_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute output weights B for given HH and HT.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-hpelm.solver">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-hpelm.solver" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Sep 23 18:49:20 2015</p>
+<p>&#64;author: akusok</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="hpelm.tests.html" class="btn btn-neutral float-right" title="hpelm.tests package">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="hpelm.modules.html" class="btn btn-neutral" title="hpelm.modules package"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

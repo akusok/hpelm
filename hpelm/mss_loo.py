@@ -10,8 +10,8 @@ from numpy.linalg import inv
 
 
 def train_loo(self, X, T):
-    H = self.project(X)
-    HH, HT = self._project(X, T)
+    H = self.solver.project(X)
+    HH, HT = self.solver.get_batch(X, T)
 
     N, nn = H.shape
     e = np.ones((nn+1,)) * -1  # errors for all numbers of neurons
@@ -77,7 +77,8 @@ def train_loo(self, X, T):
     best_nn = rank[:k_opt]
 
     self._prune(best_nn)
-    self.Beta = self._project(X, T, solve=True)[2]
+    self.solver.add_batch(X, T)
+    self.solver.solve()
 #    print "%d of %d neurons selected with a LOO validation" % (len(best_nn), nn)
 #    if len(best_nn) > nn*0.9:
 #        print "Hint: try re-training with more hidden neurons"

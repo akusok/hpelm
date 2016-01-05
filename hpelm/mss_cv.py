@@ -27,9 +27,9 @@ def train_cv(self, X, T, k):
         Tvl = T[idx_vl]
         Xts = X[idx_ts]
         Tts = T[idx_ts]
-        HH, HT = self._project(Xtr, Ttr)
-        Hvl = self.project(Xvl)
-        Hts = self.project(Xts)
+        HH, HT = self.solver.get_batch(Xtr, Ttr)
+        Hvl = self.solver.project(Xvl)
+        Hts = self.solver.project(Xts)
         rank, nn = self._ranking(Hvl.shape[1], Hvl, Tvl)
         datak.append((HH, HT, Hvl, Tvl, Hts, Tts, rank))
 
@@ -37,8 +37,8 @@ def train_cv(self, X, T, k):
 
     err = 0
     for HH, HT, Hvl, Tvl, _, _, _ in datak:
-        Beta = self._solve_corr(HH, HT)
-        Yvl = np.dot(Hvl, Beta)
+        B = self.solver.solve_corr(HH, HT)
+        Yvl = np.dot(Hvl, B)
         err += self._error(Yvl, Tvl) / k
     penalty = err * 0.01 / nn  # penalty is 1% of error at max(nn)
     e[nn] = err + nn * penalty
@@ -65,7 +65,7 @@ def train_cv(self, X, T, k):
                     rank1 = rank[:idx]
                     HH1 = HH[rank1, :][:, rank1]
                     HT1 = HT[rank1, :]
-                    Beta = self._solve_corr(HH1, HT1)
+                    Beta = self.solver.solve_corr(HH1, HT1)
                     Yvl = np.dot(Hvl[:, rank1], Beta)
                     err += self._error(Yvl, Tvl) / k
                 e[idx] = err + idx * penalty
@@ -92,12 +92,13 @@ def train_cv(self, X, T, k):
     # get test error
     err_ts = 0
     for HH, HT, _, _, Hts, Tts, _ in datak:
-        Beta = self._solve_corr(HH, HT)
+        Beta = self.solver.solve_corr(HH, HT)
         Yts = np.dot(Hts, Beta)
         err_ts += self._error(Yts, Tts) / k
 
     self._prune(best_nn)
-    self.Beta = self._project(X, T, solve=True)[2]
+    self.solver.add_batch(X, T)
+    self.solver.solve()
 #    print "%d of %d neurons selected with a Cross-Validation" % (len(best_nn), nn)
 #    print "the Cross-Validation test error is %f" % err_ts
 #    if len(best_nn) > nn*0.9:

@@ -1,0 +1,675 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hpelm.hp_elm &mdash; hpelm 0.6.22 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="hpelm 0.6.22 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../index.html" class="fa fa-home"> hpelm</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../hpelm.html">hpelm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.elm">hpelm.elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.mss_v">hpelm.mss_v module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm.slfn">hpelm.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../hpelm.html#module-hpelm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">hpelm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>hpelm.hp_elm</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for hpelm.hp_elm</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Oct 27 17:48:33 2014</span>
+
+<span class="sd">@author: akusok</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="c">#import Queue</span>
+<span class="c">#import threading</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">hpelm.modules</span> <span class="kn">import</span> <span class="n">make_hdf5</span><span class="p">,</span> <span class="n">ireader</span><span class="p">,</span> <span class="n">iwriter</span>
+<span class="kn">from</span> <span class="nn">tables</span> <span class="kn">import</span> <span class="n">open_file</span>
+<span class="kn">from</span> <span class="nn">slfn</span> <span class="kn">import</span> <span class="n">SLFN</span>
+
+
+<div class="viewcode-block" id="HPELM"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM">[docs]</a><span class="k">class</span> <span class="nc">HPELM</span><span class="p">(</span><span class="n">SLFN</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interface for training Extreme Learning Machines.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse arguments of training, and prepare class variables.</span>
+
+<span class="sd">        Model structure selection (exclusive, choose one)</span>
+<span class="sd">        :param &quot;V&quot;: use validation set</span>
+<span class="sd">        :param &quot;CV&quot;: use cross-validation</span>
+
+<span class="sd">        Additional parameters for model structure selecation</span>
+<span class="sd">        :param Xv: validation data X (&quot;V&quot;)</span>
+<span class="sd">        :param Tv: validation targets T (&quot;V&quot;)</span>
+<span class="sd">        :param k: number of splits (&quot;CV&quot;)</span>
+
+<span class="sd">        System setup</span>
+<span class="sd">        :param &quot;c&quot;: build ELM for classification</span>
+<span class="sd">        :param &quot;cb&quot;: build ELM with balanced classification</span>
+<span class="sd">        :param &quot;mc&quot;: build ELM for multiclass classification</span>
+<span class="sd">        :param &quot;adaptive&quot;/&quot;ad&quot;: build adaptive ELM for non-stationary model</span>
+<span class="sd">        :param &quot;batch&quot;: batch size for adaptive ELM (sliding window step size)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;Add neurons to ELM before training it&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>  <span class="c"># make all arguments upper case</span>
+
+        <span class="c"># kind of &quot;enumerators&quot;, try to use only inside that script</span>
+        <span class="n">MODELSELECTION</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># V / CV / None</span>
+        <span class="n">ADAPTIVE</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># batch / None</span>
+
+        <span class="c"># reset parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ranking</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kmax_op</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># c / wc / mc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># weigths for weighted classification</span>
+
+        <span class="c"># check exclusive parameters</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="s">&quot;C&quot;</span><span class="p">,</span> <span class="s">&quot;WC&quot;</span><span class="p">,</span> <span class="s">&quot;MC&quot;</span><span class="p">])))</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Use only one of </span><span class="se">\</span>
+<span class="s">            C (classification) / MC (multiclass) / WC (weighted classification)&quot;</span>
+
+        <span class="c"># parse parameters</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;C&quot;</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Classification targets must have 1 output per class&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="s">&quot;c&quot;</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;WC&quot;</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Classification targets must have 1 output per class&quot;</span>
+                <span class="k">assert</span> <span class="s">&quot;w&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide class weights for weighted classification&quot;</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;w&#39;</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">==</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&quot;Number of class weights differs from number of target classes&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span> <span class="o">=</span> <span class="n">w</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="s">&quot;wc&quot;</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;MC&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="s">&quot;mc&quot;</span>
+            <span class="c"># if a in (&quot;A&quot;, &quot;AD&quot;, &quot;ADAPTIVE&quot;):</span>
+            <span class="c">#     assert &quot;batch&quot; in kwargs.keys(), &quot;Provide batch size for adaptive ELM model (batch)&quot;</span>
+            <span class="c">#     batch = kwargs[&#39;batch&#39;]</span>
+            <span class="c">#     ADAPTIVE = True</span>
+
+
+<div class="viewcode-block" id="HPELM.train"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Universal training interface for ELM model with model structure selection.</span>
+
+<span class="sd">        :param fX: input data HDF5 or matrix</span>
+<span class="sd">        :param fT: target data HDF5 or matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+        <span class="c"># traing the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="HPELM.train_async"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.train_async">[docs]</a>    <span class="k">def</span> <span class="nf">train_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Universal training interface for ELM model with model structure selection.</span>
+
+<span class="sd">        :param fX: input data HDF5 or matrix</span>
+<span class="sd">        :param fT: target data HDF5 or matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+        <span class="c"># traing the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_batch_async</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_makeh5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5name</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates HDF5 file opened in append mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">make_hdf5</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">h5name</span><span class="p">)</span>
+        <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+            <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+        <span class="k">return</span> <span class="n">node</span>
+
+
+<div class="viewcode-block" id="HPELM.predict"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fY</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterative predict which saves data to HDF5, sequential version.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">Beta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Train ELM before predicting&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">make_hdf5</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span> <span class="n">fY</span><span class="p">)</span>
+
+        <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fY</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">Y</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+            <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">))</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nb</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+
+            <span class="c"># get data</span>
+            <span class="n">Xb</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="c"># process data</span>
+            <span class="n">Yb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+            <span class="c"># write data</span>
+            <span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="n">Yb</span>
+
+            <span class="c"># report time</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb</span><span class="o">-</span><span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;processing batch </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">, eta </span><span class="si">%d</span><span class="s">:</span><span class="si">%02d</span><span class="s">:</span><span class="si">%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">eta</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="p">(</span><span class="n">eta</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span> <span class="n">eta</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="HPELM.predict_async"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.predict_async">[docs]</a>    <span class="k">def</span> <span class="nf">predict_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fY</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterative predict which saves data to HDF5, with asynchronous I/O by separate processes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">Beta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Train ELM before predicting&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">make_hdf5</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span> <span class="n">fY</span><span class="p">)</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">))</span>
+
+        <span class="c"># start async reader and writer for HDF5 files</span>
+        <span class="n">qr_in</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">qr_out</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">ireader</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">qr_in</span><span class="p">,</span> <span class="n">qr_out</span><span class="p">))</span>
+        <span class="n">reader</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">reader</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">qw_in</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">iwriter</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fY</span><span class="p">,</span> <span class="n">qw_in</span><span class="p">))</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nb</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">start_next</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+            <span class="n">stop_next</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="c"># prefetch data</span>
+            <span class="n">qr_in</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">start_next</span><span class="p">,</span> <span class="n">stop_next</span><span class="p">))</span>  <span class="c"># asyncronous reading of next data batch</span>
+
+            <span class="k">if</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># first iteration only prefetches data</span>
+                <span class="c"># get data</span>
+                <span class="n">Xb</span> <span class="o">=</span> <span class="n">qr_out</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">Xb</span> <span class="o">=</span> <span class="n">Xb</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="c"># process data</span>
+                <span class="n">Yb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+                <span class="c"># save data</span>
+                <span class="n">qw_in</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">Yb</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+
+            <span class="n">start</span> <span class="o">=</span> <span class="n">start_next</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">stop_next</span>
+            <span class="c"># report time</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb</span><span class="o">-</span><span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;processing batch </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">, eta </span><span class="si">%d</span><span class="s">:</span><span class="si">%02d</span><span class="s">:</span><span class="si">%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">eta</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="p">(</span><span class="n">eta</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span> <span class="n">eta</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="n">qw_in</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+        <span class="n">reader</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="HPELM.add_batch"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.add_batch">[docs]</a>    <span class="k">def</span> <span class="nf">add_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create HH, HT matrices.</span>
+
+<span class="sd">        HPELM-specific parallel projection.</span>
+<span class="sd">        Returns solution Beta if solve=True.</span>
+<span class="sd">        Runs on GPU if self.accelerator=&quot;GPU&quot;.</span>
+<span class="sd">        Performs balanced classification if self.classification=&quot;cb&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># initialize</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>  <span class="c"># weighted classification initialization</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,))</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>  <span class="c"># batch sum is much faster</span>
+                <span class="n">ns</span> <span class="o">+=</span> <span class="n">T</span><span class="p">[</span><span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">:</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">wc</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">ns</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span>  <span class="c"># class weights normalized to number of samples</span>
+
+        <span class="c"># main loop over all the data</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mf">0.0000001</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb</span><span class="o">-</span><span class="n">b</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;processing batch </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">, eta </span><span class="si">%d</span><span class="s">:</span><span class="si">%02d</span><span class="s">:</span><span class="si">%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">eta</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="p">(</span><span class="n">eta</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span> <span class="n">eta</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="n">Xb</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
+            <span class="n">Tb</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">!=</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">Xb</span><span class="p">,</span> <span class="n">Tb</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># weighted classification, split batch per classes</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">wc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">idxc</span> <span class="o">=</span> <span class="n">Tb</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">idxc</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># if batch contains class i</span>
+                        <span class="n">Xbc</span> <span class="o">=</span> <span class="n">Xb</span><span class="p">[</span><span class="n">idxc</span><span class="p">]</span>
+                        <span class="n">Tbc</span> <span class="o">=</span> <span class="n">Tb</span><span class="p">[</span><span class="n">idxc</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">Xbc</span><span class="p">,</span> <span class="n">Tbc</span><span class="p">,</span> <span class="n">wc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="HPELM.add_batch_async"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.add_batch_async">[docs]</a>    <span class="k">def</span> <span class="nf">add_batch_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create HH, HT matrices with async I/O.</span>
+
+<span class="sd">        HPELM-specific parallel projection.</span>
+<span class="sd">        Returns solution Beta if solve=True.</span>
+<span class="sd">        Runs on GPU if self.accelerator=&quot;GPU&quot;.</span>
+<span class="sd">        Performs balanced classification if self.classification=&quot;cb&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># initialize</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>  <span class="c"># weighted classification initialization</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,))</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>  <span class="c"># batch sum is much faster</span>
+                <span class="n">ns</span> <span class="o">+=</span> <span class="n">T</span><span class="p">[</span><span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">:</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">wc</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">ns</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span>  <span class="c"># class weights normalized to number of samples</span>
+
+        <span class="c"># close X and T files</span>
+        <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c"># start async reader and writer for HDF5 files</span>
+        <span class="n">qX_in</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">qX_out</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">readerX</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">ireader</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">qX_in</span><span class="p">,</span> <span class="n">qX_out</span><span class="p">))</span>
+        <span class="n">readerX</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">readerX</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">qT_in</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">qT_out</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">readerT</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">ireader</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fT</span><span class="p">,</span> <span class="n">qT_in</span><span class="p">,</span> <span class="n">qT_out</span><span class="p">))</span>
+        <span class="n">readerT</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">readerT</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c"># main loop over all the data</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nb</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">start_next</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+            <span class="n">stop_next</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="c"># prefetch data</span>
+            <span class="n">qX_in</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">start_next</span><span class="p">,</span> <span class="n">stop_next</span><span class="p">))</span>  <span class="c"># asyncronous reading of next data batch</span>
+            <span class="n">qT_in</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">start_next</span><span class="p">,</span> <span class="n">stop_next</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># first iteration only prefetches data</span>
+                <span class="n">Xb</span> <span class="o">=</span> <span class="n">qX_out</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">qT_out</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+                <span class="c"># process data</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">!=</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">Xb</span><span class="p">,</span> <span class="n">Tb</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># weighted classification, split batch per classes</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">wc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                        <span class="n">idxc</span> <span class="o">=</span> <span class="n">Tb</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">idxc</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># if batch contains class i</span>
+                            <span class="n">Xbc</span> <span class="o">=</span> <span class="n">Xb</span><span class="p">[</span><span class="n">idxc</span><span class="p">]</span>
+                            <span class="n">Tbc</span> <span class="o">=</span> <span class="n">Tb</span><span class="p">[</span><span class="n">idxc</span><span class="p">]</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">Xbc</span><span class="p">,</span> <span class="n">Tbc</span><span class="p">,</span> <span class="n">wc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="c"># report time</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb</span><span class="o">-</span><span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;processing batch </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">, eta </span><span class="si">%d</span><span class="s">:</span><span class="si">%02d</span><span class="s">:</span><span class="si">%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">eta</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="p">(</span><span class="n">eta</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span> <span class="n">eta</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="n">readerX</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="n">readerT</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y1</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">H1</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">Beta</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Do projection and calculate error in batch mode.</span>
+
+<span class="sd">        HPELM-specific iterative error for all usage cases.</span>
+<span class="sd">        Can be _error(Y, T) or _error(None, T, H, Beta, rank)</span>
+
+<span class="sd">        :param T: - true targets for error calculation</span>
+<span class="sd">        :param H: - projected data for error calculation</span>
+<span class="sd">        :param Beta: - current projection matrix</span>
+<span class="sd">        :param rank: - selected neurons (= columns of H)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">Y1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">H</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">H1</span><span class="p">,</span> <span class="n">T1</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">rank</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">Beta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;Wrong dimension of Beta for the given ranking&quot;</span>
+            <span class="k">assert</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">Beta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&quot;Wrong dimension of Beta for the given targets&quot;</span>
+            <span class="n">nn</span> <span class="o">=</span> <span class="n">rank</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">Y1</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">T1</span><span class="p">)</span>
+            <span class="n">nn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">n1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">n1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neurons</span><span class="p">])</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="n">N</span> <span class="o">/</span> <span class="n">batch</span>  <span class="c"># number of batches</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">batch</span> <span class="o">*</span> <span class="n">nb</span><span class="p">:</span>
+            <span class="n">nb</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;c&quot;</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">Y1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">Hb</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">rank</span><span class="p">]</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Hb</span><span class="p">,</span> <span class="n">Beta</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+                <span class="n">errb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Yb</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">Tb</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">err</span> <span class="o">+=</span> <span class="n">errb</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>  <span class="c"># weighted classification</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">errc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">Y1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">Hb</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">rank</span><span class="p">]</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Hb</span><span class="p">,</span> <span class="n">Beta</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>  <span class="c"># per-class MSE</span>
+                    <span class="n">idxc</span> <span class="o">=</span> <span class="n">Tb</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+                    <span class="n">errb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Yb</span><span class="p">[</span><span class="n">idxc</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">errc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">errb</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;mc&quot;</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">Y1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">Hb</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">rank</span><span class="p">]</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Hb</span><span class="p">,</span> <span class="n">Beta</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+                <span class="n">errb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Yb</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">Tb</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span>
+                <span class="n">err</span> <span class="o">+=</span> <span class="n">errb</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># MSE error</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+                <span class="n">Tb</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">Y1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">Hb</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">rank</span><span class="p">]</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Hb</span><span class="p">,</span> <span class="n">Beta</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Yb</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
+                <span class="n">errb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Tb</span> <span class="o">-</span> <span class="n">Yb</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">err</span> <span class="o">+=</span> <span class="n">errb</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+
+        <span class="k">return</span> <span class="n">err</span>
+
+
+<div class="viewcode-block" id="HPELM.train_hpv"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.train_hpv">[docs]</a>    <span class="k">def</span> <span class="nf">train_hpv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span><span class="p">,</span> <span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="n">HH</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">steps</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nns</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">nns</span><span class="p">)</span>  <span class="c"># numbers of neurons to check</span>
+        <span class="k">print</span> <span class="n">nns</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">nns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">k</span><span class="p">,))</span>  <span class="c"># errors for these numbers of neurons</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">))</span>
+
+        <span class="n">Betas</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># keep all betas in memory</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">nns</span><span class="p">:</span>
+            <span class="n">Betas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve_corr</span><span class="p">(</span><span class="n">HH</span><span class="p">[:</span><span class="n">l</span><span class="p">,</span> <span class="p">:</span><span class="n">l</span><span class="p">],</span> <span class="n">HT</span><span class="p">[:</span><span class="n">l</span><span class="p">,</span> <span class="p">:]))</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mf">0.0000001</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb</span><span class="o">-</span><span class="n">b</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;processing batch </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">, eta </span><span class="si">%d</span><span class="s">:</span><span class="si">%02d</span><span class="s">:</span><span class="si">%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">eta</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="p">(</span><span class="n">eta</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span> <span class="n">eta</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+            <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+            <span class="n">Xb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+            <span class="n">Hb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                <span class="n">hb1</span> <span class="o">=</span> <span class="n">Hb</span><span class="p">[:,</span> <span class="p">:</span><span class="n">nns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hb1</span><span class="p">,</span> <span class="n">Betas</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">Yb</span><span class="p">,</span> <span class="n">Tb</span><span class="p">)</span> <span class="o">*</span> <span class="n">alpha</span>
+
+        <span class="n">k_opt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="n">best_nn</span> <span class="o">=</span> <span class="n">nns</span><span class="p">[</span><span class="n">k_opt</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prune</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">best_nn</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">Betas</span><span class="p">[</span><span class="n">k_opt</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">Betas</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s"> neurons selected with a validation set&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">best_nn</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">best_nn</span> <span class="o">&gt;</span> <span class="n">nn</span><span class="o">*</span><span class="mf">0.9</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Hint: try re-training with more hidden neurons&quot;</span>
+        <span class="k">return</span> <span class="n">nns</span><span class="p">,</span> <span class="n">err</span>
+
+</div>
+<div class="viewcode-block" id="HPELM.train_myhpv"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.train_myhpv">[docs]</a>    <span class="k">def</span> <span class="nf">train_myhpv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span><span class="p">,</span> <span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="n">HH</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">steps</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nns</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">nns</span><span class="p">)</span>  <span class="c"># numbers of neurons to check</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">nns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c"># errors for these numbers of neurons</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">))</span>
+
+        <span class="n">Betas</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># keep all betas in memory</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">nns</span><span class="p">:</span>
+            <span class="n">Betas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve_corr</span><span class="p">(</span><span class="n">HH</span><span class="p">[:</span><span class="n">l</span><span class="p">,</span> <span class="p">:</span><span class="n">l</span><span class="p">],</span> <span class="n">HT</span><span class="p">[:</span><span class="n">l</span><span class="p">,</span> <span class="p">:]))</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mf">0.0000001</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb</span><span class="o">-</span><span class="n">b</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;processing batch </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">, eta </span><span class="si">%d</span><span class="s">:</span><span class="si">%02d</span><span class="s">:</span><span class="si">%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">eta</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="p">(</span><span class="n">eta</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span><span class="p">,</span> <span class="n">eta</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+            <span class="n">Xb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+            <span class="n">Hb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+            <span class="n">Tc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">Tb</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                <span class="n">hb1</span> <span class="o">=</span> <span class="n">Hb</span><span class="p">[:,</span> <span class="p">:</span><span class="n">nns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hb1</span><span class="p">,</span> <span class="n">Betas</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">Yc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">Yb</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Tc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Yc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+                <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Tc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Yc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Tc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Yc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+                <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Tc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Yc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">nns</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">N</span>
+</pre></div></div></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Anton Akusok.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.6.22',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

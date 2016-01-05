@@ -9,11 +9,12 @@ import numpy as np
 
 
 def train_v(self, X, T, Xv, Tv):
-    HH, HT, Beta = self._project(X, T, solve=True)
-    Hv = self.project(Xv)
+    HH, HT = self.solver.get_batch(X, T)
+    Beta = self.solver.solve_corr(HH, HT)
+    Hv = self.solver.project(Xv)
     nn = Hv.shape[1]
     e = np.ones((nn+1,)) * -1  # errors for all numbers of neurons
-    rank, nn = self._ranking(nn, Xv, Tv)  # create ranking of neurons
+    rank, nn = self._ranking(nn, Hv, Tv)  # create ranking of neurons
 
     Yv = np.dot(Hv, Beta)
     err = self._error(Yv, Tv)
@@ -40,7 +41,7 @@ def train_v(self, X, T, Xv, Tv):
                 rank1 = rank[:idx]
                 HH1 = HH[rank1, :][:, rank1]
                 HT1 = HT[rank1, :]
-                Beta = self._solve_corr(HH1, HT1)
+                Beta = self.solver.solve_corr(HH1, HT1)
                 Yv = np.dot(Hv[:, rank1], Beta)
                 e[idx] = self._error(Yv, Tv) + idx * penalty
 
@@ -64,7 +65,8 @@ def train_v(self, X, T, Xv, Tv):
     best_nn = rank[:k_opt]
 
     self._prune(best_nn)
-    self.Beta = self._project(X, T, solve=True)[2]
+    self.solver.add_batch(X, T)
+    self.solver.solve()
 #    print "%d of %d neurons selected with a validation set" % (len(best_nn), nn)
 #    if len(best_nn) > nn*0.9:
 #        print "Hint: try re-training with more hidden neurons"

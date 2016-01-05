@@ -5,6 +5,7 @@ Created on Fri Mar 20 14:27:13 2015
 @author: akusok
 """
 
+"""
 from gpu_solver import GPUSolver, gpu_solve
 import numpy as np
 from scipy.linalg import solve
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         test()
     
     print "Works!"
-
+"""
 
 
 

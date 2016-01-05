@@ -35,10 +35,9 @@ setup(name='hpelm',
       packages=['hpelm',
                 'hpelm.modules',
                 'hpelm.tests',
-                'hpelm.acc'],
+                'hpelm.solver'],
       install_requires=[
           'numpy',
-          'numexpr',
           'scipy>=0.12',
           'tables',
           'cython'
