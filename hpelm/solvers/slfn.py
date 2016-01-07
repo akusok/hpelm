@@ -9,10 +9,12 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 
-class Solver(object):
+class SLFN(object):
 
     def __init__(self, c, norm=None, precision=np.float64):
         """Initialize matrices and functions.
+
+        Basic SLFN implementation, not the fastest but very simple and it defines interface.
 
         Set neurons to the required precision. Neurons is a list
         of [('function_type', 'number of neurons', W, Bias), ...]
@@ -25,7 +27,8 @@ class Solver(object):
         self.c = c
         self.precision = precision
         self.to_precision = lambda a: a.astype(precision)
-        self.neurons = None
+        # cannot use a dictionary for neurons, because its iteration order is not defined
+        self.neurons = []  # list of all neurons in normal Numpy form
         self.B = None
 
         # transformation functions in HPELM, accessible by name
@@ -37,63 +40,70 @@ class Solver(object):
         self.func["rbf_l2"] = lambda X, W, B: np.exp(-cdist(X, W.T, "euclidean")**2 / B)
         self.func["rbf_linf"] = lambda X, W, B: np.exp(-cdist(X, W.T, "chebyshev")**2 / B)
 
-    def _project(self, X):
+
+    def project(self, X):
         """Projects X to H, build-in function.
         """
+        assert self.neurons is not None, "ELM has no neurons"
         X = self.to_precision(X)
         return np.hstack([self.func[ftype](X, W, B) for ftype, _, W, B in self.neurons])
 
-    def project(self, X):
-        """Projects X to H and returns a Numpy array.
-        """
-        assert self.neurons is not None, "ELM has no neurons"
-        return self._project(X)
 
-    def add_batch(self, X, T, w=1.0):
+    def add_batch(self, X, T, wc = None):
         """Add a weighted batch of data to an iterative solution.
 
-        :param w: can be one number or a vector of weights.
+        :param wc: vector of weights for data samples, same length as X or T
         """
-        assert self.neurons is not None, "ELM has no neurons"
-        w = np.array(w, dtype=self.precision)
-        H = self._project(X)
+        H = self.project(X)
         T = self.to_precision(T)
-        self.HH += np.dot(H.T, H) * w
-        self.HT += np.dot(H.T, T) * w
+        if wc is not None:  # apply weights if given
+            w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
+            H *= w
+            T *= w
+        self.HH += np.dot(H.T, H)
+        self.HT += np.dot(H.T, T)
 
-    def get_batch(self, X, T, w=1.0):
+
+    def get_batch(self, X, T, wc = None):
         """Compute and return a weighted batch of data.
 
-        :param w: can be one number or a vector of weights.
+        :param wc: vector of weights for data samples, same length as X or T
         """
-        assert self.neurons is not None, "ELM has no neurons"
-        H = self._project(X)
+        H = self.project(X)
         T = self.to_precision(T)
-        w = np.array(w, dtype=self.precision)
-        HH = np.dot(H.T, H) * w + np.eye(self.L) * self.norm
-        HT = np.dot(H.T, T) * w
+        if wc is not None:  # apply weights if given
+            w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
+            H *= w
+            T *= w
+        HH = np.dot(H.T, H) + np.eye(self.L) * self.norm
+        HT = np.dot(H.T, T)
         return HH, HT
 
+
     def solve(self):
-        """Compute output weights B, with fix for unstable solution.
+        """Redirects to solve_corr, to avoid duplication of code.
         """
-        HH_pinv = np.linalg.pinv(self.HH)
-        self.B = np.dot(HH_pinv, self.HT)
+        self.B = self.solve_corr(self.HH, self.HT)
+
 
     def solve_corr(self, HH, HT):
         """Compute output weights B for given HH and HT.
+
+        Simple but inefficient version, see a better one in solver_python.
         """
         HH_pinv = np.linalg.pinv(HH)
         B = np.dot(HH_pinv, HT)
         return B
 
+
     def predict(self, X):
         """Predict a batch of data.
         """
         assert self.B is not None, "Solve the task before predicting"
-        H = self._project(X)
+        H = self.project(X)
         Y = np.dot(H, self.B)
         return Y
+
 
     def reset(self):
         """Reset current HH, HT and Beta but keep neurons.
