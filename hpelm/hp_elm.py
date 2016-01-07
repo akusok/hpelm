@@ -12,7 +12,7 @@ import multiprocessing as mp
 from time import time
 from hpelm.modules import make_hdf5, ireader, iwriter
 from tables import open_file
-from slfn import SLFN
+from solvers.slfn import SLFN
 
 
 class HPELM(SLFN):

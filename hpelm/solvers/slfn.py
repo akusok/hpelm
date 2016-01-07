@@ -7,6 +7,8 @@ Created on Sun Sep  6 11:18:55 2015
 
 import numpy as np
 from scipy.spatial.distance import cdist
+import platform
+import os
 
 
 class SLFN(object):
@@ -24,12 +26,14 @@ class SLFN(object):
         if norm is None:
             norm = 50*np.finfo(precision).eps  # 50 times machine epsilon
         self.norm = norm
-        self.c = c
+        self.c = c  # number of outputs, also number of classes (thus 'c')
         self.precision = precision
-        self.to_precision = lambda a: a.astype(precision)
         # cannot use a dictionary for neurons, because its iteration order is not defined
         self.neurons = []  # list of all neurons in normal Numpy form
+        self.L = None  # number of neurons
         self.B = None
+        self.HH = None
+        self.HT = None
 
         # transformation functions in HPELM, accessible by name
         self.func = {}
@@ -40,14 +44,61 @@ class SLFN(object):
         self.func["rbf_l2"] = lambda X, W, B: np.exp(-cdist(X, W.T, "euclidean")**2 / B)
         self.func["rbf_linf"] = lambda X, W, B: np.exp(-cdist(X, W.T, "chebyshev")**2 / B)
 
+    def add_neurons(self, number, func, W, B):
+        """Add prepared neurons to the SLFN, merge with existing ones.
+
+        Adds a number of specific neurons to SLFN network. Weights and biases
+        are generated automatically if not provided, but they assume that input
+        data is normalized (input data features have zero mean and unit variance).
+
+        If neurons of such type already exist, they are merged together.
+
+        Parameters
+        ----------
+            number : int
+                A number of new neurons to add
+            func : {'lin', 'sigm', 'tanh', 'rbf_l1', 'rbf_l2', 'rbf_linf'}
+                Transformation function of hidden layer. Linear function leads
+                to a linear model.
+            W : array_like, optional
+                A 2-D matrix of neuron weights, size (`inputs`, `number`)
+            B : array_like, optional
+                A 1-D vector of neuron biases, size (`number`, )
+        """
+
+        ntypes = [nr[0] for nr in self.neurons]  # existing types of neurons
+        if func in ntypes:
+            # add to an existing neuron type
+            i = ntypes.index(func)
+            _, nn0, W0, B0 = self.neurons[i]
+            number = nn0 + number
+            W = np.hstack((W0, W))
+            B = np.hstack((B0, B))
+            self.neurons[i] = (func, number, W, B)
+        else:
+            # create a new neuron type
+            self.neurons.append((func, number, W, B))
+
+        # reset invalid parameters
+        self.L = sum([n[1] for n in self.neurons])  # get number of neurons
+        self.HH = None
+        self.HT = None
+        self.B = None
 
     def project(self, X):
         """Projects X to H, build-in function.
         """
         assert self.neurons is not None, "ELM has no neurons"
-        X = self.to_precision(X)
+        X = X.astype(self.precision)
         return np.hstack([self.func[ftype](X, W, B) for ftype, _, W, B in self.neurons])
 
+    def predict(self, X):
+        """Predict a batch of data.
+        """
+        assert self.B is not None, "Solve the task before predicting"
+        H = self.project(X)
+        Y = np.dot(H, self.B)
+        return Y
 
     def add_batch(self, X, T, wc = None):
         """Add a weighted batch of data to an iterative solution.
@@ -55,14 +106,19 @@ class SLFN(object):
         :param wc: vector of weights for data samples, same length as X or T
         """
         H = self.project(X)
-        T = self.to_precision(T)
+        T = T.astype(self.precision)
         if wc is not None:  # apply weights if given
             w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
             H *= w
             T *= w
+
+        if self.HH is None:  # initialize space for self.HH, self.HT
+            self.HH = np.zeros((self.L, self.L), dtype=self.precision)
+            self.HT = np.zeros((self.L, self.c), dtype=self.precision)
+            np.fill_diagonal(self.HH, self.norm)
+
         self.HH += np.dot(H.T, H)
         self.HT += np.dot(H.T, T)
-
 
     def get_batch(self, X, T, wc = None):
         """Compute and return a weighted batch of data.
@@ -70,21 +126,19 @@ class SLFN(object):
         :param wc: vector of weights for data samples, same length as X or T
         """
         H = self.project(X)
-        T = self.to_precision(T)
+        T = T.astype(self.precision)
         if wc is not None:  # apply weights if given
             w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
             H *= w
             T *= w
-        HH = np.dot(H.T, H) + np.eye(self.L) * self.norm
+        HH = np.dot(H.T, H) + np.eye(H.shape[1]) * self.norm
         HT = np.dot(H.T, T)
         return HH, HT
-
 
     def solve(self):
         """Redirects to solve_corr, to avoid duplication of code.
         """
         self.B = self.solve_corr(self.HH, self.HT)
-
 
     def solve_corr(self, HH, HT):
         """Compute output weights B for given HH and HT.
@@ -95,44 +149,58 @@ class SLFN(object):
         B = np.dot(HH_pinv, HT)
         return B
 
-
-    def predict(self, X):
-        """Predict a batch of data.
+    def _prune(self, idx):
+        """Leave only neurons with the given indexes.
         """
-        assert self.B is not None, "Solve the task before predicting"
-        H = self.project(X)
-        Y = np.dot(H, self.B)
-        return Y
-
-
-    def reset(self):
-        """Reset current HH, HT and Beta but keep neurons.
-        """
-        self.HH = np.zeros((self.L, self.L), dtype=self.precision)
-        self.HT = np.zeros((self.L, self.c), dtype=self.precision)
-        np.fill_diagonal(self.HH, self.norm)
+        idx = list(idx)
+        neurons = []
+        for nold in self.neurons:
+            k = nold[1]  # number of neurons
+            ix1 = [i for i in idx if i < k]  # index for current neuron type
+            idx = [i-k for i in idx if i >= k]
+            func = nold[0]
+            number = len(ix1)
+            W = nold[2][:, ix1]
+            bias = nold[3][ix1]
+            neurons.append((func, number, W, bias))
+        self.neurons = neurons
+        # reset invalid parameters
+        self.L = sum([n[1] for n in self.neurons])  # get number of neurons
+        self.HH = None
+        self.HT = None
         self.B = None
+
+
+
+    def _affinityfix(self):
+        """Numpy processor core affinity fix.
+
+        Fixes a problem when all Numpy processes are pushed to core 0.
+        """
+        if "Linux" in platform.system():
+            a = np.random.rand(3, 1)
+            np.dot(a.T, a)
+            pid = os.getpid()
+            os.system("taskset -p 0xffffffff %d >/dev/null" % pid)
+
+
+
 
     ###########################################################
     # setters and getters
-
-    def set_neurons(self, neurons):
-        """Set new neurons in solver.
-        """
-        self.L = sum([n[1] for n in neurons])  # total number of neurons
-        # apply precision to W and bias in neurons
-        self.neurons = []
-        for n in neurons:
-            W = self.to_precision(n[2])
-            b = self.to_precision(n[3])
-            self.neurons.append((n[0], n[1], W, b))
-        # init neurons-dependent storage
-        self.reset()
 
     def get_B(self):
         """Return B as a numpy array.
         """
         return self.B
+
+    def set_B(self, B):
+        """Set B as a numpy array.
+
+        :param B: output layer weights matrix.
+        """
+        assert B.shape[1] == self.c, "Incorrect output dimension: %d expected, %d found" % (self.c, B.shape[1])
+        self.B = B.astype(self.precision)
 
     def get_corr(self):
         """Return current correlation matrices.
@@ -150,6 +218,10 @@ class SLFN(object):
         assert HT.shape[1] == self.c, "Number of columns in HT must equal number of targets (%d)" % self.c
         self.HH = self.to_precision(HH)
         self.HT = self.to_precision(HT)
+
+
+
+
 
 
 if __name__ == "__main__":
