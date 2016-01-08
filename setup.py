@@ -12,6 +12,8 @@ def readme():
     with open('README.rst') as f:
         return f.read()
 
+# sphinx-apidoc -f -o docs hpelm
+
 setup(name='hpelm',
       version='0.6.22',
       description='High-Performance implementation of an\

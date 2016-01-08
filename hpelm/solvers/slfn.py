@@ -172,19 +172,6 @@ class SLFN(object):
 
 
 
-    def _affinityfix(self):
-        """Numpy processor core affinity fix.
-
-        Fixes a problem when all Numpy processes are pushed to core 0.
-        """
-        if "Linux" in platform.system():
-            a = np.random.rand(3, 1)
-            np.dot(a.T, a)
-            pid = os.getpid()
-            os.system("taskset -p 0xffffffff %d >/dev/null" % pid)
-
-
-
 
     ###########################################################
     # setters and getters
@@ -221,86 +208,16 @@ class SLFN(object):
 
 
 
+    def fix_affinity(self):
+        """Numpy processor core affinity fix.
 
-
-
-if __name__ == "__main__":
-    N = 1000
-    d = 15
-    k = 10
-    L = 100/3
-    c = 2
-
-    neurons = [('lin', L, np.random.rand(d, L), np.random.rand(L)),
-               ('sigm', L, np.random.rand(d, L), np.random.rand(L)),
-               ('tanh', L, np.random.rand(d, L), np.random.rand(L))]
-
-    sl = Solver(c, precision=np.float64)
-    sl.set_neurons(neurons)
-    for _ in xrange(k):
-        X = np.random.rand(N, d)
-        T = np.random.rand(N, c)
-        sl.add_batch(X, T)
-
-    sl.solve()
-    Y = sl.predict(X)
-    print (T - Y).shape
-    print np.mean((T - Y)**2)
-    print "Done!"
-
-
-
-
-
-
-    """def project(self, X):
-        # assemble hidden layer output with all kinds of neurons
-        assert len(self.neurons) > 0, "Model must have hidden neurons"
-
-        X, _ = self._checkdata(X, None)
-        H = []
-        cdkinds = {"rbf_l2": "euclidean", "rbf_l1": "cityblock", "rbf_linf": "chebyshev"}
-        for func, _, W, B in self.neurons:
-            # projection
-            if "rbf" in func:
-                self._affinityfix()
-                N = X.shape[0]
-                k = cpu_count()
-                jobs = [(X[idx], W.T, cdkinds[func], idx) for idx in np.array_split(np.arange(N), k*10)]  #### ERROR HERE!!!
-                p = Pool(k)
-                H0 = np.empty((N, W.shape[1]))
-                for h0, idx in p.imap(cd, jobs):
-                    H0[idx] = h0
-                p.close()
-                H0 = - H0 / B
-            else:
-                H0 = X.dot(W) + B
-
-            # transformation
-            if func == "lin":
-                pass
-            elif "rbf" in func:
-                ne.evaluate('exp(H0)', out=H0)
-            elif func == "sigm":
-                ne.evaluate("1/(1+exp(-H0))", out=H0)
-            elif func == "tanh":
-                ne.evaluate('tanh(H0)', out=H0)
-            else:
-                H0 = func(H0)  # custom <numpy.ufunc>
-            H.append(H0)
-
-        if len(H) == 1:
-            H = H[0]
-        else:
-            H = np.hstack(H)
-#        print (H > 0.01).sum(0)
-        return H"""
-
-
-
-
-
-
+        Fixes a problem when all Numpy processes are pushed to core 0.
+        """
+        if "Linux" in platform.system():
+            a = np.random.rand(3, 1)
+            np.dot(a.T, a)
+            pid = os.getpid()
+            os.system("taskset -p 0xffffffff %d >/dev/null" % pid)
 
 
 

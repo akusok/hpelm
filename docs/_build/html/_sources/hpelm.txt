@@ -6,9 +6,8 @@ Subpackages
 
 .. toctree::
 
-    hpelm.acc
     hpelm.modules
-    hpelm.solver
+    hpelm.solvers
     hpelm.tests
 
 Submodules
@@ -58,14 +57,6 @@ hpelm.mss_v module
 ------------------
 
 .. automodule:: hpelm.mss_v
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-hpelm.slfn module
------------------
-
-.. automodule:: hpelm.slfn
     :members:
     :undoc-members:
     :show-inheritance:

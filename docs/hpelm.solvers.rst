@@ -1,13 +1,13 @@
-hpelm.solver package
-====================
+hpelm.solvers package
+=====================
 
 Submodules
 ----------
 
-hpelm.solver.solver module
---------------------------
+hpelm.solvers.slfn module
+-------------------------
 
-.. automodule:: hpelm.solver.solver
+.. automodule:: hpelm.solvers.slfn
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ hpelm.solver.solver module
 Module contents
 ---------------
 
-.. automodule:: hpelm.solver
+.. automodule:: hpelm.solvers
     :members:
     :undoc-members:
     :show-inheritance:

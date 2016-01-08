@@ -16,19 +16,40 @@ from mss_loo import train_loo
 
 
 class ELM(object):
-    """Interface for training Extreme Learning Machines.
+    """Interface for training Extreme Learning Machines (ELM).
+
+    Args:
+        inputs (int): dimensionality of input data, or number of data features
+        outputs (int): dimensionality of output data, or number of classes
+        batch (int, optional): batch size for data processing in ELM, reduces memory requirements. Does not work
+            for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
+            as a class attribute.
+        accelerator (string, optional): type of accelerated ELM to use: None, 'GPU', ...
+        precision (optional): data precision to use, supports signle ('single', '32' or numpy.float32) or double
+            ('double', '64' or numpy.float64). Single precision is faster but may cause numerical errors. Majority
+            of GPUs work in single precision. Default: **double**.
+        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch, whatever takes longer.
+
+    Class attributes; attributes that simply store initialization or `train()` parameters are omitted.
+
+    Attributes:
+        flist (list of strings): Awailable types of neurons, use them when adding new neurons.
+        solver (object): Implementation of neural network with computational methods, but without
+            complex logic. Different implementations are given by different classes: for Python, for GPU, etc.
+            See ``hpelm.solvers`` folder for particular files. You can implement your own computational algorithm
+            by inheriting from ``hpelm.solvers.slfn`` and overwriting some methods.
+
+    Note:
+        Below the 'matrix' type means a 2-dimensional Numpy.ndarray.
     """
 
-    def __init__(self, inputs, targets, batch=1000, accelerator=None, precision='single', tprint=5):
-        """Single-hidden Layer Feed-forward Network.
-        """
-
+    def __init__(self, inputs, outputs, batch=1000, accelerator=None, precision='double', tprint=5):
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
-        assert isinstance(targets, (int, long)), "Number of outputs must be integer"
+        assert isinstance(outputs, (int, long)), "Number of outputs must be integer"
         assert batch > 0, "Batch should be positive"
 
         self.inputs = inputs
-        self.targets = targets
+        self.outputs = outputs
         self.batch = int(batch)
         self.precision = np.float32
 
@@ -42,24 +63,18 @@ class ELM(object):
         # create SLFN solver to do actual computations
         self.accelerator = accelerator
         if accelerator is None:  # double precision Numpy solver
-            self.solver = SLFN(self.targets, precision=self.precision)
+            self.solver = SLFN(self.outputs, precision=self.precision)
             # TODO: add advanced and GPU solvers, in load also
 
         # init other stuff
-        self.opened_hdf5 = []
+        self.opened_hdf5 = []  # list of opened HDF5 files, they are closed in ELM descructor
         self.classification = None  # c / wc / mc
         self.wc = None  # weighted classification weights
         self.tprint = tprint  # time intervals in seconds to report ETA
         self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")  # supported neuron types
 
-    def __del__(self):
-        """Close any HDF5 files opened during HPELM usage.
-        """
-        for h5 in self.opened_hdf5:
-            h5.close()
-
     def __str__(self):
-        s = "ELM with %d inputs and %d outputs\n" % (self.inputs, self.targets)
+        s = "ELM with %d inputs and %d outputs\n" % (self.inputs, self.outputs)
         s += "Hidden layer neurons: "
         for func, n, _, _ in self.solver.neurons:
             s += "%d %s, " % (n, func)
@@ -69,30 +84,28 @@ class ELM(object):
     def train(self, X, T, *args, **kwargs):
         """Universal training interface for ELM model with model structure selection.
 
-        :param X: input data matrix
-        :param T: target data matrix
+        Model structure selection takes more time and requires all data to fit into memory. Optimal pruning ('OP',
+        effectively an L1-regularization) takes the most time but gives the smallest and best performing model.
+        Choosing a classification forces ELM to use classification error in model structure selection,
+        and in `error()` method output.
 
-        Model structure selection (exclusive, choose one)
-        :param "V": use validation set
-        :param "CV": use cross-validation
-        :param "LOO": use leave-one-out validation
+        Args:
+            X (matrix): input data matrix, size (N * `inputs`)
+            T (matrix): outputs data matrix, size (N * `outputs`)
+            'c'/'wc'/'mc' (string, choose one): train ELM for classification ('c'), classification with weighted classes
+                ('wc') or multi-label classification ('mc') with several correct classes per data sample. In classification,
+                number of `outputs` is the number of classes; correct class(es) for each sample has value 1 and
+                incorrect classes have 0.
+            'V'/'CV'/'LOO' (sting, choose one): model structure selection: select optimal number of neurons using a validation set ('V'),
+                cross-validation ('CV') or Leave-One-Out ('LOO')
+            'OP' (string, use with 'V'/'CV'/'LOO'): choose best neurons instead of random ones, training takes longer; equivalent to L1-regularization
 
-        Additional parameters for model structure selecation
-        :param Xv: validation data X ("V")
-        :param Tv: validation targets T ("V")
-        :param k: number of splits ("CV")
-
-        Ranking of hidden neurons
-        :param "OP": use Optimal Pruning (OP-ELM)
-        :param "kmax": maximum number of neurons (with "OP")
-
-        System setup
-        :param "classification"/"c": build ELM for classification
-        :param "weighted classification"/"wc": build ELM with weights assigned to classes
-        :param w: weights of classes for "wc"
-        :param "multiclass"/"mc": build ELM for multiclass classification
-        :param "adaptive"/"ad": build adaptive ELM for non-stationary model
-        :param "batch": batch size for adaptive ELM (sliding window step size)
+        Keyword Args:
+            Xv (matrix, use with 'V'): validation set input data, size (Nv * `inputs`)
+            Tv (matrix, use with 'V'): validation set outputs data, size (Nv * `outputs`)
+            k (int, use with 'CV'): number of splits for cross-validation, k>=3
+            kmax (int, optional, use with 'OP'): maximum number of neurons to keep in ELM
+            batch (int, optional): batch size for ELM, overwrites batch size from an initialization
         """
 
         assert len(self.solver.neurons) > 0, "Add neurons to ELM before training it"
@@ -117,7 +130,7 @@ class ELM(object):
         for a in args:
             if a == "V":  # validation set
                 assert "Xv" in kwargs.keys(), "Provide validation dataset (Xv)"
-                assert "Tv" in kwargs.keys(), "Provide validation targets (Tv)"
+                assert "Tv" in kwargs.keys(), "Provide validation outputs (Tv)"
                 Xv = kwargs['Xv']
                 Tv = kwargs['Tv']
                 Xv, Tv = self._checkdata(Xv, Tv)
@@ -134,19 +147,22 @@ class ELM(object):
                 if "kmax" in kwargs.keys():
                     self.kmax_op = int(kwargs["kmax"])
             if a == "C":
-                assert self.targets > 1, "Classification targets must have 1 output per class"
+                assert self.outputs > 1, "Classification outputs must have 1 output per class"
                 self.classification = "c"
             if a == "WC":
-                assert self.targets > 1, "Classification targets must have 1 output per class"
+                assert self.outputs > 1, "Classification outputs must have 1 output per class"
                 self.classification = "wc"
                 if 'w' in kwargs.keys():
                     w = kwargs['w']
                     assert len(w) == T.shape[1], "Number of class weights must be equal to the number of classes"
                     self.wc = w
             if a == "MC":
-                assert self.targets > 1, "Classification targets must have 1 output per class"
+                assert self.outputs > 1, "Classification outputs must have 1 output per class"
                 self.classification = "mc"
             # TODO: Adaptive ELM model for timeseries (someday)
+
+        if "batch" in kwargs.keys():
+            self.batch = int(kwargs["batch"])
 
         self.solver.reset()  # remove previous training
         # use "train_x" method which borrows _project(), _error() from the "self" object
@@ -162,7 +178,13 @@ class ELM(object):
             self.solver.solve()
 
     def add_batch(self, X, T):
-        """Update HH, HT matrices using parts of training data (X,T).
+        """Update HH, HT matrices needed for ELM solution by feeding training data (X,T) in batches.
+
+        Helper method, for training an ELM use `train()` instead.
+
+        Args:
+            X (matrix): input data
+            T (matrix): output data
         """
         # initialize batch size
         nb = int(np.ceil(float(X.shape[0]) / self.batch))
@@ -178,6 +200,203 @@ class ELM(object):
             if self.classification == "wc":
                 wc_vector = self.wc[np.where(T0 == 1)[1]]  # weights for samples in the batch
             self.solver.add_batch(X0, T0, wc_vector)
+
+    def add_neurons(self, number, func, W=None, B=None):
+        """Adds neurons to ELM model. ELM is created empty, and needs some neurons to work.
+
+        Add neurons to an empty ELM model, or add more neurons to a model that already has some.
+
+        Random weights `W` and biases `B` are generated automatically if not provided explicitly.
+        Maximum number of neurons is limited by the available RAM and computational power, a sensible limit
+        would be 1000 neurons for an average size dataset and 15000 for the largest datasets. ELM becomes slower after
+        3000 neurons because computational complexity is proportional to a qube of number of neurons.
+
+        This method checks and prepares neurons, they are actually stored in `solver` object.
+
+        Args:
+            number (int): number of neurons to add
+            func (string): type of neurons: "lin" for linear, "sigm" or "tanh" for non-linear,
+                "rbf_l1", "rbf_l2" or "rbf_linf" for radial basis function neurons.
+            W (matrix, optional): random projection matrix size (`inputs` * `number`). For 'rbf_' neurons,
+                W stores centroids of radial basis functions in transposed form.
+            B (vector, optional): bias vector of size (`number` * 1), a 1-dimensional Numpy.ndarray object.
+                For 'rbf_' neurons, B gives widths of radial basis functions.
+        """
+        assert isinstance(number, int), "Number of neurons must be integer"
+        assert (func in self.flist or isinstance(func, np.ufunc)),\
+            "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
+        assert isinstance(W, (np.ndarray, type(None))), "Projection matrix (W) must be a Numpy ndarray"
+        assert isinstance(B, (np.ndarray, type(None))), "Bias vector (B) must be a Numpy ndarray"
+
+        # default neuron initializer
+        if W is None:
+            if func == "lin":  # copying input features for linear neurons
+                number = min(number, self.inputs)  # cannot have more linear neurons than features
+                W = np.eye(self.inputs, number)
+            else:
+                W = np.random.randn(self.inputs, number)
+                if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
+                    W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
+        if B is None:
+            B = np.random.randn(number)
+            if func in ("rbf_l2", "rbf_l1", "rbf_linf"):
+                B = np.abs(B)
+                B = B * self.inputs
+            if func == "lin":
+                B = np.zeros((number,))
+        msg = "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
+        assert W.shape == (self.inputs, number), msg
+        assert B.shape == (number,), "B must be size [neurons] (expected [%d])" % number
+        # set to correct precision
+        W = W.astype(self.precision)
+        B = B.astype(self.precision)
+
+        # add prepared neurons to the model
+        self.solver.add_neurons(number, func, W, B)
+
+    def error(self, Y, T):
+        """Calculate error of model predictions.
+
+        Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
+        For classification, computes corresponding classification error. For weighted classification,
+        computes average weighted per-class error. For multi-label classification, correct classes are all with Y>0.5.
+
+        Args:
+            Y (matrix): ELM model predictions, can be computed with `predict()` function.
+            T (matrix): true outputs.
+
+        Returns:
+            e (double): MSE for regression / classification error for classification.
+        """
+        _, Y = self._checkdata(None, Y)
+        _, T = self._checkdata(None, T)
+        return self._error(Y, T)
+
+    def confusion(self, Y1, T1):
+        """Unfinished...
+
+        Args:
+            Y1 (matrix): predicted outputs by ELM model, size (N * `outputs`)
+            T1 (matrix): true outputs or classes, size (N * `outputs`)
+
+        Returns:
+            conf (matrix): confusion matrix, size (`outputs` * `outputs`)
+        """
+        # TODO: Fix confusion matrix code
+        _, Y = self._checkdata(None, Y1)
+        _, T = self._checkdata(None, T1)
+        nn = np.sum([n1[1] for n1 in self.solver.neurons])
+        N = T.shape[0]
+        batch = max(self.batch, nn)
+        nb = int(np.ceil(float(N) / self.batch))  # number of batches
+
+        C = self.outputs
+        conf = np.zeros((C, C))
+
+        if self.classification in ("c", "wc"):
+            for b in xrange(nb):
+                start = b*batch
+                stop = min((b+1)*batch, N)
+                Tb = np.array(T[start:stop]).argmax(1)
+                Yb = np.array(Y[start:stop]).argmax(1)
+                for c1 in xrange(C):
+                    for c1h in xrange(C):
+                        conf[c1, c1h] += np.sum((Tb == c1) * (Yb == c1h))
+        elif self.classification == "mc":
+            for b in xrange(nb):
+                start = b*batch
+                stop = min((b+1)*batch, N)
+                Tb = np.array(T[start:stop]) > 0.5
+                Yb = np.array(Y[start:stop]) > 0.5
+                for c1 in xrange(C):
+                    for c1h in xrange(C):
+                        conf[c1, c1h] += np.sum(Tb[:, c1] * Yb[:, c1h])
+        else:  # No confusion matrix
+            conf = None
+        return conf
+
+    def project(self, X):
+        """Get ELM's hidden layer representation of input data.
+
+        Args:
+            X (matrix): input data, size (N * `inputs`)
+
+        Returns:
+            H (matrix): hidden layer representation matrix, size (N * number_of_neurons)
+        """
+        X, _ = self._checkdata(X, None)
+        H = self.solver.project(X)
+        return H
+
+    def predict(self, X):
+        """Predict outputs Y for the given input data X.
+
+        Args:
+            X (matrix): input data of size (N * `inputs`)
+
+        Returns:
+            Y (matrix): output data or predicted classes, size (N * `outputs`).
+        """
+        X, _ = self._checkdata(X, None)
+        Y = self.solver.predict(X)
+        return Y
+
+    def save(self, fname):
+        """Save ELM model with current parameters.
+
+        Model does not save a particular solver, precision batch size. They are obtained from
+        a new ELM when loading the model (so one can switch to another solver, for instance).
+
+        Also ranking and max number of neurons are not saved, because they
+        are runtime training info irrelevant after the training completes.
+
+        Args:
+            fname (string): filename to save model into.
+        """
+        assert isinstance(fname, basestring), "Model file name must be a string"
+        m = {"inputs": self.inputs,
+             "outputs": self.outputs,
+             "precision": self.precision,
+             "Classification": self.classification,
+             "Weights_WC": self.wc,
+             "neurons": self.solver.neurons,
+             "norm": self.solver.norm,  # W and bias are here
+             "Beta": self.solver.get_B()}
+        try:
+            cPickle.dump(m, open(fname, "wb"), -1)
+        except IOError:
+            raise IOError("Cannot create a model file at: %s" % fname)
+
+    def load(self, fname):
+        """Load ELM model data from a file.
+
+        Load requires an ``ELM`` object, and it uses solver type, precision and batch size from that ELM object.
+
+        Args:
+            fname (string): filename to load model from.
+        """
+        assert isinstance(fname, basestring), "Model file name must be a string"
+        try:
+            m = cPickle.load(open(fname, "rb"))
+        except IOError:
+            raise IOError("Model file not found: %s" % fname)
+        self.inputs = m["inputs"]
+        self.outputs = m["outputs"]
+        self.classification = m["Classification"]
+        self.wc = m["Weights_WC"]
+
+        # create a new solver and load neurons / Beta into it with correct precision
+        if self.accelerator is None:
+            self.solver = SLFN(self.outputs, precision=self.precision)
+        for number, func, W, B in m["neurons"]:
+            self.solver.add_neurons(number, func, W.astype(self.precision), B.astype(self.precision))
+        self.solver.norm = m["norm"]
+        self.solver.set_B(np.array(m["Beta"], dtype=self.precision))
+
+    def __del__(self):
+        # Closes any HDF5 files opened during HPELM usage.
+        for h5 in self.opened_hdf5:
+            h5.close()
 
     def _error(self, Y, T, R=None):
         """Returns regression/classification/multiclass error, also for PRESS.
@@ -226,7 +445,7 @@ class ELM(object):
 
         :param nn: number of neurons
         :param H: data matrix needed for optimal pruning
-        :param T: targets matrix needed for optimal pruning
+        :param T: outputs matrix needed for optimal pruning
         """
         if self.ranking == "OP":  # optimal ranking (L1 normalization)
             assert H is not None and T is not None, "Need H and T to perform optimal pruning"
@@ -279,160 +498,14 @@ class ELM(object):
                 if len(T.shape) == 1:
                     T = T.reshape(-1, 1)
             assert len(T.shape) == 2, "T must have 2 dimensions"
-            msg = "T has wrong dimensionality: expected %d, found %d" % (self.targets, T.shape[1])
-            assert T.shape[1] == self.targets, msg
+            msg = "T has wrong dimensionality: expected %d, found %d" % (self.outputs, T.shape[1])
+            assert T.shape[1] == self.outputs, msg
 
         if (X is not None) and (T is not None):
             assert X.shape[0] == T.shape[0], "X and T cannot have different number of samples"
 
         return X, T
 
-    def add_neurons(self, number, func, W=None, B=None):
-        """Check and prepare neurons here, then pass them to SLFN.
-        """
-        assert isinstance(number, int), "Number of neurons must be integer"
-        assert (func in self.flist or isinstance(func, np.ufunc)),\
-            "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
-        assert isinstance(W, (np.ndarray, type(None))), "Projection matrix (W) must be a Numpy ndarray"
-        assert isinstance(B, (np.ndarray, type(None))), "Bias vector (B) must be a Numpy ndarray"
-
-        # default neuron initializer
-        if W is None:
-            if func == "lin":  # copying input features for linear neurons
-                number = min(number, self.inputs)  # cannot have more linear neurons than features
-                W = np.eye(self.inputs, number)
-            else:
-                W = np.random.randn(self.inputs, number)
-                if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
-                    W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
-        if B is None:
-            B = np.random.randn(number)
-            if func in ("rbf_l2", "rbf_l1", "rbf_linf"):
-                B = np.abs(B)
-                B = B * self.inputs
-            if func == "lin":
-                B = np.zeros((number,))
-        msg = "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
-        assert W.shape == (self.inputs, number), msg
-        assert B.shape == (number,), "B must be size [neurons] (expected [%d])" % number
-        # set to correct precision
-        W = W.astype(self.precision)
-        B = B.astype(self.precision)
-
-        # add prepared neurons to the model
-        self.solver.add_neurons(number, func, W, B)
-
-    def save(self, fname):
-        """Save ELM model with current parameters.
-
-        Model does not save type of solver, batch size and report interval,
-        gets them from ELM initialization instead (so one can use another solver, for instance).
-
-        Also ranking and max number of neurons are not saved, because they
-        are runtime training info irrelevant after training completes.
-
-        :param fname: file name to save model into.
-        :return:
-        """
-        assert isinstance(fname, basestring), "Model file name must be a string"
-        m = {"inputs": self.inputs,
-             "outputs": self.targets,
-             "precision": self.precision,
-             "Classification": self.classification,
-             "Weights_WC": self.wc,
-             "neurons": self.solver.neurons,
-             "norm": self.solver.norm,  # W and bias are here
-             "Beta": self.solver.get_B()}
-        try:
-            cPickle.dump(m, open(fname, "wb"), -1)
-        except IOError:
-            raise IOError("Cannot create a model file at: %s" % fname)
-
-    def load(self, fname):
-        """Load model data from a file.
-
-        :param fname: model file name.
-        :return:
-        """
-        assert isinstance(fname, basestring), "Model file name must be a string"
-        try:
-            m = cPickle.load(open(fname, "rb"))
-        except IOError:
-            raise IOError("Model file not found: %s" % fname)
-        self.inputs = m["inputs"]
-        self.targets = m["outputs"]
-        self.precision = m["precision"],
-        self.classification = m["Classification"]
-        self.wc = m["Weights_WC"]
-
-        if self.accelerator is None:  # double precision Numpy solver
-            self.solver = SLFN(self.targets, precision=self.precision)
-        self.solver.neurons = m["neurons"]
-        self.solver.L = sum([n[1] for n in self.solver.neurons])  # number of neurons
-        self.solver.norm = m["norm"]
-        self.solver.set_B(m["Beta"])
-
-
-#############################################################
-###  Methods interacting directly with SLFN model of ELM  ###
-
-    def project(self, X):
-        """Call solver's function.
-        """
-        X, _ = self._checkdata(X, None)
-        H = self.solver.project(X)
-        return H
-
-    def predict(self, X):
-        """Predict targets for the given inputs X.
-        """
-        X, _ = self._checkdata(X, None)
-        assert self.solver.get_B() is not None, "Train ELM before predicting"
-        Y = self.solver.predict(X)
-        return Y
-
-    def error(self, Y, T):
-        """Calculate error of model predictions.
-        """
-        _, Y = self._checkdata(None, Y)
-        _, T = self._checkdata(None, T)
-        return self._error(Y, T)
-
-    def confusion(self, Y1, T1):
-        """Compute confusion matrix for the given classification, iteratively.
-        """
-        # TODO: Fix confusion matrix code
-        _, Y = self._checkdata(None, Y1)
-        _, T = self._checkdata(None, T1)
-        nn = np.sum([n1[1] for n1 in self.solver.neurons])
-        N = T.shape[0]
-        batch = max(self.batch, nn)
-        nb = int(np.ceil(float(N) / self.batch))  # number of batches
-
-        C = self.targets
-        conf = np.zeros((C, C))
-
-        if self.classification in ("c", "wc"):
-            for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
-                Tb = np.array(T[start:stop]).argmax(1)
-                Yb = np.array(Y[start:stop]).argmax(1)
-                for c1 in xrange(C):
-                    for c1h in xrange(C):
-                        conf[c1, c1h] += np.sum((Tb == c1) * (Yb == c1h))
-        elif self.classification == "mc":
-            for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
-                Tb = np.array(T[start:stop]) > 0.5
-                Yb = np.array(Y[start:stop]) > 0.5
-                for c1 in xrange(C):
-                    for c1h in xrange(C):
-                        conf[c1, c1h] += np.sum(Tb[:, c1] * Yb[:, c1h])
-        else:  # No confusion matrix
-            conf = None
-        return conf
 
 
 
