@@ -12,22 +12,39 @@ import os
 
 
 class SLFN(object):
+    """Single Layer Feed-forward Network (SLFN), the neural network that ELM trains.
+
+    This implementation is not the fastest but very simple, and it defines interface.
+
+    Args:
+        c (int): number of outputs, or classes for classification
+        norm (double): output weights normalization parameter (Tikhonov normalizaion, or
+            ridge regression), large values provides smaller (= better) weights but worse model accuracy
+        precision (Numpy.float32/64): solver precision, float32 is faster but may be worse, most GPU
+            work fast only in float32.
+
+    Attributes:
+        neurons (list): a list of different types of neurons, initially empty. One neuron type is a tuple
+            ('number of neurons', 'function_type', W, Bias), `neurons` is a list of [neuron_type_1, neuron_type_2, ... ].
+        func (dict): a dictionary of transformation function type, key is a neuron type (= function name)
+            and value is the function itself. A single function takes input parameters X, W, B, and outputs
+            corresponding H for its neuron type.
+        HH, HT (matrix): intermediate covariance matrices used in ELM solution. Can be computed and stored in GPU
+            memory for accelerated SLFN. They are not needed once ELM is solved and they can take a lot of memory
+            with large numbers of neurons, so one can delete them with `reset()` method. They are omitted when
+            an ELM model is saved.
+        B (matrix): output solution matrix of SLFN. A trained ELM needs only `neurons` and `B` to predict outputs
+            for new input data.
+    """
 
     def __init__(self, c, norm=None, precision=np.float64):
-        """Initialize matrices and functions.
-
-        Basic SLFN implementation, not the fastest but very simple and it defines interface.
-
-        Set neurons to the required precision. Neurons is a list
-        of [('function_type', 'number of neurons', W, Bias), ...]
-        Create transformation functions.
-        Initialize HH, HT and B matrices, add 'norm' to diagonal of HH.
+        """Initialize class variables and transformation functions.
         """
-        if norm is None:
-            norm = 50*np.finfo(precision).eps  # 50 times machine epsilon
-        self.norm = norm
         self.c = c  # number of outputs, also number of classes (thus 'c')
         self.precision = precision
+        if norm is None:
+            norm = 50*np.finfo(precision).eps  # 50 times machine epsilon
+        self.norm = precision(norm)  # cast norm in required precision
         # cannot use a dictionary for neurons, because its iteration order is not defined
         self.neurons = []  # list of all neurons in normal Numpy form
         self.L = None  # number of neurons
@@ -66,31 +83,37 @@ class SLFN(object):
                 A 1-D vector of neuron biases, size (`number`, )
         """
 
-        ntypes = [nr[0] for nr in self.neurons]  # existing types of neurons
+        ntypes = [nr[1] for nr in self.neurons]  # existing types of neurons
         if func in ntypes:
             # add to an existing neuron type
             i = ntypes.index(func)
-            _, nn0, W0, B0 = self.neurons[i]
+            nn0, _, W0, B0 = self.neurons[i]
             number = nn0 + number
             W = np.hstack((W0, W))
             B = np.hstack((B0, B))
-            self.neurons[i] = (func, number, W, B)
+            self.neurons[i] = (number, func, W, B)
         else:
             # create a new neuron type
-            self.neurons.append((func, number, W, B))
+            self.neurons.append((number, func, W, B))
+        self.reset()
+        self.B = None
 
-        # reset invalid parameters
-        self.L = sum([n[1] for n in self.neurons])  # get number of neurons
+    def reset(self):
+        """ Resets intermediate training results, frees memory that they use.
+
+        Keeps solution of ELM, so a trained ELM remains operational.
+        Can be called to free memory after an ELM is trained.
+        """
+        self.L = sum([n[0] for n in self.neurons])  # get number of neurons
         self.HH = None
         self.HT = None
-        self.B = None
 
     def project(self, X):
         """Projects X to H, build-in function.
         """
         assert self.neurons is not None, "ELM has no neurons"
         X = X.astype(self.precision)
-        return np.hstack([self.func[ftype](X, W, B) for ftype, _, W, B in self.neurons])
+        return np.hstack([self.func[ftype](X, W, B) for _, ftype, W, B in self.neurons])
 
     def predict(self, X):
         """Predict a batch of data.
@@ -155,19 +178,17 @@ class SLFN(object):
         idx = list(idx)
         neurons = []
         for nold in self.neurons:
-            k = nold[1]  # number of neurons
+            k = nold[0]  # number of neurons
             ix1 = [i for i in idx if i < k]  # index for current neuron type
             idx = [i-k for i in idx if i >= k]
-            func = nold[0]
+            func = nold[1]
             number = len(ix1)
             W = nold[2][:, ix1]
             bias = nold[3][ix1]
-            neurons.append((func, number, W, bias))
+            neurons.append((number, func, W, bias))
         self.neurons = neurons
         # reset invalid parameters
-        self.L = sum([n[1] for n in self.neurons])  # get number of neurons
-        self.HH = None
-        self.HT = None
+        self.reset()
         self.B = None
 
 
@@ -186,6 +207,7 @@ class SLFN(object):
 
         :param B: output layer weights matrix.
         """
+        assert B.shape[0] == self.L, "Incorrect first dimension: %d expected, %d found" % (self.L, B.shape[0])
         assert B.shape[1] == self.c, "Incorrect output dimension: %d expected, %d found" % (self.c, B.shape[1])
         self.B = B.astype(self.precision)
 

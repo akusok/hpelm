@@ -7,7 +7,7 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 
-from slfn import SLFN
+from nnet import SLFN
 
 
 class HPELM(SLFN):

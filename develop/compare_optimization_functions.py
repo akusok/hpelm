@@ -16,7 +16,7 @@ import numpy as np
 from numpy.linalg import pinv
 from scipy.optimize import minimize_scalar, brenth
 
-from slfn import SLFN
+from nnet import SLFN
 
 
 class ELM(SLFN):

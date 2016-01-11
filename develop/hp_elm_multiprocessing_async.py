@@ -12,7 +12,7 @@ import threading
 from time import time
 from hpelm.modules import make_hdf5, ireader, iwriter, ireader2
 from tables import open_file
-from slfn import SLFN
+from nnet import SLFN
 
 
 class HPELM(SLFN):

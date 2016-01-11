@@ -11,7 +11,7 @@ from scipy.spatial.distance import cdist
 from multiprocessing import Pool, cpu_count
 import os
 
-from slfn import SLFN
+from nnet import SLFN
 
 
 class parallel_cdist(object):
