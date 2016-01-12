@@ -12,6 +12,7 @@ import numpy as np
 from hpelm import HPELM as ELM
 
 
+# noinspection PyArgumentList
 class TestCorrectness(TestCase):
 
     def test_1_NonNumpyInputs_RaiseError(self):

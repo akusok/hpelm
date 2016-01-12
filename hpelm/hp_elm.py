@@ -15,7 +15,7 @@ from tables import open_file
 from nnets.slfn import SLFN
 
 
-class HPELM(SLFN):
+class HPELM(Object):
     """Interface for training Extreme Learning Machines.
     """
 
@@ -115,7 +115,7 @@ class HPELM(SLFN):
         return node
 
 
-    def predict(self, fX, fY):
+    def _predict(self, fX, fY):
         """Iterative predict which saves data to HDF5, sequential version.
         """
         assert self.solver.Beta is not None, "Train ELM before predicting"
@@ -140,7 +140,7 @@ class HPELM(SLFN):
             # get data
             Xb = X[start:stop].astype(np.float64)
             # process data
-            Yb = self.solver.predict(Xb)
+            Yb = self.solver._predict(Xb)
             # write data
             Y[start:stop] = Yb
 
@@ -191,7 +191,7 @@ class HPELM(SLFN):
                 Xb = qr_out.get()
                 Xb = Xb.astype(np.float64)
                 # process data
-                Yb = self.solver.predict(Xb)
+                Yb = self.solver._predict(Xb)
                 # save data
                 qw_in.put((Yb, start, stop))
 
@@ -442,7 +442,7 @@ class HPELM(SLFN):
             alpha = float(stop-start)/N
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
-            Hb = self.solver.project(Xb)
+            Hb = self.solver._project(Xb)
             for i in xrange(k):
                 hb1 = Hb[:, :nns[i]]
                 Yb = np.dot(hb1, Betas[i])
@@ -487,7 +487,7 @@ class HPELM(SLFN):
             stop = min((b+1)*self.batch, N)
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
-            Hb = self.solver.project(Xb)
+            Hb = self.solver._project(Xb)
             Tc = np.argmax(Tb, axis=1)
             for i in xrange(k):
                 hb1 = Hb[:, :nns[i]]

@@ -128,8 +128,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="hpelm.solvers.html">hpelm.solvers package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#module-hpelm.solvers.slfn">hpelm.solvers.slfn module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#module-hpelm.solvers">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#hpelm-solvers-slfn-module">hpelm.solvers.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="hpelm.tests.html">hpelm.tests package</a><ul>
@@ -152,7 +152,7 @@
 <p>&#64;author: akusok</p>
 <dl class="class">
 <dt id="hpelm.elm.ELM">
-<em class="property">class </em><code class="descclassname">hpelm.elm.</code><code class="descname">ELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">hpelm.elm.</code><code class="descname">ELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Interface for training Extreme Learning Machines (ELM).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -169,6 +169,7 @@ as a class attribute.</li>
 <li><strong>precision</strong> (<em>optional</em>) &#8211; data precision to use, supports signle (&#8216;single&#8217;, &#8216;32&#8217; or numpy.float32) or double
 (&#8216;double&#8217;, &#8216;64&#8217; or numpy.float64). Single precision is faster but may cause numerical errors. Majority
 of GPUs work in single precision. Default: <strong>double</strong>.</li>
+<li><strong>norm</strong> (<em>double, optinal</em>) &#8211; L2-normalization parameter, None gives the default value.</li>
 <li><strong>tprint</strong> (<em>int, optional</em>) &#8211; ELM reports its progess every <cite>tprint</cite> seconds or after every batch, whatever takes longer.</li>
 </ul>
 </td>
@@ -177,20 +178,20 @@ of GPUs work in single precision. Default: <strong>double</strong>.</li>
 </table>
 <p>Class attributes; attributes that simply store initialization or <cite>train()</cite> parameters are omitted.</p>
 <dl class="attribute">
+<dt id="hpelm.elm.ELM.nnet">
+<code class="descname">nnet</code><a class="headerlink" href="#hpelm.elm.ELM.nnet" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>object</em></p>
+<p>Implementation of neural network with computational methods, but without
+complex logic. Different implementations are given by different classes: for Python, for GPU, etc.
+See <code class="docutils literal"><span class="pre">hpelm.nnets</span></code> folder for particular files. You can implement your own computational algorithm
+by inheriting from <code class="docutils literal"><span class="pre">hpelm.nnets.SLFN</span></code> and overwriting some methods.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="hpelm.elm.ELM.flist">
 <code class="descname">flist</code><a class="headerlink" href="#hpelm.elm.ELM.flist" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>list of strings</em></p>
 <p>Awailable types of neurons, use them when adding new neurons.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="hpelm.elm.ELM.solver">
-<code class="descname">solver</code><a class="headerlink" href="#hpelm.elm.ELM.solver" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>object</em></p>
-<p>Implementation of neural network with computational methods, but without
-complex logic. Different implementations are given by different classes: for Python, for GPU, etc.
-See <code class="docutils literal"><span class="pre">hpelm.solvers</span></code> folder for particular files. You can implement your own computational algorithm
-by inheriting from <code class="docutils literal"><span class="pre">hpelm.solvers.slfn</span></code> and overwriting some methods.</p>
 </dd></dl>
 
 <div class="admonition note">
@@ -198,10 +199,13 @@ by inheriting from <code class="docutils literal"><span class="pre">hpelm.solver
 <p class="last">Below the &#8216;matrix&#8217; type means a 2-dimensional Numpy.ndarray.</p>
 </div>
 <dl class="method">
-<dt id="hpelm.elm.ELM.add_batch">
-<code class="descname">add_batch</code><span class="sig-paren">(</span><em>X</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.add_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.add_batch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update HH, HT matrices needed for ELM solution by feeding training data (X,T) in batches.</p>
-<p>Helper method, for training an ELM use <cite>train()</cite> instead.</p>
+<dt id="hpelm.elm.ELM.add_data">
+<code class="descname">add_data</code><span class="sig-paren">(</span><em>X</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.add_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.add_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Feed new training data (X,T) to ELM model in batches; does not solve ELM itself.</p>
+<p>Helper method that updates intermediate solution parameters HH and HT, which are used for solving ELM later.
+Updates accumulate, so this method can be called multiple times with different parts of training data.
+To reset accumulated training data, use <cite>ELM.nnet.reset()</cite>.</p>
+<p>For training an ELM use <cite>ELM.train()</cite> instead.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -275,8 +279,12 @@ confusion matrix, size (<cite>outputs</cite> * <cite>outputs</cite>)</p>
 <code class="descname">error</code><span class="sig-paren">(</span><em>Y</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate error of model predictions.</p>
 <p>Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
-For classification, computes corresponding classification error. For weighted classification,
-computes average weighted per-class error. For multi-label classification, correct classes are all with Y&gt;0.5.</p>
+For classification, computes corresponding classification error.
+For multi-label classification, correct classes are all with Y&gt;0.5.</p>
+<p>For weighted classification the error is an average weighted True Positive Rate,
+or percentage of correctly predicted samples for each class, multiplied by weight
+of that class and averaged. If you want something else, just write the code yourself :)
+See <a class="reference external" href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -423,7 +431,7 @@ batch size for ELM, overwrites batch size from an initialization</li>
 <dl class="class">
 <dt id="hpelm.hp_elm.HPELM">
 <em class="property">class </em><code class="descclassname">hpelm.hp_elm.</code><code class="descname">HPELM</code><span class="sig-paren">(</span><em>c</em>, <em>norm=None</em>, <em>precision=&lt;type 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="hpelm.solvers.html#hpelm.solvers.slfn.SLFN" title="hpelm.solvers.slfn.SLFN"><code class="xref py py-class docutils literal"><span class="pre">hpelm.solvers.slfn.SLFN</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">hpelm.nnets.slfn.SLFN</span></code></p>
 <p>Interface for training Extreme Learning Machines.</p>
 <dl class="method">
 <dt id="hpelm.hp_elm.HPELM.add_batch">

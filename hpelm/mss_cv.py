@@ -28,8 +28,8 @@ def train_cv(self, X, T, k):
         Xts = X[idx_ts]
         Tts = T[idx_ts]
         HH, HT = self.solver.get_batch(Xtr, Ttr)
-        Hvl = self.solver.project(Xvl)
-        Hts = self.solver.project(Xts)
+        Hvl = self.solver._project(Xvl)
+        Hts = self.solver._project(Xts)
         rank, nn = self._ranking(Hvl.shape[1], Hvl, Tvl)
         datak.append((HH, HT, Hvl, Tvl, Hts, Tts, rank))
 

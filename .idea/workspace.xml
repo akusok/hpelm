@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="113e7ec7-c14a-483b-93e3-5bb5db926990" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hpelm/solvers/__init__.py" afterPath="$PROJECT_DIR$/hpelm/nnets/__init__.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hpelm/solvers/slfn.py" afterPath="$PROJECT_DIR$/hpelm/nnets/slfn.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" afterPath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.doctree" afterPath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.doctree" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.tests.doctree" afterPath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.tests.doctree" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/objects.inv" afterPath="$PROJECT_DIR$/docs/_build/html/objects.inv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/hpelm.iml" afterPath="$PROJECT_DIR$/.idea/hpelm.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/develop/XXXXhpelm.py" afterPath="$PROJECT_DIR$/develop/XXXXhpelm.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/develop/compare_optimization_functions.py" afterPath="$PROJECT_DIR$/develop/compare_optimization_functions.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/develop/hp_elm_multiprocessing_async.py" afterPath="$PROJECT_DIR$/develop/hp_elm_multiprocessing_async.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/develop/parallel_cdist_projection.py" afterPath="$PROJECT_DIR$/develop/parallel_cdist_projection.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/elm.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/elm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/hp_elm.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/hp_elm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_acceptance.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_acceptance.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_correctness.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_correctness.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/genindex.html" afterPath="$PROJECT_DIR$/docs/_build/html/genindex.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/hpelm.html" afterPath="$PROJECT_DIR$/docs/_build/html/hpelm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/hpelm.tests.html" afterPath="$PROJECT_DIR$/docs/_build/html/hpelm.tests.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/modules.html" afterPath="$PROJECT_DIR$/docs/_build/html/modules.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/py-modindex.html" afterPath="$PROJECT_DIR$/docs/_build/html/py-modindex.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/searchindex.js" afterPath="$PROJECT_DIR$/docs/_build/html/searchindex.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/elm.py" afterPath="$PROJECT_DIR$/hpelm/elm.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/hp_elm.py" afterPath="$PROJECT_DIR$/hpelm/hp_elm.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/mss_cv.py" afterPath="$PROJECT_DIR$/hpelm/mss_cv.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/mss_hpv.py" afterPath="$PROJECT_DIR$/hpelm/mss_hpv.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/mss_loo.py" afterPath="$PROJECT_DIR$/hpelm/mss_loo.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/mss_v.py" afterPath="$PROJECT_DIR$/hpelm/mss_v.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/nnets/slfn.py" afterPath="$PROJECT_DIR$/hpelm/nnets/slfn.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/tests/test_acceptance.py" afterPath="$PROJECT_DIR$/hpelm/tests/test_acceptance.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py" afterPath="$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/tests/test_correctness.py" afterPath="$PROJECT_DIR$/hpelm/tests/test_correctness.py" />
     </list>
     <ignored path="hpelm.iws" />
@@ -30,61 +45,63 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_correctness.coverage" NAME="Nosetests in test_correctness Coverage Results" MODIFIED="1452521996470" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
-    <SUITE FILE_PATH="coverage/hpelm$Nosetest_TestAcceptance_test_basic_elm_single_machine.coverage" NAME="Nosetest TestAcceptance.test_basic_elm_single_machine Coverage Results" MODIFIED="1452519502950" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
     <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_acceptance.coverage" NAME="Nosetests in test_acceptance Coverage Results" MODIFIED="1452520585997" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
+    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_correctness.coverage" NAME="Nosetests in test_correctness Coverage Results" MODIFIED="1452593628124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
+    <SUITE FILE_PATH="coverage/hpelm$Nosetest_TestAcceptance_test_basic_elm_single_machine.coverage" NAME="Nosetest TestAcceptance.test_basic_elm_single_machine Coverage Results" MODIFIED="1452519502950" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
   </component>
   <component name="CoverageOptionsProvider">
     <option name="myAddOrReplace" value="0" />
     <option name="myActivateViewOnRun" value="false" />
   </component>
+  <component name="CoverageViewManager">
+    <option name="myAutoScrollFromSource" value="true" />
+  </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="ExportToHTMLSettings">
+    <option name="OPEN_IN_BROWSER" value="true" />
+    <option name="OUTPUT_DIRECTORY" value="$USER_HOME$/Desktop/ins" />
+  </component>
   <component name="FavoritesManager">
     <favorites_list name="hpelm" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.5122732">
       <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="slfn.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
+        <leaf>
+          <file leaf-file-name="elm.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="1.155624">
-                  <caret line="159" column="0" selection-start-line="159" selection-start-column="0" selection-end-line="159" selection-end-column="0" />
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="88" column="0" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
                   <folding>
-                    <element signature="e#238#1852#1" expanded="false" />
-                    <element signature="e#3167#4070#1" expanded="false" />
+                    <element signature="e#24#84#1" expanded="false" />
+                    <element signature="e#86#104#0" expanded="true" />
+                    <element signature="e#3784#4016#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="elm.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+          <file leaf-file-name="hp_elm.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="-8.796296">
+                  <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="slfn.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="468" column="0" selection-start-line="468" selection-start-column="0" selection-end-line="468" selection-end-column="0" />
+                  <caret line="147" column="25" selection-start-line="147" selection-start-column="25" selection-end-line="147" selection-end-column="25" />
                   <folding>
-                    <element signature="e#25#85#1" expanded="false" />
-                    <element signature="e#87#105#0" expanded="true" />
-                    <element signature="e#2239#3680#0" expanded="false" />
-                    <element signature="e#3713#3945#0" expanded="false" />
-                    <element signature="e#3999#8979#0" expanded="false" />
-                    <element signature="e#3999#5827#1" expanded="false" />
-                    <element signature="e#9019#10240#0" expanded="false" />
-                    <element signature="e#10307#13288#0" expanded="false" />
-                    <element signature="e#13325#14049#0" expanded="false" />
-                    <element signature="e#14092#15647#0" expanded="false" />
-                    <element signature="e#15683#16018#0" expanded="false" />
-                    <element signature="e#16054#16375#0" expanded="false" />
-                    <element signature="e#17460#18517#0" expanded="false" />
-                    <element signature="e#18550#18659#0" expanded="false" />
-                    <element signature="e#18705#20579#0" expanded="false" />
-                    <element signature="e#20633#21479#0" expanded="false" />
-                    <element signature="e#21521#23531#0" expanded="false" />
+                    <element signature="e#126#135#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -98,17 +115,75 @@
             <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
+                  <caret line="52" column="29" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="test_correctness.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="test_correctness.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="1.1895224">
-                  <caret line="326" column="23" selection-start-line="326" selection-start-column="23" selection-end-line="326" selection-end-column="23" />
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="139" column="0" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#24#84#1" expanded="false" />
+                    <element signature="e#86#95#0" expanded="true" />
+                    <element signature="e#274#479#0" expanded="false" />
+                    <element signature="e#536#735#0" expanded="false" />
+                    <element signature="e#798#941#0" expanded="false" />
+                    <element signature="e#1005#1142#0" expanded="false" />
+                    <element signature="e#1209#1402#0" expanded="false" />
+                    <element signature="e#1470#1663#0" expanded="false" />
+                    <element signature="e#1718#1870#0" expanded="false" />
+                    <element signature="e#1935#2093#0" expanded="false" />
+                    <element signature="e#2154#2292#0" expanded="false" />
+                    <element signature="e#2358#2512#0" expanded="false" />
+                    <element signature="e#2581#2682#0" expanded="false" />
+                    <element signature="e#2749#2881#0" expanded="false" />
+                    <element signature="e#2941#3047#0" expanded="false" />
+                    <element signature="e#3110#3218#0" expanded="false" />
+                    <element signature="e#3276#3384#0" expanded="false" />
+                    <element signature="e#3443#3555#0" expanded="false" />
+                    <element signature="e#3614#3726#0" expanded="false" />
+                    <element signature="e#3787#3903#0" expanded="false" />
+                    <element signature="e#3962#4114#0" expanded="false" />
+                    <element signature="e#4175#4438#0" expanded="false" />
+                    <element signature="e#4497#4685#0" expanded="false" />
+                    <element signature="e#4747#4919#0" expanded="false" />
+                    <element signature="e#4975#5151#0" expanded="false" />
+                    <element signature="e#5217#5449#0" expanded="false" />
+                    <element signature="e#5521#5954#0" expanded="false" />
+                    <element signature="e#5994#6091#0" expanded="false" />
+                    <element signature="e#6151#6284#0" expanded="false" />
+                    <element signature="e#6337#6404#0" expanded="false" />
+                    <element signature="e#6465#6665#0" expanded="false" />
+                    <element signature="e#6716#6906#0" expanded="false" />
+                    <element signature="e#6966#7297#0" expanded="false" />
+                    <element signature="e#7358#7549#0" expanded="false" />
+                    <element signature="e#7608#7809#0" expanded="false" />
+                    <element signature="e#7881#8072#0" expanded="false" />
+                    <element signature="e#8151#8516#0" expanded="false" />
+                    <element signature="e#8568#8762#0" expanded="false" />
+                    <element signature="e#8818#9101#0" expanded="false" />
+                    <element signature="e#9156#9536#0" expanded="false" />
+                    <element signature="e#9593#9881#0" expanded="false" />
+                    <element signature="e#9937#10134#0" expanded="false" />
+                    <element signature="e#10180#10266#0" expanded="false" />
+                    <element signature="e#10323#11143#0" expanded="false" />
+                    <element signature="e#11186#12220#0" expanded="false" />
+                    <element signature="e#12268#12463#0" expanded="false" />
+                    <element signature="e#12511#12689#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="test_corr_hpelm.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.7314815">
+                  <caret line="54" column="37" selection-start-line="54" selection-start-column="37" selection-end-line="54" selection-end-column="37" />
                   <folding />
                 </state>
               </provider>
@@ -119,6 +194,11 @@
     </splitter>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Anton Akusok &lt;akusok.a@gmail.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
@@ -127,7 +207,6 @@
         <option value="$PROJECT_DIR$/hpelm/slfn/slfn.py" />
         <option value="$PROJECT_DIR$/hpelm/solvers/__init__.py" />
         <option value="$PROJECT_DIR$/hpelm/slfn.py" />
-        <option value="$PROJECT_DIR$/hpelm/hp_elm.py" />
         <option value="$PROJECT_DIR$/hpelm/__init__.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/docs/hpelm.acc.rst" />
@@ -140,6 +219,7 @@
         <option value="$PROJECT_DIR$/hpelm/elm.py" />
         <option value="$PROJECT_DIR$/hpelm/tests/test_correctness.py" />
         <option value="$PROJECT_DIR$/hpelm/nnets/slfn.py" />
+        <option value="$PROJECT_DIR$/hpelm/hp_elm.py" />
       </list>
     </option>
   </component>
@@ -149,8 +229,38 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="width" value="1920" />
-    <option name="height" value="1080" />
+    <option name="x" value="-1" />
+    <option name="y" value="-26" />
+    <option name="width" value="1922" />
+    <option name="height" value="1107" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>Django</id>
+          </State>
+          <State>
+            <id>GeneralJavaScript</id>
+          </State>
+          <State>
+            <id>JavaScript</id>
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>PyMethodMayBeStaticInspection</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -177,25 +287,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Problems" />
-        <subPane subId="Changed Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
+      <pane id="Scope" />
       <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
@@ -215,66 +307,15 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tests" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="nnets" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/hpelm/tests/test_correctness.py" />
-    <property name="settings.editor.selected.configurable" value="coverage" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Desktop/ins" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="FullScreen" value="true" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -403,6 +444,11 @@
       <method />
     </configuration>
     <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="js.build_tools.npm" factoryName="npm">
@@ -593,37 +639,44 @@
       <option name="number" value="Default" />
       <updated>1452164411573</updated>
     </task>
+    <task id="LOCAL-00001" summary="Unittested  elm.py">
+      <created>1452522143258</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1452522143259</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_in_test_acceptance - 2016.01.11 at 15h 53m 46s.xml">
-      <configuration name="Nosetests in test_acceptance" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_acceptance - 2016.01.11 at 15h 53m 50s.xml">
-      <configuration name="Nosetests in test_acceptance" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_acceptance - 2016.01.11 at 15h 54m 04s.xml">
-      <configuration name="Nosetests in test_acceptance" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_acceptance - 2016.01.11 at 15h 54m 31s.xml">
-      <configuration name="Nosetests in test_acceptance" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_acceptance - 2016.01.11 at 15h 55m 42s.xml">
-      <configuration name="Nosetests in test_acceptance" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_acceptance - 2016.01.11 at 15h 56m 27s.xml">
-      <configuration name="Nosetests in test_acceptance" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_correctness - 2016.01.11 at 15h 54m 02s.xml">
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 10h 54m 31s.xml">
       <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_correctness - 2016.01.11 at 15h 56m 48s.xml">
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 10h 55m 27s.xml">
       <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_correctness - 2016.01.11 at 15h 57m 04s.xml">
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 10h 56m 55s.xml">
       <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_correctness - 2016.01.11 at 16h 19m 58s.xml">
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 11h 00m 58s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 11h 01m 20s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 12h 02m 18s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 12h 02m 52s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 12h 03m 16s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 12h 03m 39s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.12 at 12h 13m 48s.xml">
       <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
   </component>
@@ -637,28 +690,29 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
+    <frame x="-1" y="-26" width="1922" height="1107" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1400426" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32970297" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33663365" sideWeight="0.5021299" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32926002" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32970297" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35940593" sideWeight="0.4978701" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31043664" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18199112" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33465347" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33399406" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32771084" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33663365" sideWeight="0.5021299" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32903865" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22945571" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32903865" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18177083" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13927428" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32926002" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40832508" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4469772" sideWeight="0.4978701" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32871288" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -672,20 +726,346 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="Unittested  elm.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Unittested  elm.py" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="9" />
+      <option name="time" value="14" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#95#0" expanded="true" />
+            <element signature="e#274#479#0" expanded="false" />
+            <element signature="e#536#735#0" expanded="false" />
+            <element signature="e#798#941#0" expanded="false" />
+            <element signature="e#1005#1142#0" expanded="false" />
+            <element signature="e#1209#1402#0" expanded="false" />
+            <element signature="e#1470#1663#0" expanded="false" />
+            <element signature="e#1718#1870#0" expanded="false" />
+            <element signature="e#1935#2093#0" expanded="false" />
+            <element signature="e#2154#2292#0" expanded="false" />
+            <element signature="e#2358#2512#0" expanded="false" />
+            <element signature="e#2581#2682#0" expanded="false" />
+            <element signature="e#2749#2881#0" expanded="false" />
+            <element signature="e#2941#3047#0" expanded="false" />
+            <element signature="e#3110#3218#0" expanded="false" />
+            <element signature="e#3276#3384#0" expanded="false" />
+            <element signature="e#3443#3555#0" expanded="false" />
+            <element signature="e#3614#3726#0" expanded="false" />
+            <element signature="e#3787#3903#0" expanded="false" />
+            <element signature="e#3962#4114#0" expanded="false" />
+            <element signature="e#4175#4438#0" expanded="false" />
+            <element signature="e#4497#4685#0" expanded="false" />
+            <element signature="e#4747#4919#0" expanded="false" />
+            <element signature="e#4975#5151#0" expanded="false" />
+            <element signature="e#5217#5449#0" expanded="false" />
+            <element signature="e#5521#5954#0" expanded="false" />
+            <element signature="e#5994#6091#0" expanded="false" />
+            <element signature="e#6151#6284#0" expanded="false" />
+            <element signature="e#6337#6404#0" expanded="false" />
+            <element signature="e#6465#6665#0" expanded="false" />
+            <element signature="e#6716#6906#0" expanded="false" />
+            <element signature="e#6966#7297#0" expanded="false" />
+            <element signature="e#7358#7549#0" expanded="false" />
+            <element signature="e#7608#7809#0" expanded="false" />
+            <element signature="e#7881#8072#0" expanded="false" />
+            <element signature="e#8151#8516#0" expanded="false" />
+            <element signature="e#8568#8762#0" expanded="false" />
+            <element signature="e#8818#9101#0" expanded="false" />
+            <element signature="e#9156#9536#0" expanded="false" />
+            <element signature="e#9593#9881#0" expanded="false" />
+            <element signature="e#9937#10134#0" expanded="false" />
+            <element signature="e#10180#10266#0" expanded="false" />
+            <element signature="e#10323#11143#0" expanded="false" />
+            <element signature="e#11186#12220#0" expanded="false" />
+            <element signature="e#12268#12463#0" expanded="false" />
+            <element signature="e#12511#12689#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="171" column="38" selection-start-line="171" selection-start-column="38" selection-end-line="171" selection-end-column="38" />
+          <folding>
+            <element signature="e#126#135#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="277" column="26" selection-start-line="277" selection-start-column="26" selection-end-line="277" selection-end-column="26" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#95#0" expanded="true" />
+            <element signature="e#274#479#0" expanded="false" />
+            <element signature="e#536#735#0" expanded="false" />
+            <element signature="e#798#941#0" expanded="false" />
+            <element signature="e#1005#1142#0" expanded="false" />
+            <element signature="e#1209#1402#0" expanded="false" />
+            <element signature="e#1470#1663#0" expanded="false" />
+            <element signature="e#1718#1870#0" expanded="false" />
+            <element signature="e#1935#2093#0" expanded="false" />
+            <element signature="e#2154#2292#0" expanded="false" />
+            <element signature="e#2358#2512#0" expanded="false" />
+            <element signature="e#2581#2682#0" expanded="false" />
+            <element signature="e#2749#2881#0" expanded="false" />
+            <element signature="e#2941#3047#0" expanded="false" />
+            <element signature="e#3110#3218#0" expanded="false" />
+            <element signature="e#3276#3384#0" expanded="false" />
+            <element signature="e#3443#3555#0" expanded="false" />
+            <element signature="e#3614#3726#0" expanded="false" />
+            <element signature="e#3787#3903#0" expanded="false" />
+            <element signature="e#3962#4114#0" expanded="false" />
+            <element signature="e#4175#4438#0" expanded="false" />
+            <element signature="e#4497#4685#0" expanded="false" />
+            <element signature="e#4747#4919#0" expanded="false" />
+            <element signature="e#4975#5151#0" expanded="false" />
+            <element signature="e#5217#5449#0" expanded="false" />
+            <element signature="e#5521#5954#0" expanded="false" />
+            <element signature="e#5994#6091#0" expanded="false" />
+            <element signature="e#6151#6284#0" expanded="false" />
+            <element signature="e#6337#6404#0" expanded="false" />
+            <element signature="e#6465#6665#0" expanded="false" />
+            <element signature="e#6716#6906#0" expanded="false" />
+            <element signature="e#6966#7297#0" expanded="false" />
+            <element signature="e#7358#7549#0" expanded="false" />
+            <element signature="e#7608#7809#0" expanded="false" />
+            <element signature="e#7881#8072#0" expanded="false" />
+            <element signature="e#8151#8516#0" expanded="false" />
+            <element signature="e#8568#8762#0" expanded="false" />
+            <element signature="e#8818#9101#0" expanded="false" />
+            <element signature="e#9156#9536#0" expanded="false" />
+            <element signature="e#9593#9881#0" expanded="false" />
+            <element signature="e#9937#10134#0" expanded="false" />
+            <element signature="e#10180#10266#0" expanded="false" />
+            <element signature="e#10323#11143#0" expanded="false" />
+            <element signature="e#11186#12220#0" expanded="false" />
+            <element signature="e#12268#12463#0" expanded="false" />
+            <element signature="e#12511#12689#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="171" column="38" selection-start-line="171" selection-start-column="38" selection-end-line="171" selection-end-column="38" />
+          <folding>
+            <element signature="e#126#135#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="264" column="26" selection-start-line="264" selection-start-column="26" selection-end-line="264" selection-end-column="26" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#95#0" expanded="true" />
+            <element signature="e#274#479#0" expanded="false" />
+            <element signature="e#536#735#0" expanded="false" />
+            <element signature="e#798#941#0" expanded="false" />
+            <element signature="e#1005#1142#0" expanded="false" />
+            <element signature="e#1209#1402#0" expanded="false" />
+            <element signature="e#1470#1663#0" expanded="false" />
+            <element signature="e#1718#1870#0" expanded="false" />
+            <element signature="e#1935#2093#0" expanded="false" />
+            <element signature="e#2154#2292#0" expanded="false" />
+            <element signature="e#2358#2512#0" expanded="false" />
+            <element signature="e#2581#2682#0" expanded="false" />
+            <element signature="e#2749#2881#0" expanded="false" />
+            <element signature="e#2941#3047#0" expanded="false" />
+            <element signature="e#3110#3218#0" expanded="false" />
+            <element signature="e#3276#3384#0" expanded="false" />
+            <element signature="e#3443#3555#0" expanded="false" />
+            <element signature="e#3614#3726#0" expanded="false" />
+            <element signature="e#3787#3903#0" expanded="false" />
+            <element signature="e#3962#4114#0" expanded="false" />
+            <element signature="e#4175#4438#0" expanded="false" />
+            <element signature="e#4497#4685#0" expanded="false" />
+            <element signature="e#4747#4919#0" expanded="false" />
+            <element signature="e#4975#5151#0" expanded="false" />
+            <element signature="e#5217#5449#0" expanded="false" />
+            <element signature="e#5521#5954#0" expanded="false" />
+            <element signature="e#5994#6091#0" expanded="false" />
+            <element signature="e#6151#6284#0" expanded="false" />
+            <element signature="e#6337#6404#0" expanded="false" />
+            <element signature="e#6465#6665#0" expanded="false" />
+            <element signature="e#6716#6906#0" expanded="false" />
+            <element signature="e#6966#7297#0" expanded="false" />
+            <element signature="e#7358#7549#0" expanded="false" />
+            <element signature="e#7608#7809#0" expanded="false" />
+            <element signature="e#7881#8072#0" expanded="false" />
+            <element signature="e#8151#8516#0" expanded="false" />
+            <element signature="e#8568#8762#0" expanded="false" />
+            <element signature="e#8818#9101#0" expanded="false" />
+            <element signature="e#9156#9536#0" expanded="false" />
+            <element signature="e#9593#9881#0" expanded="false" />
+            <element signature="e#9937#10134#0" expanded="false" />
+            <element signature="e#10180#10266#0" expanded="false" />
+            <element signature="e#10323#11143#0" expanded="false" />
+            <element signature="e#11186#12220#0" expanded="false" />
+            <element signature="e#12268#12463#0" expanded="false" />
+            <element signature="e#12511#12689#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="150" column="27" selection-start-line="150" selection-start-column="27" selection-end-line="150" selection-end-column="27" />
+          <folding>
+            <element signature="e#126#135#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="468" column="0" selection-start-line="468" selection-start-column="0" selection-end-line="468" selection-end-column="0" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#95#0" expanded="true" />
+            <element signature="e#274#479#0" expanded="false" />
+            <element signature="e#536#735#0" expanded="false" />
+            <element signature="e#798#941#0" expanded="false" />
+            <element signature="e#1005#1142#0" expanded="false" />
+            <element signature="e#1209#1402#0" expanded="false" />
+            <element signature="e#1470#1663#0" expanded="false" />
+            <element signature="e#1718#1870#0" expanded="false" />
+            <element signature="e#1935#2093#0" expanded="false" />
+            <element signature="e#2154#2292#0" expanded="false" />
+            <element signature="e#2358#2512#0" expanded="false" />
+            <element signature="e#2581#2682#0" expanded="false" />
+            <element signature="e#2749#2881#0" expanded="false" />
+            <element signature="e#2941#3047#0" expanded="false" />
+            <element signature="e#3110#3218#0" expanded="false" />
+            <element signature="e#3276#3384#0" expanded="false" />
+            <element signature="e#3443#3555#0" expanded="false" />
+            <element signature="e#3614#3726#0" expanded="false" />
+            <element signature="e#3787#3903#0" expanded="false" />
+            <element signature="e#3962#4114#0" expanded="false" />
+            <element signature="e#4175#4438#0" expanded="false" />
+            <element signature="e#4497#4685#0" expanded="false" />
+            <element signature="e#4747#4919#0" expanded="false" />
+            <element signature="e#4975#5151#0" expanded="false" />
+            <element signature="e#5217#5449#0" expanded="false" />
+            <element signature="e#5521#5954#0" expanded="false" />
+            <element signature="e#5994#6091#0" expanded="false" />
+            <element signature="e#6151#6284#0" expanded="false" />
+            <element signature="e#6337#6404#0" expanded="false" />
+            <element signature="e#6465#6665#0" expanded="false" />
+            <element signature="e#6716#6906#0" expanded="false" />
+            <element signature="e#6966#7297#0" expanded="false" />
+            <element signature="e#7358#7549#0" expanded="false" />
+            <element signature="e#7608#7809#0" expanded="false" />
+            <element signature="e#7881#8072#0" expanded="false" />
+            <element signature="e#8151#8516#0" expanded="false" />
+            <element signature="e#8568#8762#0" expanded="false" />
+            <element signature="e#8818#9101#0" expanded="false" />
+            <element signature="e#9156#9536#0" expanded="false" />
+            <element signature="e#9593#9881#0" expanded="false" />
+            <element signature="e#9937#10134#0" expanded="false" />
+            <element signature="e#10180#10266#0" expanded="false" />
+            <element signature="e#10323#11143#0" expanded="false" />
+            <element signature="e#11186#12220#0" expanded="false" />
+            <element signature="e#12268#12463#0" expanded="false" />
+            <element signature="e#12511#12689#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="96" column="61" selection-start-line="96" selection-start-column="61" selection-end-line="96" selection-end-column="61" />
           <folding>
-            <element signature="e#238#1852#1" expanded="false" />
-            <element signature="e#3167#4070#1" expanded="false" />
+            <element signature="e#126#135#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -695,23 +1075,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="177" column="29" selection-start-line="177" selection-start-column="29" selection-end-line="177" selection-end-column="29" />
           <folding>
-            <element signature="e#25#85#1" expanded="false" />
-            <element signature="e#87#105#0" expanded="true" />
-            <element signature="e#2239#3680#0" expanded="false" />
-            <element signature="e#3713#3945#0" expanded="false" />
-            <element signature="e#3999#8979#0" expanded="false" />
-            <element signature="e#3999#5827#1" expanded="false" />
-            <element signature="e#9019#10240#0" expanded="false" />
-            <element signature="e#10307#13288#0" expanded="false" />
-            <element signature="e#13325#14049#0" expanded="false" />
-            <element signature="e#14092#15647#0" expanded="false" />
-            <element signature="e#15683#16018#0" expanded="false" />
-            <element signature="e#16054#16375#0" expanded="false" />
-            <element signature="e#17460#18517#0" expanded="false" />
-            <element signature="e#18550#18659#0" expanded="false" />
-            <element signature="e#18705#20579#0" expanded="false" />
-            <element signature="e#20633#21479#0" expanded="false" />
-            <element signature="e#21521#23531#0" expanded="false" />
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -720,7 +1086,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -736,7 +1101,55 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#95#0" expanded="true" />
+            <element signature="e#274#479#0" expanded="false" />
+            <element signature="e#536#735#0" expanded="false" />
+            <element signature="e#798#941#0" expanded="false" />
+            <element signature="e#1005#1142#0" expanded="false" />
+            <element signature="e#1209#1402#0" expanded="false" />
+            <element signature="e#1470#1663#0" expanded="false" />
+            <element signature="e#1718#1870#0" expanded="false" />
+            <element signature="e#1935#2093#0" expanded="false" />
+            <element signature="e#2154#2292#0" expanded="false" />
+            <element signature="e#2358#2512#0" expanded="false" />
+            <element signature="e#2581#2682#0" expanded="false" />
+            <element signature="e#2749#2881#0" expanded="false" />
+            <element signature="e#2941#3047#0" expanded="false" />
+            <element signature="e#3110#3218#0" expanded="false" />
+            <element signature="e#3276#3384#0" expanded="false" />
+            <element signature="e#3443#3555#0" expanded="false" />
+            <element signature="e#3614#3726#0" expanded="false" />
+            <element signature="e#3787#3903#0" expanded="false" />
+            <element signature="e#3962#4114#0" expanded="false" />
+            <element signature="e#4175#4438#0" expanded="false" />
+            <element signature="e#4497#4685#0" expanded="false" />
+            <element signature="e#4747#4919#0" expanded="false" />
+            <element signature="e#4975#5151#0" expanded="false" />
+            <element signature="e#5217#5449#0" expanded="false" />
+            <element signature="e#5521#5954#0" expanded="false" />
+            <element signature="e#5994#6091#0" expanded="false" />
+            <element signature="e#6151#6284#0" expanded="false" />
+            <element signature="e#6337#6404#0" expanded="false" />
+            <element signature="e#6465#6665#0" expanded="false" />
+            <element signature="e#6716#6906#0" expanded="false" />
+            <element signature="e#6966#7297#0" expanded="false" />
+            <element signature="e#7358#7549#0" expanded="false" />
+            <element signature="e#7608#7809#0" expanded="false" />
+            <element signature="e#7881#8072#0" expanded="false" />
+            <element signature="e#8151#8516#0" expanded="false" />
+            <element signature="e#8568#8762#0" expanded="false" />
+            <element signature="e#8818#9101#0" expanded="false" />
+            <element signature="e#9156#9536#0" expanded="false" />
+            <element signature="e#9593#9881#0" expanded="false" />
+            <element signature="e#9937#10134#0" expanded="false" />
+            <element signature="e#10180#10266#0" expanded="false" />
+            <element signature="e#10323#11143#0" expanded="false" />
+            <element signature="e#11186#12220#0" expanded="false" />
+            <element signature="e#12268#12463#0" expanded="false" />
+            <element signature="e#12511#12689#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -745,23 +1158,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="201" column="52" selection-start-line="201" selection-start-column="52" selection-end-line="201" selection-end-column="52" />
           <folding>
-            <element signature="e#25#85#1" expanded="false" />
-            <element signature="e#87#105#0" expanded="true" />
-            <element signature="e#2239#3680#0" expanded="false" />
-            <element signature="e#3713#3945#0" expanded="false" />
-            <element signature="e#3999#8979#0" expanded="false" />
-            <element signature="e#3999#5827#1" expanded="false" />
-            <element signature="e#9019#10240#0" expanded="false" />
-            <element signature="e#10307#13288#0" expanded="false" />
-            <element signature="e#13325#14049#0" expanded="false" />
-            <element signature="e#14092#15647#0" expanded="false" />
-            <element signature="e#15683#16018#0" expanded="false" />
-            <element signature="e#16054#16375#0" expanded="false" />
-            <element signature="e#17460#18517#0" expanded="false" />
-            <element signature="e#18550#18659#0" expanded="false" />
-            <element signature="e#18705#20579#0" expanded="false" />
-            <element signature="e#20633#21479#0" expanded="false" />
-            <element signature="e#21521#23531#0" expanded="false" />
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -785,8 +1184,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#238#1852#1" expanded="false" />
-            <element signature="e#3167#4070#1" expanded="false" />
+            <element signature="e#126#135#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -796,23 +1194,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="187" column="45" selection-start-line="187" selection-start-column="45" selection-end-line="187" selection-end-column="45" />
           <folding>
-            <element signature="e#25#85#1" expanded="false" />
-            <element signature="e#87#105#0" expanded="true" />
-            <element signature="e#2239#3680#0" expanded="false" />
-            <element signature="e#3713#3945#0" expanded="false" />
-            <element signature="e#3999#8979#0" expanded="false" />
-            <element signature="e#3999#5827#1" expanded="false" />
-            <element signature="e#9019#10240#0" expanded="false" />
-            <element signature="e#10307#13288#0" expanded="false" />
-            <element signature="e#13325#14049#0" expanded="false" />
-            <element signature="e#14092#15647#0" expanded="false" />
-            <element signature="e#15683#16018#0" expanded="false" />
-            <element signature="e#16054#16375#0" expanded="false" />
-            <element signature="e#17460#18517#0" expanded="false" />
-            <element signature="e#18550#18659#0" expanded="false" />
-            <element signature="e#18705#20579#0" expanded="false" />
-            <element signature="e#20633#21479#0" expanded="false" />
-            <element signature="e#21521#23531#0" expanded="false" />
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -822,8 +1206,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#238#1852#1" expanded="false" />
-            <element signature="e#3167#4070#1" expanded="false" />
+            <element signature="e#126#135#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -833,23 +1216,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="39" column="20" selection-start-line="39" selection-start-column="20" selection-end-line="39" selection-end-column="20" />
           <folding>
-            <element signature="e#25#85#1" expanded="false" />
-            <element signature="e#87#105#0" expanded="true" />
-            <element signature="e#2239#3680#0" expanded="false" />
-            <element signature="e#3713#3945#0" expanded="false" />
-            <element signature="e#3999#8979#0" expanded="false" />
-            <element signature="e#3999#5827#1" expanded="false" />
-            <element signature="e#9019#10240#0" expanded="false" />
-            <element signature="e#10307#13288#0" expanded="false" />
-            <element signature="e#13325#14049#0" expanded="false" />
-            <element signature="e#14092#15647#0" expanded="false" />
-            <element signature="e#15683#16018#0" expanded="false" />
-            <element signature="e#16054#16375#0" expanded="false" />
-            <element signature="e#17460#18517#0" expanded="false" />
-            <element signature="e#18550#18659#0" expanded="false" />
-            <element signature="e#18705#20579#0" expanded="false" />
-            <element signature="e#20633#21479#0" expanded="false" />
-            <element signature="e#21521#23531#0" expanded="false" />
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -868,13 +1237,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/mss_loo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="26" selection-start-line="17" selection-start-column="21" selection-end-line="17" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/mss_v.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -886,7 +1248,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-2.914622">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -943,7 +1304,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="14" column="32" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -975,18 +1335,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="98" column="38" selection-start-line="98" selection-start-column="38" selection-end-line="98" selection-end-column="38" />
+          <caret line="52" column="29" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
+    <entry file="file://$PROJECT_DIR$/develop_solver/test_gpu_project.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.19285715">
+          <caret line="24" column="83" selection-start-line="24" selection-start-column="83" selection-end-line="24" selection-end-column="83" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/develop_solver/solver_numbapro.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.19285715">
+          <caret line="19" column="63" selection-start-line="19" selection-start-column="63" selection-end-line="19" selection-end-column="63" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
+          <caret line="147" column="25" selection-start-line="147" selection-start-column="25" selection-end-line="147" selection-end-column="25" />
+          <folding>
+            <element signature="e#126#135#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/mss_loo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.32142857">
+          <caret line="22" column="5" selection-start-line="22" selection-start-column="4" selection-end-line="22" selection-end-column="5" />
           <folding />
         </state>
       </provider>
@@ -994,44 +1380,83 @@
     <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="468" column="0" selection-start-line="468" selection-start-column="0" selection-end-line="468" selection-end-column="0" />
+          <caret line="88" column="0" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
           <folding>
-            <element signature="e#25#85#1" expanded="false" />
-            <element signature="e#87#105#0" expanded="true" />
-            <element signature="e#2239#3680#0" expanded="false" />
-            <element signature="e#3713#3945#0" expanded="false" />
-            <element signature="e#3999#8979#0" expanded="false" />
-            <element signature="e#3999#5827#1" expanded="false" />
-            <element signature="e#9019#10240#0" expanded="false" />
-            <element signature="e#10307#13288#0" expanded="false" />
-            <element signature="e#13325#14049#0" expanded="false" />
-            <element signature="e#14092#15647#0" expanded="false" />
-            <element signature="e#15683#16018#0" expanded="false" />
-            <element signature="e#16054#16375#0" expanded="false" />
-            <element signature="e#17460#18517#0" expanded="false" />
-            <element signature="e#18550#18659#0" expanded="false" />
-            <element signature="e#18705#20579#0" expanded="false" />
-            <element signature="e#20633#21479#0" expanded="false" />
-            <element signature="e#21521#23531#0" expanded="false" />
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#104#0" expanded="true" />
+            <element signature="e#3784#4016#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
+    <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.155624">
-          <caret line="159" column="0" selection-start-line="159" selection-start-column="0" selection-end-line="159" selection-end-column="0" />
-          <folding>
-            <element signature="e#238#1852#1" expanded="false" />
-            <element signature="e#3167#4070#1" expanded="false" />
-          </folding>
+        <state vertical-scroll-proportion="-8.796296">
+          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.1895224">
-          <caret line="326" column="23" selection-start-line="326" selection-start-column="23" selection-end-line="326" selection-end-column="23" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="139" column="0" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
+          <folding>
+            <element signature="e#24#84#1" expanded="false" />
+            <element signature="e#86#95#0" expanded="true" />
+            <element signature="e#274#479#0" expanded="false" />
+            <element signature="e#536#735#0" expanded="false" />
+            <element signature="e#798#941#0" expanded="false" />
+            <element signature="e#1005#1142#0" expanded="false" />
+            <element signature="e#1209#1402#0" expanded="false" />
+            <element signature="e#1470#1663#0" expanded="false" />
+            <element signature="e#1718#1870#0" expanded="false" />
+            <element signature="e#1935#2093#0" expanded="false" />
+            <element signature="e#2154#2292#0" expanded="false" />
+            <element signature="e#2358#2512#0" expanded="false" />
+            <element signature="e#2581#2682#0" expanded="false" />
+            <element signature="e#2749#2881#0" expanded="false" />
+            <element signature="e#2941#3047#0" expanded="false" />
+            <element signature="e#3110#3218#0" expanded="false" />
+            <element signature="e#3276#3384#0" expanded="false" />
+            <element signature="e#3443#3555#0" expanded="false" />
+            <element signature="e#3614#3726#0" expanded="false" />
+            <element signature="e#3787#3903#0" expanded="false" />
+            <element signature="e#3962#4114#0" expanded="false" />
+            <element signature="e#4175#4438#0" expanded="false" />
+            <element signature="e#4497#4685#0" expanded="false" />
+            <element signature="e#4747#4919#0" expanded="false" />
+            <element signature="e#4975#5151#0" expanded="false" />
+            <element signature="e#5217#5449#0" expanded="false" />
+            <element signature="e#5521#5954#0" expanded="false" />
+            <element signature="e#5994#6091#0" expanded="false" />
+            <element signature="e#6151#6284#0" expanded="false" />
+            <element signature="e#6337#6404#0" expanded="false" />
+            <element signature="e#6465#6665#0" expanded="false" />
+            <element signature="e#6716#6906#0" expanded="false" />
+            <element signature="e#6966#7297#0" expanded="false" />
+            <element signature="e#7358#7549#0" expanded="false" />
+            <element signature="e#7608#7809#0" expanded="false" />
+            <element signature="e#7881#8072#0" expanded="false" />
+            <element signature="e#8151#8516#0" expanded="false" />
+            <element signature="e#8568#8762#0" expanded="false" />
+            <element signature="e#8818#9101#0" expanded="false" />
+            <element signature="e#9156#9536#0" expanded="false" />
+            <element signature="e#9593#9881#0" expanded="false" />
+            <element signature="e#9937#10134#0" expanded="false" />
+            <element signature="e#10180#10266#0" expanded="false" />
+            <element signature="e#10323#11143#0" expanded="false" />
+            <element signature="e#11186#12220#0" expanded="false" />
+            <element signature="e#12268#12463#0" expanded="false" />
+            <element signature="e#12511#12689#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7314815">
+          <caret line="54" column="37" selection-start-line="54" selection-start-column="37" selection-end-line="54" selection-end-column="37" />
           <folding />
         </state>
       </provider>

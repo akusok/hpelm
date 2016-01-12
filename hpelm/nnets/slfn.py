@@ -5,10 +5,11 @@ Created on Sun Sep  6 11:18:55 2015
 @author: akusok
 """
 
+import os
+import platform
+
 import numpy as np
 from scipy.spatial.distance import cdist
-import platform
-import os
 
 
 class SLFN(object):
@@ -25,7 +26,7 @@ class SLFN(object):
 
     Attributes:
         neurons (list): a list of different types of neurons, initially empty. One neuron type is a tuple
-            ('number of neurons', 'function_type', W, Bias), `neurons` is a list of [neuron_type_1, neuron_type_2, ... ].
+            ('number of neurons', 'function_type', W, Bias), `neurons` is a list of [neuron_type_1, neuron_type_2, ...].
         func (dict): a dictionary of transformation function type, key is a neuron type (= function name)
             and value is the function itself. A single function takes input parameters X, W, B, and outputs
             corresponding H for its neuron type.
@@ -44,7 +45,7 @@ class SLFN(object):
         self.precision = precision
         if norm is None:
             norm = 50*np.finfo(precision).eps  # 50 times machine epsilon
-        self.norm = precision(norm)  # cast norm in required precision
+        self.norm = norm
         # cannot use a dictionary for neurons, because its iteration order is not defined
         self.neurons = []  # list of all neurons in normal Numpy form
         self.L = None  # number of neurons
@@ -65,24 +66,16 @@ class SLFN(object):
         """Add prepared neurons to the SLFN, merge with existing ones.
 
         Adds a number of specific neurons to SLFN network. Weights and biases
-        are generated automatically if not provided, but they assume that input
-        data is normalized (input data features have zero mean and unit variance).
+        must be provided for that function.
 
         If neurons of such type already exist, they are merged together.
 
-        Parameters
-        ----------
-            number : int
-                A number of new neurons to add
-            func : {'lin', 'sigm', 'tanh', 'rbf_l1', 'rbf_l2', 'rbf_linf'}
-                Transformation function of hidden layer. Linear function leads
-                to a linear model.
-            W : array_like, optional
-                A 2-D matrix of neuron weights, size (`inputs`, `number`)
-            B : array_like, optional
-                A 1-D vector of neuron biases, size (`number`, )
+        Args:
+            number (int): the number of new neurons to add
+            func (str): transformation function of hidden layer. Linear function creates a linear model.
+            W (matrix): a 2-D matrix of neuron weights, size (`inputs` * `number`)
+            B (vector): a 1-D vector of neuron biases, size (`number` * 1)
         """
-
         ntypes = [nr[1] for nr in self.neurons]  # existing types of neurons
         if func in ntypes:
             # add to an existing neuron type
@@ -99,7 +92,7 @@ class SLFN(object):
         self.B = None
 
     def reset(self):
-        """ Resets intermediate training results, frees memory that they use.
+        """ Resets intermediate training results, releases memory that they use.
 
         Keeps solution of ELM, so a trained ELM remains operational.
         Can be called to free memory after an ELM is trained.
@@ -108,27 +101,48 @@ class SLFN(object):
         self.HH = None
         self.HT = None
 
-    def project(self, X):
-        """Projects X to H, build-in function.
+    def _project(self, X):
+        """Projects X to H, an auxiliary function that implements a particular projection.
+
+        For actual projection, use `ELM.project()` instead.
+
+        Args:
+            X (matrix): an input data matrix, size (N * `inputs`)
+
+        Returns:
+            H (matrix): an SLFN hidden layer representation, size (N * `L`) where 'L' is number of neurons
         """
         assert self.neurons is not None, "ELM has no neurons"
         X = X.astype(self.precision)
         return np.hstack([self.func[ftype](X, W, B) for _, ftype, W, B in self.neurons])
 
-    def predict(self, X):
-        """Predict a batch of data.
+    def _predict(self, X):
+        """Predict a batch of data. Auxiliary function that implements a particular prediction.
+
+        For prediction, use `ELM.predict()` instead.
+
+        Args:
+            X (matrix): input data size (N * `inputs`)
+
+        Returns:
+            Y (matrix): predicted outputs size (N * `outputs`), always in float/double format.
         """
         assert self.B is not None, "Solve the task before predicting"
-        H = self.project(X)
+        H = self._project(X)
         Y = np.dot(H, self.B)
         return Y
 
-    def add_batch(self, X, T, wc = None):
-        """Add a weighted batch of data to an iterative solution.
+    def add_batch(self, X, T, wc=None):
+        """Add a batch of training data to an iterative solution, weighted if neeed.
 
-        :param wc: vector of weights for data samples, same length as X or T
+        The batch is processed as a whole, the training data is splitted in `ELM.add_data()` method.
+
+        Args:
+            X (matrix): input data matrix size (N * `inputs`)
+            T (matrix): output data matrix size (N * `outputs`)
+            wc (vector): vector of weights for data samples, one weight per sample, size (N * 1)
         """
-        H = self.project(X)
+        H = self._project(X)
         T = T.astype(self.precision)
         if wc is not None:  # apply weights if given
             w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
@@ -143,12 +157,22 @@ class SLFN(object):
         self.HH += np.dot(H.T, H)
         self.HT += np.dot(H.T, T)
 
-    def get_batch(self, X, T, wc = None):
-        """Compute and return a weighted batch of data.
+    def get_batch(self, X, T, wc=None):
+        """Compute and return a batch of training data, weighted if neeed.
 
-        :param wc: vector of weights for data samples, same length as X or T
+        Same as `add_batch()` but returns the result instead.
+
+        Args:
+            X (matrix): input data matrix size (N * `inputs`)
+            T (matrix): output data matrix size (N * `outputs`)
+            wc (vector): vector of weights for data samples, one weight per sample, size (N * 1)
+
+        Returns:
+            HH (matrix): covariance matrix of hidden data representation, size (`L` * `L`)
+            HT (matrix): correlation matrix between hidden data representation and outputs,
+                size (`L` * `outputs`)
         """
-        H = self.project(X)
+        H = self._project(X)
         T = T.astype(self.precision)
         if wc is not None:  # apply weights if given
             w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
@@ -167,6 +191,10 @@ class SLFN(object):
         """Compute output weights B for given HH and HT.
 
         Simple but inefficient version, see a better one in solver_python.
+
+        Args:
+            HH (matrix): covariance matrix of hidden layer represenation H, size (`L` * `L`)
+            HT (matrix): correlation matrix between H and outputs T, size (`L` * `outputs`)
         """
         HH_pinv = np.linalg.pinv(HH)
         B = np.dot(HH_pinv, HT)
@@ -191,12 +219,6 @@ class SLFN(object):
         self.reset()
         self.B = None
 
-
-
-
-    ###########################################################
-    # setters and getters
-
     def get_B(self):
         """Return B as a numpy array.
         """
@@ -205,7 +227,8 @@ class SLFN(object):
     def set_B(self, B):
         """Set B as a numpy array.
 
-        :param B: output layer weights matrix.
+        Args:
+            B (matrix): output layer weights matrix, size (`L` * `outputs`)
         """
         assert B.shape[0] == self.L, "Incorrect first dimension: %d expected, %d found" % (self.L, B.shape[0])
         assert B.shape[1] == self.c, "Incorrect output dimension: %d expected, %d found" % (self.c, B.shape[1])
@@ -218,6 +241,10 @@ class SLFN(object):
 
     def set_corr(self, HH, HT):
         """Set pre-computed correlation matrices.
+
+        Args:
+            HH (matrix): covariance matrix of hidden layer represenation H, size (`L` * `L`)
+            HT (matrix): correlation matrix between H and outputs T, size (`L` * `outputs`)
         """
         assert self.neurons is not None, "Add or load neurons before using ELM"
         assert HH.shape[0] == HH.shape[1], "HH must be a square matrix"
@@ -225,10 +252,8 @@ class SLFN(object):
         assert HH.shape[0] == self.L, msg
         assert HH.shape[0] == HT.shape[0], "HH and HT must have the same number of rows (%d)" % self.L
         assert HT.shape[1] == self.c, "Number of columns in HT must equal number of targets (%d)" % self.c
-        self.HH = self.to_precision(HH)
-        self.HT = self.to_precision(HT)
-
-
+        self.HH = HH.astype(self.precision)
+        self.HT = HT.astype(self.precision)
 
     def fix_affinity(self):
         """Numpy processor core affinity fix.
@@ -240,18 +265,3 @@ class SLFN(object):
             np.dot(a.T, a)
             pid = os.getpid()
             os.system("taskset -p 0xffffffff %d >/dev/null" % pid)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -10,7 +10,7 @@ from numpy.linalg import inv
 
 
 def train_loo(self, X, T):
-    H = self.solver.project(X)
+    H = self.solver._project(X)
     HH, HT = self.solver.get_batch(X, T)
 
     N, nn = H.shape

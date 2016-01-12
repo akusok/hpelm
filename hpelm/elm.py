@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Mon Oct 27 17:48:33 2014
 
@@ -28,8 +28,9 @@ class ELM(object):
         precision (optional): data precision to use, supports signle ('single', '32' or numpy.float32) or double
             ('double', '64' or numpy.float64). Single precision is faster but may cause numerical errors. Majority
             of GPUs work in single precision. Default: **double**.
-        norm (double, optinal): L2-normalization parameter, None gives the default value.
-        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch, whatever takes longer.
+        norm (double, optinal): L2-normalization parameter, **None** gives the default value.
+        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch,
+            whatever takes longer.
 
     Class attributes; attributes that simply store initialization or `train()` parameters are omitted.
 
@@ -73,6 +74,8 @@ class ELM(object):
         self.opened_hdf5 = []  # list of opened HDF5 files, they are closed in ELM descructor
         self.classification = None  # c / wc / mc
         self.wc = None  # weighted classification weights
+        self.ranking = None
+        self.kmax_op = None
         self.tprint = tprint  # time intervals in seconds to report ETA
         self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")  # supported neuron types
 
@@ -96,12 +99,13 @@ class ELM(object):
             X (matrix): input data matrix, size (N * `inputs`)
             T (matrix): outputs data matrix, size (N * `outputs`)
             'c'/'wc'/'mc' (string, choose one): train ELM for classification ('c'), classification with weighted classes
-                ('wc') or multi-label classification ('mc') with several correct classes per data sample. In classification,
-                number of `outputs` is the number of classes; correct class(es) for each sample has value 1 and
-                incorrect classes have 0.
-            'V'/'CV'/'LOO' (sting, choose one): model structure selection: select optimal number of neurons using a validation set ('V'),
-                cross-validation ('CV') or Leave-One-Out ('LOO')
-            'OP' (string, use with 'V'/'CV'/'LOO'): choose best neurons instead of random ones, training takes longer; equivalent to L1-regularization
+                ('wc') or multi-label classification ('mc') with several correct classes per data sample.
+                In classification, number of `outputs` is the number of classes; correct class(es) for each sample
+                has value 1 and incorrect classes have 0.
+            'V'/'CV'/'LOO' (sting, choose one): model structure selection: select optimal number of neurons using
+                a validation set ('V'), cross-validation ('CV') or Leave-One-Out ('LOO')
+            'OP' (string, use with 'V'/'CV'/'LOO'): choose best neurons instead of random ones, training takes longer;
+                equivalent to L1-regularization
 
         Keyword Args:
             Xv (matrix, use with 'V'): validation set input data, size (Nv * `inputs`)
@@ -115,9 +119,6 @@ class ELM(object):
         X, T = self._checkdata(X, T)
         args = [a.upper() for a in args]  # make all arguments upper case
 
-        # kind of "enumerators", try to use only inside that script
-        MODELSELECTION = None  # V / CV / MCCV / LOO / None
-
         # reset parameters
         self.ranking = None
         self.kmax_op = None
@@ -125,27 +126,12 @@ class ELM(object):
         self.wc = None  # weigths for weighted classification
 
         # check exclusive parameters
-        assert len(set(args).intersection(set(["V", "CV", "LOO"]))) <= 1, "Use only one of V / CV / LOO"
+        assert len(set(args).intersection({"V", "CV", "LOO"})) <= 1, "Use only one of V / CV / LOO"
         msg = "Use only one of: C (classification) / MC (multiclass) / WC (weighted classification)"
-        assert len(set(args).intersection(set(["C", "WC", "MC"]))) <= 1, msg
+        assert len(set(args).intersection({"C", "WC", "MC"})) <= 1, msg
 
         # parse parameters
-        # TODO: code coverage for model structure selection
         for a in args:
-            if a == "V":  # validation set
-                assert "Xv" in kwargs.keys(), "Provide validation dataset (Xv)"
-                assert "Tv" in kwargs.keys(), "Provide validation outputs (Tv)"
-                Xv = kwargs['Xv']
-                Tv = kwargs['Tv']
-                Xv, Tv = self._checkdata(Xv, Tv)
-                MODELSELECTION = "V"
-            if a == "CV":
-                assert "k" in kwargs.keys(), "Provide Cross-Validation number of splits (k)"
-                k = kwargs['k']
-                assert k >= 3, "Use at least k=3 splits for Cross-Validation"
-                MODELSELECTION = "CV"
-            if a == "LOO":
-                MODELSELECTION = "LOO"
             if a == "OP":
                 self.ranking = "OP"
                 if "kmax" in kwargs.keys():
@@ -163,23 +149,30 @@ class ELM(object):
             if a == "MC":
                 assert self.outputs > 1, "Classification outputs must have 1 output per class"
                 self.classification = "mc"
-            # TODO: Adaptive ELM model for timeseries (someday)
 
         if "batch" in kwargs.keys():
             self.batch = int(kwargs["batch"])
 
+        # train ELM with desired model structure selection
         self.nnet.reset()  # remove previous training
-        # use "train_x" method which borrows _project(), _error() from the "self" object
-        if MODELSELECTION == "V":
+        if "V" in args:  # use validation set
+            assert "Xv" in kwargs.keys(), "Provide validation dataset (Xv)"
+            assert "Tv" in kwargs.keys(), "Provide validation outputs (Tv)"
+            Xv = kwargs['Xv']
+            Tv = kwargs['Tv']
+            Xv, Tv = self._checkdata(Xv, Tv)
             train_v(self, X, T, Xv, Tv)
-        elif MODELSELECTION == "CV":
+        elif "CV" in args:  # use cross-validation
+            assert "k" in kwargs.keys(), "Provide Cross-Validation number of splits (k)"
+            k = kwargs['k']
+            assert k >= 3, "Use at least k=3 splits for Cross-Validation"
             train_cv(self, X, T, k)
-        elif MODELSELECTION == "LOO":
+        elif "LOO" in args:  # use Leave-One-Out error on training set
             train_loo(self, X, T)
-        else:
-            # basic training algorithm
+        else:  # basic training algorithm
             self.add_data(X, T)
             self.nnet.solve()
+        # TODO: Adaptive ELM model for timeseries (someday)
 
     def add_data(self, X, T):
         """Feed new training data (X,T) to ELM model in batches; does not solve ELM itself.
@@ -200,8 +193,8 @@ class ELM(object):
 
         # find automatic weights if none are given
         if self.classification == "wc" and self.wc is None:
-            ns = T.sum(axis=0).astype(self.nnet.precision)  # number of samples in classes
-            self.wc = (ns / ns.sum())**-1  # weights of classes
+            ns = T.sum(axis=0).astype(self.precision)  # number of samples in classes
+            self.wc = ns.sum() / ns  # weights of classes
 
         for X0, T0 in zip(np.array_split(X, nb, axis=0),
                           np.array_split(T, nb, axis=0)):
@@ -244,12 +237,12 @@ class ELM(object):
             else:
                 W = np.random.randn(self.inputs, number)
                 if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
-                    W = W * (3 / self.inputs ** 0.5)  # high dimensionality fix
+                    W *= 3.0 / self.inputs**0.5  # high dimensionality fix
         if B is None:
             B = np.random.randn(number)
             if func in ("rbf_l2", "rbf_l1", "rbf_linf"):
                 B = np.abs(B)
-                B = B * self.inputs
+                B *= self.inputs
             if func == "lin":
                 B = np.zeros((number,))
         msg = "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
@@ -266,8 +259,13 @@ class ELM(object):
         """Calculate error of model predictions.
 
         Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
-        For classification, computes corresponding classification error. For weighted classification,
-        computes average weighted per-class error. For multi-label classification, correct classes are all with Y>0.5.
+        For classification, computes mis-classification error.
+        For multi-label classification, correct classes are all with Y>0.5.
+
+        For weighted classification the error is an average weighted True Positive Rate,
+        or percentage of correctly predicted samples for each class, multiplied by weight
+        of that class and averaged. If you want something else, just write it yourself :)
+        See https://en.wikipedia.org/wiki/Confusion_matrix for details.
 
         Args:
             Y (matrix): ELM model predictions, can be computed with `predict()` function.
@@ -309,7 +307,7 @@ class ELM(object):
                 Yb = np.array(Y[start:stop]).argmax(1)
                 for c1 in xrange(C):
                     for c1h in xrange(C):
-                        conf[c1, c1h] += np.sum((Tb == c1) * (Yb == c1h))
+                        conf[c1, c1h] += np.logical_and(Tb == c1, Yb == c1h).sum()
         elif self.classification == "mc":
             for b in xrange(nb):
                 start = b*batch
@@ -333,7 +331,7 @@ class ELM(object):
             H (matrix): hidden layer representation matrix, size (N * number_of_neurons)
         """
         X, _ = self._checkdata(X, None)
-        H = self.nnet.project(X)
+        H = self.nnet._project(X)
         return H
 
     def predict(self, X):
@@ -346,7 +344,7 @@ class ELM(object):
             Y (matrix): output data or predicted classes, size (N * `outputs`).
         """
         X, _ = self._checkdata(X, None)
-        Y = self.nnet.predict(X)
+        Y = self.nnet._predict(X)
         return Y
 
     def save(self, fname):
@@ -410,24 +408,25 @@ class ELM(object):
 
         An ELM-specific error with PRESS support.
         """
+        # TODO: change 'mc' to 'ml', however leave 'mc' working
         if R is None:  # normal classification error
             if self.classification == "c":
-                err = np.mean(Y.argmax(1) != T.argmax(1))
+                err = np.not_equal(Y.argmax(1), T.argmax(1)).mean()
             elif self.classification == "wc":  # weighted classification
                 c = T.shape[1]
                 errc = np.zeros(c)
                 for i in xrange(c):  # per-class MSE
                     idx = np.where(T[:, i] == 1)[0]
                     if len(idx) > 0:
-                        errc[i] = np.mean(Y[idx].argmax(1) != i)
-                err = np.mean(errc * self.wc)
+                        errc[i] = np.not_equal(Y[idx].argmax(1), i).mean()
+                err = np.sum(errc * self.wc) / np.sum(self.wc)
             elif self.classification == "mc":
-                err = np.mean((Y > 0.5) != (T > 0.5))
+                err = np.not_equal(Y > 0.5, T > 0.5).mean()
             else:
                 err = np.mean((Y - T)**2)
         else:  # LOO_PRESS error
             if self.classification == "c":
-                err = (Y.argmax(1) != T.argmax(1)).astype(np.float) / R.ravel()
+                err = np.not_equal(Y.argmax(1), T.argmax(1)) / R.ravel()
                 err = np.mean(err**2)
             elif self.classification == "wc":  # balanced classification
                 c = T.shape[1]
@@ -435,11 +434,11 @@ class ELM(object):
                 for i in xrange(c):  # per-class MSE
                     idx = np.where(T[:, i] == 1)[0]
                     if len(idx) > 0:
-                        t = (Y[idx].argmax(1) != i).astype(np.float) / R[idx].ravel()
+                        t = np.not_equal(Y[idx].argmax(1), i) / R[idx].ravel()
                         errc[i] = np.mean(t**2)
-                err = np.mean(errc * self.weights_wc)
+                err = np.mean(errc * self.wc)
             elif self.classification == "mc":
-                err = ((Y > 0.5) != (T > 0.5)).astype(np.float) / R.reshape((-1, 1))
+                err = np.not_equal(Y > 0.5, T > 0.5) / R.reshape((-1, 1))
                 err = np.mean(err**2)
             else:
                 err = (Y - T) / R.reshape((-1, 1))
@@ -450,9 +449,14 @@ class ELM(object):
     def _ranking(self, nn, H=None, T=None):
         """Return ranking of hidden neurons; random or OP.
 
-        :param nn: number of neurons
-        :param H: data matrix needed for optimal pruning
-        :param T: outputs matrix needed for optimal pruning
+        Args:
+            nn (int): number of neurons
+            H (matrix): hidden layer representation matrix needed for optimal pruning
+            T (matrix): outputs matrix needed for optimal pruning
+
+        Returns:
+            rank (vector): ranking of neurons
+            nn (int): number of selected neurons, can be changed by `self.kmax_op`
         """
         if self.ranking == "OP":  # optimal ranking (L1 normalization)
             assert H is not None and T is not None, "Need H and T to perform optimal pruning"
@@ -474,12 +478,16 @@ class ELM(object):
             if isinstance(X, basestring):  # open HDF5 file
                 try:
                     h5 = open_file(X, "r")
-                    self.opened_hdf5.append(h5)
-                    for node in h5.walk_nodes():
-                        pass  # find a node with whatever name
-                    X = node
                 except:
                     raise IOError("Cannot read HDF5 file at %s" % X)
+                self.opened_hdf5.append(h5)
+                node = None
+                for node in h5.walk_nodes():
+                    pass  # find a node with whatever name
+                if node:
+                    X = node
+                else:
+                    raise IOError("Empty HDF5 file at %s" % X)
             else:
                 # assert isinstance(X, np.ndarray) and
                 assert X.dtype.kind not in "OSU", "X must be a numerical numpy array"
@@ -493,12 +501,16 @@ class ELM(object):
             if isinstance(T, basestring):  # open HDF5 file
                 try:
                     h5 = open_file(T, "r")
-                    self.opened_hdf5.append(h5)
-                    for node in h5.walk_nodes():
-                        pass  # find a node with whatever name
-                    T = node
-                except:
+                except IOError:
                     raise IOError("Cannot read HDF5 file at %s" % T)
+                self.opened_hdf5.append(h5)
+                node = None
+                for node in h5.walk_nodes():
+                    pass  # find a node with whatever name
+                if node:
+                    T = node
+                else:
+                    raise IOError("Empty HDF5 file at %s" % X)
             else:
                 # assert isinstance(T, np.ndarray) and
                 assert T.dtype.kind not in "OSU", "T must be a numerical numpy array"
@@ -512,13 +524,3 @@ class ELM(object):
             assert X.shape[0] == T.shape[0], "X and T cannot have different number of samples"
 
         return X, T
-
-
-
-
-
-
-
-
-
-

@@ -5,15 +5,16 @@ Created on Mon Oct 27 14:12:41 2014
 @author: akusok
 """
 
-from unittest import TestCase
-import numpy as np
-import tempfile
 import os
+import tempfile
+from unittest import TestCase
+
+import numpy as np
+
 from hpelm import ELM
 
 
 class TestCorrectness(TestCase):
-
     def test_NonNumpyInputs_RaiseError(self):
         X = np.array([['1', '2'], ['3', '4'], ['5', '6']])
         T = np.array([[1], [2], [3]])
@@ -63,7 +64,7 @@ class TestCorrectness(TestCase):
         elm.add_neurons(1, "lin")
         elm.train(X, T)
 
-    def test_OneDimensionTargets_RunsCorrectly(self):
+    def test_OneDimensionTargets2_RunsCorrectly(self):
         X = np.array([[1, 2], [3, 4], [5, 6]])
         T = np.array([[0], [0], [0]])
         elm = ELM(2, 1)
@@ -124,7 +125,7 @@ class TestCorrectness(TestCase):
 
     def test_SLFN_AddUfuncNeurons_GotThem(self):
         elm = ELM(1, 1)
-        func = np.frompyfunc(lambda a: a+1, 1, 1)
+        func = np.frompyfunc(lambda a: a + 1, 1, 1)
         elm.add_neurons(1, func)
         self.assertIs(func, elm.nnet.neurons[0][1])
 
@@ -168,8 +169,8 @@ class TestCorrectness(TestCase):
         elm = ELM(2, 1)
         W1 = np.random.rand(2, 3)
         W2 = np.random.rand(2, 4)
-        bias1 = np.random.rand(3,)
-        bias2 = np.random.rand(4,)
+        bias1 = np.random.rand(3, )
+        bias2 = np.random.rand(4, )
         elm.add_neurons(3, "sigm", W1, bias1)
         elm.add_neurons(4, "sigm", W2, bias2)
         np.testing.assert_array_almost_equal(np.hstack((W1, W2)), elm.nnet.neurons[0][2])
@@ -177,14 +178,14 @@ class TestCorrectness(TestCase):
 
     def test_Str_Works(self):
         elm = ELM(1, 1)
-        s = elm.__str__()
+        s = "%s" % elm
         self.assertIn("ELM with 1 inputs and 1 output", s)
 
     def test_StrCustomNeurons_DisplaysName(self):
         elm = ELM(1, 1)
         func = np.sin
         elm.add_neurons(1, func)
-        s_elm = elm.__str__()
+        s_elm = "%s" % elm
         self.assertIn("sin", s_elm)
 
     def test_ELMWithBatch_SetsBatch(self):
@@ -249,12 +250,45 @@ class TestCorrectness(TestCase):
         self.assertGreater(Y[1, 0], Y[1, 1])
         self.assertGreater(Y[2, 0], Y[2, 1])
 
-    def test_GetErrorFromELM_Works(self):
+    def test_RegressionError_Works(self):
         T = np.array([1, 2, 3])
         Y = np.array([1.1, 2.2, 3.3])
+        err1 = np.mean((T - Y) ** 2)
         elm = ELM(1, 1)
         e = elm.error(Y, T)
-        self.assertGreater(e, 0)
+        np.testing.assert_allclose(e, err1)
+
+    def test_ClassificationError_Works(self):
+        X = np.array([1, 2, 3])
+        T = np.array([[0, 1], [0, 1], [1, 0]])
+        Y = np.array([[0, 1], [0.4, 0.6], [0, 1]])
+        elm = ELM(1, 2)
+        elm.add_neurons(1, "lin")
+        elm.train(X, T, "c")
+        e = elm.error(Y, T)
+        np.testing.assert_allclose(e, 1.0 / 3)
+
+    def test_WeightedClassError_Works(self):
+        X = np.array([1, 2, 3])
+        T = np.array([[0, 1], [0, 1], [1, 0]])
+        Y = np.array([[0, 1], [0.4, 0.6], [0, 1]])
+        # here class 0 is totally incorrect, and class 1 is totally correct
+        w = (9, 1)
+        elm = ELM(1, 2)
+        elm.add_neurons(1, "lin")
+        elm.train(X, T, "wc", w=w)
+        e = elm.error(Y, T)
+        np.testing.assert_allclose(e, 0.9)
+
+    def test_MultiLabelClassError_Works(self):
+        X = np.array([1, 2, 3])
+        T = np.array([[0, 1], [1, 1], [1, 0]])
+        Y = np.array([[0.4, 0.6], [0.8, 0.6], [1, 1]])
+        elm = ELM(1, 2)
+        elm.add_neurons(1, "lin")
+        elm.train(X, T, "mc")
+        e = elm.error(Y, T)
+        np.testing.assert_allclose(e, 1.0 / 6)
 
     def test_ProjectELM_WorksCorrectly(self):
         X = np.array([[1], [2], [3]])
@@ -283,6 +317,8 @@ class TestCorrectness(TestCase):
         self.assertIs(elm6.nnet.precision, np.float64)
         elm7 = ELM(1, 1)  # default double precision
         self.assertIs(elm7.nnet.precision, np.float64)
+        elm8 = ELM(1, 1, precision="lol")  # default double precision
+        self.assertIs(elm8.nnet.precision, np.float64)
 
     def test_ELM_SaveLoad(self):
         X = np.array([1, 2, 3, 1, 2, 3])
@@ -293,7 +329,7 @@ class TestCorrectness(TestCase):
         elm.train(X, T, "wc", w=(0.7, 0.3))
         B1 = elm.nnet.get_B()
         try:
-            f,fname = tempfile.mkstemp()
+            f, fname = tempfile.mkstemp()
             elm.save(fname)
             elm2 = ELM(3, 3)
             elm2.load(fname)
@@ -313,22 +349,15 @@ class TestCorrectness(TestCase):
     def test_SaveELM_WrongFile(self):
         elm = ELM(1, 1)
         try:
-            f,fname = tempfile.mkstemp()
-            self.assertRaises(IOError, elm.save, os.path.dirname(fname)+"olo/lo")
+            f, fname = tempfile.mkstemp()
+            self.assertRaises(IOError, elm.save, os.path.dirname(fname) + "olo/lo")
         finally:
             os.close(f)
 
     def test_LoadELM_WrongFile(self):
         elm = ELM(1, 1)
         try:
-            f,fname = tempfile.mkstemp()
-            self.assertRaises(IOError, elm.load, fname+"ololo2")
+            f, fname = tempfile.mkstemp()
+            self.assertRaises(IOError, elm.load, fname + "ololo2")
         finally:
             os.close(f)
-
-
-
-
-
-
-

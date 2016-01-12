@@ -12,7 +12,7 @@ def train_hpv(self, HH, HT, Xv, Tv, Yv):
     Beta = self._
     
     HH, HT, Beta = self._project(X, T, solve=True)
-    Hv = self.project(Xv)
+    Hv = self._project(Xv)
     nn = Hv.shape[1]
     e = np.ones((nn+1,)) * -1  # errors for all numbers of neurons
     rank, nn = self._ranking(nn, Hv, Tv)  # create ranking of neurons

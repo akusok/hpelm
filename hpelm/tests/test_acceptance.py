@@ -11,6 +11,7 @@ import numpy as np
 import hpelm
 
 
+# noinspection PyArgumentList
 class TestAcceptance(TestCase):
 
     def test_basic_elm_single_machine(self):

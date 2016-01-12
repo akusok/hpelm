@@ -136,9 +136,9 @@
 
         <span class="n">elm</span> <span class="o">=</span> <span class="n">hpelm</span><span class="o">.</span><span class="n">ELM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">elm</span><span class="o">.</span><span class="n">add_neurons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">elm</span><span class="o">.</span><span class="n">Beta</span>
+        <span class="k">print</span> <span class="n">elm</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">get_B</span><span class="p">()</span>
         <span class="n">elm</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">elm</span><span class="o">.</span><span class="n">Beta</span>
+        <span class="k">print</span> <span class="n">elm</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">get_B</span><span class="p">()</span>
         <span class="n">Yt</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="n">MSE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">Yt</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
@@ -162,7 +162,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">Yh</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">nn</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">elm</span><span class="o">.</span><span class="n">neurons</span><span class="p">])</span>
+                <span class="n">nn</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">elm</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">neurons</span><span class="p">])</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c"># one neuron in the ELM</span>
                 <span class="k">return</span>
             <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
