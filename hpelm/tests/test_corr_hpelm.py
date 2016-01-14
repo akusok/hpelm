@@ -355,6 +355,21 @@ class TestCorrectness(TestCase):
         hpelm.solve_corr(fHH, fHT)
         self.assertIsNot(hpelm.nnet.get_B(), None)
 
+    def test_ValidationCorr_Works(self):
+        X = self.makeh5(np.random.rand(10, 3))
+        T = self.makeh5(np.random.rand(10, 2))
+        hpelm = HPELM(3, 2)
+        hpelm.add_neurons(6, "tanh")
+        f, fHH = tempfile.mkstemp()
+        os.close(f)
+        os.remove(fHH)
+        f, fHT = tempfile.mkstemp()
+        os.close(f)
+        os.remove(fHT)
+        hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
+        nns, err = hpelm.validation_corr(fHH, fHT, X, T, steps=3)
+        self.assertGreater(err[0], err[-1])
+
     def test_Predict_Works(self):
         X = self.makeh5(np.array([[1, 2], [3, 4], [5, 6], [7, 8]]))
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
@@ -388,7 +403,45 @@ class TestCorrectness(TestCase):
         os.remove(fH)
         hpelm.project(X, fH)
 
+    def test_RegressionError_Works(self):
+        T = np.array([1, 2, 3])
+        Y = np.array([1.1, 2.2, 3.3])
+        err1 = np.mean((T - Y) ** 2)
+        fT = self.makeh5(T)
+        fY = self.makeh5(Y)
+        hpelm = HPELM(1, 1)
+        e = hpelm.error(fY, fT)
+        np.testing.assert_allclose(e, err1)
 
+    def test_ClassificationError_Works(self):
+        T = self.makeh5(np.array([[0, 1], [0, 1], [1, 0]]))
+        Y = self.makeh5(np.array([[0, 1], [0.4, 0.6], [0, 1]]))
+        hpelm = HPELM(1, 2)
+        hpelm.add_neurons(1, "lin")
+        hpelm.classification = "c"
+        e = hpelm.error(Y, T)
+        np.testing.assert_allclose(e, 1.0 / 3)
+
+    def test_WeightedClassError_Works(self):
+        X = self.makeh5(np.array([1, 2, 3]))
+        T = self.makeh5(np.array([[0, 1], [0, 1], [1, 0]]))
+        Y = self.makeh5(np.array([[0, 1], [0.4, 0.6], [0, 1]]))
+        # here class 0 is totally incorrect, and class 1 is totally correct
+        w = (9, 1)
+        hpelm = HPELM(1, 2)
+        hpelm.add_neurons(1, "lin")
+        hpelm.train(X, T, "wc", w=w)
+        e = hpelm.error(Y, T)
+        np.testing.assert_allclose(e, 0.9)
+
+    def test_MultiLabelClassError_Works(self):
+        T = self.makeh5(np.array([[0, 1], [1, 1], [1, 0]]))
+        Y = self.makeh5(np.array([[0.4, 0.6], [0.8, 0.6], [1, 1]]))
+        hpelm = HPELM(1, 2)
+        hpelm.add_neurons(1, "lin")
+        hpelm.classification = "mc"
+        e = hpelm.error(Y, T)
+        np.testing.assert_allclose(e, 1.0 / 6)
 
 
 

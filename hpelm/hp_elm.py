@@ -73,10 +73,8 @@ class HPELM(ELM):
                 istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
             batch (int, optional): batch size for ELM, overwrites batch size from the initialization
         """
-        # TODO: add start/stop indexes for training on a part of HDF5 files.
         # TODO: move to h5py completely with async io (mpio), because I don't need pyTables features
         # TODO: explain why I don't support parallel processing (huge amount of data to transfer, or fast enough)
-        # TODO: support appending HH, HT into the same given files, waiting for others
         X, T = self._checkdata(fX, fT)
         self._train_parse_args(args, kwargs)
 
@@ -171,39 +169,7 @@ class HPELM(ELM):
             fHH (hdf5): an hdf5 file with intermediate solution data
             fHT (hdf5): an hdf5 file with intermediate solution data
         """
-        try:
-            h5 = open_file(fHH, "r")
-        except:
-            raise IOError("Cannot read HDF5 file at %s" % fHH)
-        node = None
-        for node in h5.walk_nodes():
-            pass  # find a node with whatever name
-        if node:
-            HH = node[:]
-        else:
-            raise IOError("Empty HDF5 file at %s" % fHH)
-        h5.close()
-
-        try:
-            h5 = open_file(fHT, "r")
-        except:
-            raise IOError("Cannot read HDF5 file at %s" % fHT)
-        node = None
-        for node in h5.walk_nodes():
-            pass  # find a node with whatever name
-        if node:
-            HT = node[:]
-        else:
-            raise IOError("Empty HDF5 file at %s" % fHT)
-        h5.close()
-
-        L = self.nnet.L
-        c = self.nnet.outputs
-        assert len(self.nnet.neurons) > 0, "Cannot solve ELM without neurons"
-        assert HH.shape[0] == L and HH.shape[1] == L, "HH has wrong shape: (%d,%d) expected, (%d,%d) found" \
-                                                      % (L, L, HH.shape[0], HH.shape[1])
-        assert HT.shape[0] == L and HT.shape[1] == c, "HT has wrong shape: (%d,%d) expected, (%d,%d) found" \
-                                                      % (L, c, HH.shape[0], HH.shape[1])
+        HH, HT = self._checkcorr(fHH, fHT)
         B = self.nnet.solve_corr(HH, HT)
         self.nnet.set_B(B)
 
@@ -273,9 +239,6 @@ class HPELM(ELM):
         X, _ = self._checkdata(fX, None)
         N = X.shape[0]
         # custom range adjustments
-        print N
-        print icount
-        print istart
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
@@ -307,180 +270,167 @@ class HPELM(ELM):
         h5.flush()
         h5.close()
 
-    def _error(self, Y1, T1, H1=None, Beta=None, rank=None):
-        """Do projection and calculate error in batch mode.
+    def error(self, fY, fT, istart=0, icount=np.inf):
+        """Calculate error of model predictions of HPELM.
 
-        HPELM-specific iterative error for all usage cases.
+        Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
+        For classification, computes mis-classification error.
+        For multi-label classification, correct classes are all with Y>0.5.
+
+        For weighted classification the error is an average weighted True Positive Rate,
+        or percentage of correctly predicted samples for each class, multiplied by weight
+        of that class and averaged. If you want something else, just write it yourself :)
+        See https://en.wikipedia.org/wiki/Confusion_matrix for details.
+
+        Args:
+            fY (hdf5): hdf5 filename with predicted outputs
+            fT (hdf5): hdf5 filename with true outputs
+            istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
+                all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
+            icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
+                adjusted to `istart` + `icount` <= N. If not given, all data starting from `start` is used.
+                The last sample used for training is `istart`+`icount`-1, so you can index data as:
+                istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
+
+        Returns:
+            e (double): MSE for regression / classification error for classification.
+        """
+        _, Y = self._checkdata(None, fY)
+        _, T = self._checkdata(None, fT)
+        return self._error(Y, T, istart=istart, icount=icount)
+
+    def _error(self, Y, T, istart=0, icount=np.inf):
+        """Iterative batch error calcualtion.
+
         Can be _error(Y, T) or _error(None, T, H, Beta, rank)
 
-        :param T: - true targets for error calculation
-        :param H: - projected data for error calculation
-        :param Beta: - current projection matrix
-        :param rank: - selected neurons (= columns of H)
+        Args:
+            Y (matrix): predicted targets for error calculation
+            T (matrix): true targets for error calculation
+            istart (int): index of first sample to process
+            icount (int): number of samples to process
         """
-        if Y1 is None:
-            H, T = self._checkdata(H1, T1)
-            assert rank.shape[0] == Beta.shape[0], "Wrong dimension of Beta for the given ranking"
-            assert T.shape[1] == Beta.shape[1], "Wrong dimension of Beta for the given outputs"
-            nn = rank.shape[0]
-        else:
-            _, Y = self._checkdata(None, Y1)
-            _, T = self._checkdata(None, T1)
-            nn = np.sum([n1[1] for n1 in self.neurons])
         N = T.shape[0]
-        batch = max(self.batch, nn)
-        nb = N / batch  # number of batches
-        if N > batch * nb:
-            nb += 1
+        icount = min(istart + icount, N)
+        nb = int(np.ceil(float(icount) / self.batch))  # number of batches
 
         if self.classification == "c":
             err = 0
             for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
+                start = b*self.batch + istart
+                stop = min((b+1)*self.batch + istart, icount + istart)
                 Tb = np.array(T[start:stop])
-                if Y1 is None:
-                    Hb = H[start:stop, rank]
-                    Yb = np.dot(Hb, Beta)
-                else:
-                    Yb = np.array(Y[start:stop])
+                Yb = np.array(Y[start:stop])
                 errb = np.mean(Yb.argmax(1) != Tb.argmax(1))
-                err += errb * float(stop-start)/N
+                err += errb * float(stop-start)/icount
 
         elif self.classification == "wc":  # weighted classification
             c = T.shape[1]
             errc = np.zeros(c)
+            countc = np.zeros(c)
             for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
+                start = b*self.batch + istart
+                stop = min((b+1)*self.batch + istart, icount + istart)
                 Tb = np.array(T[start:stop])
-                if Y1 is None:
-                    Hb = H[start:stop, rank]
-                    Yb = np.dot(Hb, Beta)
-                else:
-                    Yb = np.array(Y[start:stop])
+                Yb = np.array(Y[start:stop])
                 for i in xrange(c):  # per-class MSE
-                    idxc = Tb[:, i] == 1
-                    errb = np.mean(Yb[idxc].argmax(1) != i)
-                    errc[i] += errb * float(stop-start)/N
-            err = np.mean(errc * self.wc)
+                    idx = np.where(Tb[:, i] == 1)[0]
+                    if len(idx) > 0:
+                        err1 = np.not_equal(Yb[idx].argmax(1), i)
+                        errc[i] += err1.sum()
+                        countc[i] += len(idx)
+            errc = errc / countc  # get mean value
+            err = np.sum(errc * self.wc) / np.sum(self.wc)
 
         elif self.classification == "mc":
             err = 0
             for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
+                start = b*self.batch + istart
+                stop = min((b+1)*self.batch + istart, icount + istart)
                 Tb = np.array(T[start:stop])
-                if Y1 is None:
-                    Hb = H[start:stop, rank]
-                    Yb = np.dot(Hb, Beta)
-                else:
-                    Yb = np.array(Y[start:stop])
-                errb = np.mean((Yb > 0.5) != (Tb > 0.5))
-                err += errb * float(stop-start)/N
+                Yb = np.array(Y[start:stop])
+                errb = np.not_equal(Yb > 0.5, Tb > 0.5).mean()
+                err += errb * float(stop-start)/icount
 
         else:  # MSE error
             err = 0
             for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
+                start = b*self.batch + istart
+                stop = min((b+1)*self.batch + istart, icount + istart)
                 Tb = T[start:stop]
-                if Y1 is None:
-                    Hb = H[start:stop, rank]
-                    Yb = np.dot(Hb, Beta)
-                else:
-                    Yb = Y[start:stop]
+                Yb = Y[start:stop]
                 errb = np.mean((Tb - Yb)**2)
-                err += errb * float(stop-start)/N
+                err += errb * float(stop-start)/icount
 
         return err
 
-    def train_hpv(self, HH, HT, Xv, Tv, steps=10):
-        X, T = self._checkdata(Xv, Tv)
-        N = X.shape[0]
-        nn = HH.shape[0]
+    def validation_corr(self, fHH, fHT, fXv, fTv, steps=10):
+        """Quick batch error evaluation with different numbers of neurons on a validation set.
 
-        nns = np.logspace(np.log(3), np.log(nn), steps, base=np.e, endpoint=True)
-        nns = np.ceil(nns).astype(np.int)
-        nns = np.unique(nns)  # numbers of neurons to check
-        print nns
-        k = nns.shape[0]
-        err = np.zeros((k,))  # errors for these numbers of neurons
+        Only feasible implementation of model structure selection with HP-ELM. This method makes a single pass
+        over the validation data, computing errors for all numbers of neurons at once. It requires HDF5 files with
+        matrices HH and HT: `fHH` and `fHT`, obtained from `add_data(..., fHH, fHT)` method.
+
+        The method writes the best solution to the HPELM model.
+
+        Args:
+            fHH (string): name of HDF5 file with HH matrix
+            fHT (string): name of HDF5 file with HT matrix
+            fXv (string): name of HDF5 file with validation dataset inputs
+            fTv (string): name of HDF5 file with validation dataset outputs
+            steps (int or vector): amount of different numbers of neurons to test, choosen uniformly on a logarithmic
+                scale from 3 to number of neurons in HPELM. Can be given exactly as a vector.
+
+        Returns:
+            Ls (vector): numbers of neurons used by `validation_corr()` method
+            errs (vector): corresponding errors for number of neurons in `Ls`, with classification error if model
+                is run for classification
+        """
+        # TODO: add confusion matrix support here
+        X, T = self._checkdata(fXv, fTv)
+        HH, HT = self._checkcorr(fHH, fHT)
+        N = X.shape[0]
+        L = self.nnet.L
+
+        Ls = np.logspace(np.log(3), np.log(L), steps, base=np.e, endpoint=True)
+        Ls = np.ceil(Ls).astype(np.int)
+        Ls = np.unique(Ls)  # numbers of neurons to check
+        k = Ls.shape[0]
+        errs = np.zeros((k,))  # errors for these numbers of neurons
         nb = int(np.ceil(float(N) / self.batch))
 
         Betas = []  # keep all betas in memory
-        for l in nns:
+        for l in Ls:
             Betas.append(self.nnet.solve_corr(HH[:l, :l], HT[:l, :]))
 
         t = time()
         t0 = time()
         eta = 0
         for b in xrange(nb):
-            eta = int(((time()-t0) / (b+0.0000001)) * (nb-b))
-            if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
-                t = time()
             start = b*self.batch
             stop = min((b+1)*self.batch, N)
-            alpha = float(stop-start)/N
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
             Hb = self.nnet._project(Xb)
             for i in xrange(k):
-                hb1 = Hb[:, :nns[i]]
+                hb1 = Hb[:, :Ls[i]]
                 Yb = np.dot(hb1, Betas[i])
-                err[i] += self._error(Yb, Tb) * alpha
+                errs[i] += self._error(Yb, Tb) * float(stop-start)/N
+            # report time
+            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
+            if time() - t > self.tprint:
+                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                t = time()
 
-        k_opt = np.argmin(err)
-        best_nn = nns[k_opt]
-        self._prune(np.arange(best_nn))
-        self.nnet.B = Betas[k_opt]
+        k_opt = np.argmin(errs)
+        best_L = Ls[k_opt]
+        self.nnet._prune(np.arange(best_L))
+        self.nnet.set_B(Betas[k_opt])
         del Betas
-        print "%d of %d neurons selected with a validation set" % (best_nn, nn)
-        if best_nn > nn*0.9:
+        print "%d of %d neurons selected with a validation set" % (best_L, L)
+        if best_L > L*0.9:
             print "Hint: try re-training with more hidden neurons"
-        return nns, err
-
-    def train_myhpv(self, HH, HT, Xv, Tv, steps=10):
-        X, T = self._checkdata(Xv, Tv)
-        N = X.shape[0]
-        nn = HH.shape[0]
-
-        nns = np.logspace(np.log(3), np.log(nn), steps, base=np.e, endpoint=True)
-        nns = np.ceil(nns).astype(np.int)
-        nns = np.unique(nns)  # numbers of neurons to check
-        k = nns.shape[0]
-        err = np.zeros((k, 2, 2))  # errors for these numbers of neurons
-        nb = int(np.ceil(float(N) / self.batch))
-
-        Betas = []  # keep all betas in memory
-        for l in nns:
-            Betas.append(self.nnet.solve_corr(HH[:l, :l], HT[:l, :]))
-
-        t = time()
-        t0 = time()
-        eta = 0
-        for b in xrange(nb):
-            eta = int(((time()-t0) / (b+0.0000001)) * (nb-b))
-            if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
-                t = time()
-            start = b*self.batch
-            stop = min((b+1)*self.batch, N)
-            Tb = np.array(T[start:stop])
-            Xb = np.array(X[start:stop])
-            Hb = self.nnet._project(Xb)
-            Tc = np.argmax(Tb, axis=1)
-            for i in xrange(k):
-                hb1 = Hb[:, :nns[i]]
-                Yb = np.dot(hb1, Betas[i])
-                Yc = np.argmax(Yb, axis=1)
-                err[i, 0, 0] += np.sum((Tc == 0)*(Yc == 0))
-                err[i, 0, 1] += np.sum((Tc == 0)*(Yc == 1))
-                err[i, 1, 0] += np.sum((Tc == 1)*(Yc == 0))
-                err[i, 1, 1] += np.sum((Tc == 1)*(Yc == 1))
-
-        return nns, err, N
+        return Ls, errs
 
     # async-IO versions of methods
 
@@ -632,7 +582,43 @@ class HPELM(ELM):
         reader.join()
         writer.join()
 
+    def _checkcorr(self, fHH, fHT):
+        """Analog of `_checkdata()` for correlation matrices.
+        """
+        try:
+            h5 = open_file(fHH, "r")
+        except:
+            raise IOError("Cannot read HDF5 file at %s" % fHH)
+        node = None
+        for node in h5.walk_nodes():
+            pass  # find a node with whatever name
+        if node:
+            HH = node[:]
+        else:
+            raise IOError("Empty HDF5 file at %s" % fHH)
+        h5.close()
 
+        try:
+            h5 = open_file(fHT, "r")
+        except:
+            raise IOError("Cannot read HDF5 file at %s" % fHT)
+        node = None
+        for node in h5.walk_nodes():
+            pass  # find a node with whatever name
+        if node:
+            HT = node[:]
+        else:
+            raise IOError("Empty HDF5 file at %s" % fHT)
+        h5.close()
+
+        L = self.nnet.L
+        c = self.nnet.outputs
+        assert len(self.nnet.neurons) > 0, "Cannot solve ELM without neurons"
+        assert HH.shape[0] == L and HH.shape[1] == L, "HH has wrong shape: (%d,%d) expected, (%d,%d) found" \
+                                                      % (L, L, HH.shape[0], HH.shape[1])
+        assert HT.shape[0] == L and HT.shape[1] == c, "HT has wrong shape: (%d,%d) expected, (%d,%d) found" \
+                                                      % (L, c, HH.shape[0], HH.shape[1])
+        return HH, HT
 
 
 

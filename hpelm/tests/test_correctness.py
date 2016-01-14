@@ -264,7 +264,7 @@ class TestCorrectness(TestCase):
         Y = np.array([[0, 1], [0.4, 0.6], [0, 1]])
         elm = ELM(1, 2)
         elm.add_neurons(1, "lin")
-        elm.train(X, T, "c")
+        elm.classification = "c"
         e = elm.error(Y, T)
         np.testing.assert_allclose(e, 1.0 / 3)
 
@@ -286,7 +286,7 @@ class TestCorrectness(TestCase):
         Y = np.array([[0.4, 0.6], [0.8, 0.6], [1, 1]])
         elm = ELM(1, 2)
         elm.add_neurons(1, "lin")
-        elm.train(X, T, "mc")
+        elm.classification = "mc"
         e = elm.error(Y, T)
         np.testing.assert_allclose(e, 1.0 / 6)
 
