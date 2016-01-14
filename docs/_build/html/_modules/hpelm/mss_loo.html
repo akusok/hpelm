@@ -123,7 +123,7 @@
 
 
 <div class="viewcode-block" id="train_loo"><a class="viewcode-back" href="../../hpelm.html#hpelm.mss_loo.train_loo">[docs]</a><span class="k">def</span> <span class="nf">train_loo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">_project</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
     <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">get_batch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 
     <span class="n">N</span><span class="p">,</span> <span class="n">nn</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span>

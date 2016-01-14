@@ -18,7 +18,7 @@ class SLFN(object):
     This implementation is not the fastest but very simple, and it defines interface.
 
     Args:
-        c (int): number of outputs, or classes for classification
+        outputs (int): number of outputs, or classes for classification
         norm (double): output weights normalization parameter (Tikhonov normalizaion, or
             ridge regression), large values provides smaller (= better) weights but worse model accuracy
         precision (Numpy.float32/64): solver precision, float32 is faster but may be worse, most GPU
@@ -38,10 +38,10 @@ class SLFN(object):
             for new input data.
     """
 
-    def __init__(self, c, norm=None, precision=np.float64):
+    def __init__(self, outputs, norm=None, precision=np.float64):
         """Initialize class variables and transformation functions.
         """
-        self.c = c  # number of outputs, also number of classes (thus 'c')
+        self.outputs = outputs  # number of outputs, also number of classes (thus 'c')
         self.precision = precision
         if norm is None:
             norm = 50*np.finfo(precision).eps  # 50 times machine epsilon
@@ -132,15 +132,17 @@ class SLFN(object):
         Y = np.dot(H, self.B)
         return Y
 
-    def add_batch(self, X, T, wc=None):
+    def add_batch(self, X, T, wc=None, HH_out=None, HT_out=None):
         """Add a batch of training data to an iterative solution, weighted if neeed.
 
         The batch is processed as a whole, the training data is splitted in `ELM.add_data()` method.
+        With parameters HH_out, HT_out, the output will be put into these matrices instead of model.
 
         Args:
             X (matrix): input data matrix size (N * `inputs`)
             T (matrix): output data matrix size (N * `outputs`)
             wc (vector): vector of weights for data samples, one weight per sample, size (N * 1)
+            HH_out, HT_out (matrix, optional): output matrices to add batch result into, always given together
         """
         H = self._project(X)
         T = T.astype(self.precision)
@@ -149,38 +151,17 @@ class SLFN(object):
             H *= w
             T *= w
 
-        if self.HH is None:  # initialize space for self.HH, self.HT
-            self.HH = np.zeros((self.L, self.L), dtype=self.precision)
-            self.HT = np.zeros((self.L, self.c), dtype=self.precision)
-            np.fill_diagonal(self.HH, self.norm)
+        if HH_out is not None and HT_out is not None:
+            HH_out += np.dot(H.T, H) + np.eye(H.shape[1]) * self.norm
+            HT_out += np.dot(H.T, T)
+        else:
+            if self.HH is None:  # initialize space for self.HH, self.HT
+                self.HH = np.zeros((self.L, self.L), dtype=self.precision)
+                self.HT = np.zeros((self.L, self.outputs), dtype=self.precision)
+                np.fill_diagonal(self.HH, self.norm)
 
-        self.HH += np.dot(H.T, H)
-        self.HT += np.dot(H.T, T)
-
-    def get_batch(self, X, T, wc=None):
-        """Compute and return a batch of training data, weighted if neeed.
-
-        Same as `add_batch()` but returns the result instead.
-
-        Args:
-            X (matrix): input data matrix size (N * `inputs`)
-            T (matrix): output data matrix size (N * `outputs`)
-            wc (vector): vector of weights for data samples, one weight per sample, size (N * 1)
-
-        Returns:
-            HH (matrix): covariance matrix of hidden data representation, size (`L` * `L`)
-            HT (matrix): correlation matrix between hidden data representation and outputs,
-                size (`L` * `outputs`)
-        """
-        H = self._project(X)
-        T = T.astype(self.precision)
-        if wc is not None:  # apply weights if given
-            w = np.array(wc**0.5, dtype=self.precision)[:, None]  # re-shape to column matrix
-            H *= w
-            T *= w
-        HH = np.dot(H.T, H) + np.eye(H.shape[1]) * self.norm
-        HT = np.dot(H.T, T)
-        return HH, HT
+            self.HH += np.dot(H.T, H)
+            self.HT += np.dot(H.T, T)
 
     def solve(self):
         """Redirects to solve_corr, to avoid duplication of code.
@@ -231,7 +212,7 @@ class SLFN(object):
             B (matrix): output layer weights matrix, size (`L` * `outputs`)
         """
         assert B.shape[0] == self.L, "Incorrect first dimension: %d expected, %d found" % (self.L, B.shape[0])
-        assert B.shape[1] == self.c, "Incorrect output dimension: %d expected, %d found" % (self.c, B.shape[1])
+        assert B.shape[1] == self.outputs, "Incorrect output dimension: %d expected, %d found" % (self.outputs, B.shape[1])
         self.B = B.astype(self.precision)
 
     def get_corr(self):
@@ -251,7 +232,7 @@ class SLFN(object):
         msg = "Wrong HH dimension: (%d, %d) expected, %s found" % (self.L, self.L, HH.shape)
         assert HH.shape[0] == self.L, msg
         assert HH.shape[0] == HT.shape[0], "HH and HT must have the same number of rows (%d)" % self.L
-        assert HT.shape[1] == self.c, "Number of columns in HT must equal number of targets (%d)" % self.c
+        assert HT.shape[1] == self.outputs, "Number of columns in HT must equal number of outputs (%d)" % self.outputs
         self.HH = HH.astype(self.precision)
         self.HT = HT.astype(self.precision)
 

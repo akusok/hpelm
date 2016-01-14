@@ -128,9 +128,76 @@
 <span class="kn">from</span> <span class="nn">nnets.slfn</span> <span class="kn">import</span> <span class="n">SLFN</span>
 
 
-<div class="viewcode-block" id="HPELM"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM">[docs]</a><span class="k">class</span> <span class="nc">HPELM</span><span class="p">(</span><span class="n">SLFN</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Interface for training Extreme Learning Machines.</span>
+<div class="viewcode-block" id="HPELM"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM">[docs]</a><span class="k">class</span> <span class="nc">HPELM</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interface for training High-Performance Extreme Learning Machines (HP-ELM).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        inputs (int): dimensionality of input data, or number of data features</span>
+<span class="sd">        outputs (int): dimensionality of output data, or number of classes</span>
+<span class="sd">        batch (int, optional): batch size for data processing in ELM, reduces memory requirements. Does not work</span>
+<span class="sd">            for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly</span>
+<span class="sd">            as a class attribute.</span>
+<span class="sd">        accelerator (string, optional): type of accelerated ELM to use: None, &#39;GPU&#39;, ...</span>
+<span class="sd">        precision (optional): data precision to use, supports signle (&#39;single&#39;, &#39;32&#39; or numpy.float32) or double</span>
+<span class="sd">            (&#39;double&#39;, &#39;64&#39; or numpy.float64). Single precision is faster but may cause numerical errors. Majority</span>
+<span class="sd">            of GPUs work in single precision. Default: **double**.</span>
+<span class="sd">        norm (double, optinal): L2-normalization parameter, **None** gives the default value.</span>
+<span class="sd">        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch,</span>
+<span class="sd">            whatever takes longer.</span>
+
+<span class="sd">    Class attributes; attributes that simply store initialization or `train()` parameters are omitted.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        nnet (object): Implementation of neural network with computational methods, but without</span>
+<span class="sd">            complex logic. Different implementations are given by different classes: for Python, for GPU, etc.</span>
+<span class="sd">            See ``hpelm.nnets`` folder for particular files. You can implement your own computational algorithm</span>
+<span class="sd">            by inheriting from ``hpelm.nnets.SLFN`` and overwriting some methods.</span>
+<span class="sd">        flist (list of strings): Awailable types of neurons, use them when adding new neurons.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Below the &#39;matrix&#39; type means a 2-dimensional Numpy.ndarray.</span>
+
+<span class="sd">        The &#39;hdf5&#39; type denotes an HDF5 file type with a</span>
+<span class="sd">        single 2-dimensional array inside. HPELM uses PyTables interface to HDF5: http://www.pytables.org/.</span>
+<span class="sd">        For HDF5 array examples, see http://www.pytables.org/usersguide/libref/homogenous_storage.html. Array name</span>
+<span class="sd">        is irrelevant, but there must be **only one array per HDF5 file**.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s">&#39;double&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tprint</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)),</span> <span class="s">&quot;Number of inputs must be integer&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)),</span> <span class="s">&quot;Number of outputs must be integer&quot;</span>
+        <span class="k">assert</span> <span class="n">batch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;Batch should be positive&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+
+        <span class="k">if</span> <span class="n">precision</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="n">precision</span>
+        <span class="k">elif</span> <span class="s">&#39;double&#39;</span> <span class="ow">in</span> <span class="n">precision</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s">&#39;64&#39;</span> <span class="ow">in</span> <span class="n">precision</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="k">elif</span> <span class="s">&#39;single&#39;</span> <span class="ow">in</span> <span class="n">precision</span> <span class="ow">or</span> <span class="s">&#39;32&#39;</span> <span class="ow">in</span> <span class="n">precision</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Unknown precision parameter: </span><span class="si">%s</span><span class="s">, using double precision&quot;</span> <span class="o">%</span> <span class="n">precision</span>
+
+        <span class="c"># create SLFN solver to do actual computations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span> <span class="o">=</span> <span class="n">accelerator</span>
+        <span class="k">if</span> <span class="n">accelerator</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># double precision Numpy solver</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span> <span class="o">=</span> <span class="n">SLFN</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+            <span class="c"># TODO: add advanced and GPU nnets, in load also</span>
+
+        <span class="c"># init other stuff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># list of opened HDF5 files, they are closed in ELM descructor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># c / wc / mc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wc</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># weighted classification weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span> <span class="o">=</span> <span class="n">tprint</span>  <span class="c"># time intervals in seconds to report ETA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flist</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;lin&quot;</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="s">&quot;tanh&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">)</span>  <span class="c"># supported neuron types</span>
+
+
+
+
 
     <span class="k">def</span> <span class="nf">_parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Parse arguments of training, and prepare class variables.</span>
@@ -160,8 +227,6 @@
         <span class="n">ADAPTIVE</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># batch / None</span>
 
         <span class="c"># reset parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ranking</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kmax_op</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># c / wc / mc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># weigths for weighted classification</span>
 
@@ -198,7 +263,7 @@
         <span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">fX</span><span class="p">,</span> <span class="n">fT</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
         <span class="c"># traing the model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c"># remove previous training</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 
@@ -228,7 +293,7 @@
         <span class="k">return</span> <span class="n">node</span>
 
 
-<div class="viewcode-block" id="HPELM.predict"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fY</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fY</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterative predict which saves data to HDF5, sequential version.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">Beta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Train ELM before predicting&quot;</span>
@@ -253,7 +318,7 @@
             <span class="c"># get data</span>
             <span class="n">Xb</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="c"># process data</span>
-            <span class="n">Yb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+            <span class="n">Yb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
             <span class="c"># write data</span>
             <span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="n">Yb</span>
 
@@ -266,7 +331,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
         <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-</div>
+
 <div class="viewcode-block" id="HPELM.predict_async"><a class="viewcode-back" href="../../hpelm.html#hpelm.hp_elm.HPELM.predict_async">[docs]</a>    <span class="k">def</span> <span class="nf">predict_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">fY</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterative predict which saves data to HDF5, with asynchronous I/O by separate processes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -304,7 +369,7 @@
                 <span class="n">Xb</span> <span class="o">=</span> <span class="n">qr_out</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
                 <span class="n">Xb</span> <span class="o">=</span> <span class="n">Xb</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
                 <span class="c"># process data</span>
-                <span class="n">Yb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+                <span class="n">Yb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
                 <span class="c"># save data</span>
                 <span class="n">qw_in</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">Yb</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
 
@@ -555,7 +620,7 @@
             <span class="n">alpha</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
             <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
             <span class="n">Xb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
-            <span class="n">Hb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+            <span class="n">Hb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">_project</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
                 <span class="n">hb1</span> <span class="o">=</span> <span class="n">Hb</span><span class="p">[:,</span> <span class="p">:</span><span class="n">nns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
                 <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hb1</span><span class="p">,</span> <span class="n">Betas</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -600,7 +665,7 @@
             <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
             <span class="n">Tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
             <span class="n">Xb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
-            <span class="n">Hb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
+            <span class="n">Hb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">_project</span><span class="p">(</span><span class="n">Xb</span><span class="p">)</span>
             <span class="n">Tc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">Tb</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
                 <span class="n">hb1</span> <span class="o">=</span> <span class="n">Hb</span><span class="p">[:,</span> <span class="p">:</span><span class="n">nns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>

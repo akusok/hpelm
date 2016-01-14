@@ -169,8 +169,9 @@ as a class attribute.</li>
 <li><strong>precision</strong> (<em>optional</em>) &#8211; data precision to use, supports signle (&#8216;single&#8217;, &#8216;32&#8217; or numpy.float32) or double
 (&#8216;double&#8217;, &#8216;64&#8217; or numpy.float64). Single precision is faster but may cause numerical errors. Majority
 of GPUs work in single precision. Default: <strong>double</strong>.</li>
-<li><strong>norm</strong> (<em>double, optinal</em>) &#8211; L2-normalization parameter, None gives the default value.</li>
-<li><strong>tprint</strong> (<em>int, optional</em>) &#8211; ELM reports its progess every <cite>tprint</cite> seconds or after every batch, whatever takes longer.</li>
+<li><strong>norm</strong> (<em>double, optinal</em>) &#8211; L2-normalization parameter, <strong>None</strong> gives the default value.</li>
+<li><strong>tprint</strong> (<em>int, optional</em>) &#8211; ELM reports its progess every <cite>tprint</cite> seconds or after every batch,
+whatever takes longer.</li>
 </ul>
 </td>
 </tr>
@@ -279,11 +280,11 @@ confusion matrix, size (<cite>outputs</cite> * <cite>outputs</cite>)</p>
 <code class="descname">error</code><span class="sig-paren">(</span><em>Y</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate error of model predictions.</p>
 <p>Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
-For classification, computes corresponding classification error.
+For classification, computes mis-classification error.
 For multi-label classification, correct classes are all with Y&gt;0.5.</p>
 <p>For weighted classification the error is an average weighted True Positive Rate,
 or percentage of correctly predicted samples for each class, multiplied by weight
-of that class and averaged. If you want something else, just write the code yourself :)
+of that class and averaged. If you want something else, just write it yourself :)
 See <a class="reference external" href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -393,12 +394,13 @@ and in <cite>error()</cite> method output.</p>
 <li><strong>X</strong> (<em>matrix</em>) &#8211; input data matrix, size (N * <cite>inputs</cite>)</li>
 <li><strong>T</strong> (<em>matrix</em>) &#8211; outputs data matrix, size (N * <cite>outputs</cite>)</li>
 <li><strong>'c'/'wc'/'mc'</strong> (<em>string, choose one</em>) &#8211; train ELM for classification (&#8216;c&#8217;), classification with weighted classes
-(&#8216;wc&#8217;) or multi-label classification (&#8216;mc&#8217;) with several correct classes per data sample. In classification,
-number of <cite>outputs</cite> is the number of classes; correct class(es) for each sample has value 1 and
-incorrect classes have 0.</li>
-<li><strong>'V'/'CV'/'LOO'</strong> (<em>sting, choose one</em>) &#8211; model structure selection: select optimal number of neurons using a validation set (&#8216;V&#8217;),
-cross-validation (&#8216;CV&#8217;) or Leave-One-Out (&#8216;LOO&#8217;)</li>
-<li><strong>'OP'</strong> (<em>string, use with &#8216;V&#8217;/&#8217;CV&#8217;/&#8217;LOO&#8217;</em>) &#8211; choose best neurons instead of random ones, training takes longer; equivalent to L1-regularization</li>
+(&#8216;wc&#8217;) or multi-label classification (&#8216;mc&#8217;) with several correct classes per data sample.
+In classification, number of <cite>outputs</cite> is the number of classes; correct class(es) for each sample
+has value 1 and incorrect classes have 0.</li>
+<li><strong>'V'/'CV'/'LOO'</strong> (<em>sting, choose one</em>) &#8211; model structure selection: select optimal number of neurons using
+a validation set (&#8216;V&#8217;), cross-validation (&#8216;CV&#8217;) or Leave-One-Out (&#8216;LOO&#8217;)</li>
+<li><strong>'OP'</strong> (<em>string, use with &#8216;V&#8217;/&#8217;CV&#8217;/&#8217;LOO&#8217;</em>) &#8211; choose best neurons instead of random ones, training takes longer;
+equivalent to L1-regularization</li>
 </ul>
 </td>
 </tr>
@@ -430,9 +432,57 @@ batch size for ELM, overwrites batch size from an initialization</li>
 <p>&#64;author: akusok</p>
 <dl class="class">
 <dt id="hpelm.hp_elm.HPELM">
-<em class="property">class </em><code class="descclassname">hpelm.hp_elm.</code><code class="descname">HPELM</code><span class="sig-paren">(</span><em>c</em>, <em>norm=None</em>, <em>precision=&lt;type 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">hpelm.nnets.slfn.SLFN</span></code></p>
-<p>Interface for training Extreme Learning Machines.</p>
+<em class="property">class </em><code class="descclassname">hpelm.hp_elm.</code><code class="descname">HPELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Interface for training High-Performance Extreme Learning Machines (HP-ELM).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inputs</strong> (<em>int</em>) &#8211; dimensionality of input data, or number of data features</li>
+<li><strong>outputs</strong> (<em>int</em>) &#8211; dimensionality of output data, or number of classes</li>
+<li><strong>batch</strong> (<em>int, optional</em>) &#8211; batch size for data processing in ELM, reduces memory requirements. Does not work
+for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
+as a class attribute.</li>
+<li><strong>accelerator</strong> (<em>string, optional</em>) &#8211; type of accelerated ELM to use: None, &#8216;GPU&#8217;, ...</li>
+<li><strong>precision</strong> (<em>optional</em>) &#8211; data precision to use, supports signle (&#8216;single&#8217;, &#8216;32&#8217; or numpy.float32) or double
+(&#8216;double&#8217;, &#8216;64&#8217; or numpy.float64). Single precision is faster but may cause numerical errors. Majority
+of GPUs work in single precision. Default: <strong>double</strong>.</li>
+<li><strong>norm</strong> (<em>double, optinal</em>) &#8211; L2-normalization parameter, <strong>None</strong> gives the default value.</li>
+<li><strong>tprint</strong> (<em>int, optional</em>) &#8211; ELM reports its progess every <cite>tprint</cite> seconds or after every batch,
+whatever takes longer.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Class attributes; attributes that simply store initialization or <cite>train()</cite> parameters are omitted.</p>
+<dl class="attribute">
+<dt id="hpelm.hp_elm.HPELM.nnet">
+<code class="descname">nnet</code><a class="headerlink" href="#hpelm.hp_elm.HPELM.nnet" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>object</em></p>
+<p>Implementation of neural network with computational methods, but without
+complex logic. Different implementations are given by different classes: for Python, for GPU, etc.
+See <code class="docutils literal"><span class="pre">hpelm.nnets</span></code> folder for particular files. You can implement your own computational algorithm
+by inheriting from <code class="docutils literal"><span class="pre">hpelm.nnets.SLFN</span></code> and overwriting some methods.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="hpelm.hp_elm.HPELM.flist">
+<code class="descname">flist</code><a class="headerlink" href="#hpelm.hp_elm.HPELM.flist" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of strings</em></p>
+<p>Awailable types of neurons, use them when adding new neurons.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Below the &#8216;matrix&#8217; type means a 2-dimensional Numpy.ndarray.</p>
+<p class="last">The &#8216;hdf5&#8217; type denotes an HDF5 file type with a
+single 2-dimensional array inside. HPELM uses PyTables interface to HDF5: <a class="reference external" href="http://www.pytables.org/">http://www.pytables.org/</a>.
+For HDF5 array examples, see <a class="reference external" href="http://www.pytables.org/usersguide/libref/homogenous_storage.html">http://www.pytables.org/usersguide/libref/homogenous_storage.html</a>. Array name
+is irrelevant, but there must be <strong>only one array per HDF5 file</strong>.</p>
+</div>
 <dl class="method">
 <dt id="hpelm.hp_elm.HPELM.add_batch">
 <code class="descname">add_batch</code><span class="sig-paren">(</span><em>X</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.add_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.add_batch" title="Permalink to this definition">¶</a></dt>
@@ -451,12 +501,6 @@ Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
 Returns solution Beta if solve=True.
 Runs on GPU if self.accelerator=&#8221;GPU&#8221;.
 Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="hpelm.hp_elm.HPELM.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>fX</em>, <em>fY</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterative predict which saves data to HDF5, sequential version.</p>
 </dd></dl>
 
 <dl class="method">

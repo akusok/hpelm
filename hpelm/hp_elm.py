@@ -7,321 +7,305 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 import multiprocessing as mp
-#import Queue
-#import threading
 from time import time
-from hpelm.modules import make_hdf5, ireader, iwriter
+from hpelm.modules import make_hdf5, ireader, iwriter, _prepare_fHH, _write_fHH
 from tables import open_file
-from nnets.slfn import SLFN
+from elm import ELM
+# TODO: fix double storage of self.(nnet).outputs and self.(nnet).inputs problem
 
 
-class HPELM(Object):
-    """Interface for training Extreme Learning Machines.
+class HPELM(ELM):
+    """Interface for training High-Performance Extreme Learning Machines (HP-ELM).
+
+    Args:
+        inputs (int): dimensionality of input data, or number of data features
+        outputs (int): dimensionality of output data, or number of classes
+        batch (int, optional): batch size for data processing in ELM, reduces memory requirements. Does not work
+            for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
+            as a class attribute.
+        accelerator (string, optional): type of accelerated ELM to use: None, 'GPU', ...
+        precision (optional): data precision to use, supports signle ('single', '32' or numpy.float32) or double
+            ('double', '64' or numpy.float64). Single precision is faster but may cause numerical errors. Majority
+            of GPUs work in single precision. Default: **double**.
+        norm (double, optinal): L2-normalization parameter, **None** gives the default value.
+        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch,
+            whatever takes longer.
+
+    Class attributes; attributes that simply store initialization or `train()` parameters are omitted.
+
+    Attributes:
+        nnet (object): Implementation of neural network with computational methods, but without
+            complex logic. Different implementations are given by different classes: for Python, for GPU, etc.
+            See ``hpelm.nnets`` folder for particular files. You can implement your own computational algorithm
+            by inheriting from ``hpelm.nnets.SLFN`` and overwriting some methods.
+        flist (list of strings): Awailable types of neurons, use them when adding new neurons.
+
+    Note:
+        The 'hdf5' type denotes a name of HDF5 file type with a single 2-dimensional array inside. HPELM uses PyTables
+        interface to HDF5: http://www.pytables.org/. For HDF5 array examples, see
+        http://www.pytables.org/usersguide/libref/homogenous_storage.html. Array name is irrelevant,
+        but there must be **only one array per HDF5 file**.
+
+        A 2-dimensional Numpy.ndarray can also be used.
     """
 
-    def _parse_args(self, args, kwargs, X, T):
-        """Parse arguments of training, and prepare class variables.
-
-        Model structure selection (exclusive, choose one)
-        :param "V": use validation set
-        :param "CV": use cross-validation
-
-        Additional parameters for model structure selecation
-        :param Xv: validation data X ("V")
-        :param Tv: validation targets T ("V")
-        :param k: number of splits ("CV")
-
-        System setup
-        :param "c": build ELM for classification
-        :param "cb": build ELM with balanced classification
-        :param "mc": build ELM for multiclass classification
-        :param "adaptive"/"ad": build adaptive ELM for non-stationary model
-        :param "batch": batch size for adaptive ELM (sliding window step size)
-        """
-
-        assert len(self.neurons) > 0, "Add neurons to ELM before training it"
-        args = [a.upper() for a in args]  # make all arguments upper case
-
-        # kind of "enumerators", try to use only inside that script
-        MODELSELECTION = None  # V / CV / None
-        ADAPTIVE = False  # batch / None
-
-        # reset parameters
-        self.ranking = None
-        self.kmax_op = None
-        self.classification = None  # c / wc / mc
-        self.weights_wc = None  # weigths for weighted classification
-
-        # check exclusive parameters
-        assert len(set(args).intersection(set(["C", "WC", "MC"]))) <= 1, "Use only one of \
-            C (classification) / MC (multiclass) / WC (weighted classification)"
-
-        # parse parameters
-        for a in args:
-            if a == "C":
-                assert self.targets > 1, "Classification targets must have 1 output per class"
-                self.classification = "c"
-            if a == "WC":
-                assert self.targets > 1, "Classification targets must have 1 output per class"
-                assert "w" in kwargs.keys(), "Provide class weights for weighted classification"
-                w = kwargs['w']
-                assert len(w) == T.shape[1], "Number of class weights differs from number of target classes"
-                self.weights_wc = w
-                self.classification = "wc"
-            if a == "MC":
-                self.classification = "mc"
-            # if a in ("A", "AD", "ADAPTIVE"):
-            #     assert "batch" in kwargs.keys(), "Provide batch size for adaptive ELM model (batch)"
-            #     batch = kwargs['batch']
-            #     ADAPTIVE = True
-
-
     def train(self, fX, fT, *args, **kwargs):
-        """Universal training interface for ELM model with model structure selection.
+        """Universal training interface for HP-ELM model.
 
-        :param fX: input data HDF5 or matrix
-        :param fT: target data HDF5 or matrix
+        Always trains a basic ELM model without model structure selection.
+        L2-regularization is available as `norm` parameter at HPELM initialization.
+        Number of neurons selection with validation set for trained HPELM is available in `train_hpv()` method.
+
+        Args:
+            fX (hdf5): input data on disk, size (N * `inputs`)
+            fT (hdf5): outputs data on disk, size (N * `outputs`)
+            'c'/'wc'/'mc' (string, choose one): train HPELM for classification ('c'), classification with weighted
+                classes ('wc') or multi-label classification ('mc') with several correct classes per data sample.
+                In classification, number of `outputs` is the number of classes; correct class(es) for each sample
+                has value 1 and incorrect classes have 0.
+
+        Keyword Args:
+            istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
+                all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
+            icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
+                adjusted to `istart` + `icount` <= N. If not given, all data starting from `start` is used.
+                The last sample used for training is `istart`+`icount`-1, so you can index data as:
+                istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
+            batch (int, optional): batch size for ELM, overwrites batch size from the initialization
         """
+        # TODO: add start/stop indexes for training on a part of HDF5 files.
+        # TODO: move to h5py completely with async io (mpio), because I don't need pyTables features
+        # TODO: explain why I don't support parallel processing (huge amount of data to transfer, or fast enough)
+        # TODO: support appending HH, HT into the same given files, waiting for others
         X, T = self._checkdata(fX, fT)
-        self._parse_args(args, kwargs, X, T)
-        # traing the model
-        self.solver.reset()
-        self.add_batch(X, T)
-        self.solver.solve()
+        self._train_parse_args(args, kwargs)
 
+        istart = 0
+        icount = np.inf
+        if "istart" in kwargs.keys():
+            istart = max(0, int(kwargs["istart"]))
+        if "icount" in kwargs.keys():
+            icount = kwargs["icount"]
+        self.add_data(X, T, istart=istart, icount=icount)
+        self.nnet.solve()
 
-    def train_async(self, fX, fT, *args, **kwargs):
-        """Universal training interface for ELM model with model structure selection.
+    def add_data(self, fX, fT, istart=0, icount=np.inf, fHH=None, fHT=None):
+        """Feed new training data (X,T) to HP-ELM model in batches: does not solve ELM itself.
 
-        :param fX: input data HDF5 or matrix
-        :param fT: target data HDF5 or matrix
-        """
-        X, T = self._checkdata(fX, fT)
-        self._parse_args(args, kwargs, X, T)
-        # traing the model
-        self.solver.reset()
-        self.add_batch_async(fX, fT, X, T)
-        self.solver.solve()
+        This method prepares an intermediate solution data, that takes the most time. After that, obtaining
+        the solution is fast.
 
+        The intermediate solution consists of two matrices: `HH` and `HT`. They can be in memory for a model computed
+        at once, or stored on disk for a model computed in parts or in parallel.
 
-    def _makeh5(self, h5name, N, d):
-        """Creates HDF5 file opened in append mode.
-        """
-        make_hdf5((N, d), h5name)
-        h5 = open_file(h5name, "a")
-        self.opened_hdf5.append(h5)
-        for node in h5.walk_nodes():
-            pass  # find a node with whatever name
-        return node
+        For iterative solution, provide file names for on-disk matrices in the input parameters `fHH` and `fHT`.
+        They will be created if they don't exist, or new results will be merged with the existing ones. This method is
+        multiprocess-safe for parallel writing into files `fHH` and `fHT`, that allows you to easily compute ELM
+        in parallel. The multiprocess-safeness uses Python module 'fasteners' and a lock file, which is named
+        fHH+'.lock' and fHT+'.lock'.
 
+        Args:
+            fX (hdf5): (part of) input training data size (N * `inputs`)
+            fT (hdf5) (part of) output training data size (N * `outputs`)
+            istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
+                all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
+            icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
+                adjusted to `istart` + `icount` <= N. If not given, all data starting from `start` is used.
+                The last sample used for training is `istart`+`icount`-1, so you can index data as:
+                istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
+            fHH, fHT (string, optional): file names for storing HH and HT matrices. Files are created if they don't
+                exist, or new result is added to the existing files if they exist. Parallel writing to the same
+                `fHH`, `fHT` files is multiprocess-safe, made specially for parallel training of HP-ELM. Another use
+                is to split a very long training of huge ELM into smaller parts, so the training can be interrupted
+                and resumed later.
 
-    def _predict(self, fX, fY):
-        """Iterative predict which saves data to HDF5, sequential version.
-        """
-        assert self.solver.Beta is not None, "Train ELM before predicting"
-        X, _ = self._checkdata(fX, None)
-        N = X.shape[0]
-        make_hdf5((N, self.targets), fY)
-
-        h5 = open_file(fY, "a")
-        self.opened_hdf5.append(h5)
-        for Y in h5.walk_nodes():
-            pass  # find a node with whatever name
-        nb = int(np.ceil(float(N) / self.batch))
-
-        t = time()
-        t0 = time()
-        eta = 0
-
-        for b in xrange(0, nb):
-            start = b*self.batch
-            stop = min((b+1)*self.batch, N)
-
-            # get data
-            Xb = X[start:stop].astype(np.float64)
-            # process data
-            Yb = self.solver._predict(Xb)
-            # write data
-            Y[start:stop] = Yb
-
-            # report time
-            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
-            if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
-                t = time()
-
-        self.opened_hdf5.pop()
-        h5.close()
-
-
-    def predict_async(self, fX, fY):
-        """Iterative predict which saves data to HDF5, with asynchronous I/O by separate processes.
-        """
-        assert self.Beta is not None, "Train ELM before predicting"
-        X, _ = self._checkdata(fX, None)
-        N = X.shape[0]
-        h5 = self.opened_hdf5.pop()
-        h5.close()
-        make_hdf5((N, self.targets), fY)
-        nb = int(np.ceil(float(N) / self.batch))
-
-        # start async reader and writer for HDF5 files
-        qr_in = mp.Queue()
-        qr_out = mp.Queue(1)
-        reader = mp.Process(target=ireader, args=(fX, qr_in, qr_out))
-        reader.daemon = True
-        reader.start()
-        qw_in = mp.Queue(1)
-        writer = mp.Process(target=iwriter, args=(fY, qw_in))
-        writer.daemon = True
-        writer.start()
-
-        t = time()
-        t0 = time()
-        eta = 0
-
-        for b in xrange(0, nb+1):
-            start_next = b*self.batch
-            stop_next = min((b+1)*self.batch, N)
-            # prefetch data
-            qr_in.put((start_next, stop_next))  # asyncronous reading of next data batch
-
-            if b > 0:  # first iteration only prefetches data
-                # get data
-                Xb = qr_out.get()
-                Xb = Xb.astype(np.float64)
-                # process data
-                Yb = self.solver._predict(Xb)
-                # save data
-                qw_in.put((Yb, start, stop))
-
-            start = start_next
-            stop = stop_next
-            # report time
-            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
-            if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
-                t = time()
-
-        qw_in.put(None)
-        reader.join()
-        writer.join()
-
-
-    def add_batch(self, X, T):
-        """Create HH, HT matrices.
-
-        HPELM-specific parallel projection.
-        Returns solution Beta if solve=True.
-        Runs on GPU if self.accelerator="GPU".
-        Performs balanced classification if self.classification="cb".
         """
         # initialize
+        assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
+        X, T = self._checkdata(fX, fT)
         N = X.shape[0]
-        nb = int(np.ceil(float(N) / self.batch))
-        if self.classification == "wc":  # weighted classification initialization
-            ns = np.zeros((self.targets,))
+        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.outputs, self.precision, self.nnet.norm)
+        # custom range adjustments
+        icount = min(istart + icount, N)
+        nb = int(np.ceil(float(icount) / self.batch))  # number of batches
+
+        # weighted classification initialization
+        if self.classification == "wc" and self.wc is None:
+            ns = np.zeros((self.outputs,))
             for b in xrange(nb):  # batch sum is much faster
-                ns += T[b*self.batch: (b+1)*self.batch].sum(axis=0)
-            wc = (float(ns.sum()) / ns) * self.weights_wc  # class weights normalized to number of samples
+                start = b*self.batch + istart
+                stop = min((b+1)*self.batch + istart, icount + istart)
+                ns += T[start:stop].sum(axis=0)
+            ns = ns.astype(self.precision)
+            self.wc = ns.sum() / ns  # class weights normalized to number of samples
 
         # main loop over all the data
         t = time()
         t0 = time()
         eta = 0
+        wc_vector = None
         for b in xrange(nb):
-            eta = int(((time()-t0) / (b+0.0000001)) * (nb-b))
-            if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
-                t = time()
-            start = b*self.batch
-            stop = min((b+1)*self.batch, N)
+            start = b*self.batch + istart
+            stop = min((b+1)*self.batch + istart, icount + istart)
             Xb = X[start:stop]
             Tb = T[start:stop]
+            if self.classification == "wc":
+                wc_vector = self.wc[np.where(Tb == 1)[1]]  # weights for samples in the batch
 
-            if self.classification != "wc":
-                self.solver.add_batch(Xb, Tb)
-            else:
-                # weighted classification, split batch per classes
-                for i in range(wc.shape[0]):
-                    idxc = Tb[:, i] == 1
-                    if idxc.sum() > 0:  # if batch contains class i
-                        Xbc = Xb[idxc]
-                        Tbc = Tb[idxc]
-                        self.solver.add_batch(Xbc, Tbc, wc[i])
+            self.nnet.add_batch(Xb, Tb, wc_vector, HH_out=HH, HT_out=HT)
 
-
-    def add_batch_async(self, fX, fT, X, T):
-        """Create HH, HT matrices with async I/O.
-
-        HPELM-specific parallel projection.
-        Returns solution Beta if solve=True.
-        Runs on GPU if self.accelerator="GPU".
-        Performs balanced classification if self.classification="cb".
-        """
-        # initialize
-        N = X.shape[0]
-        nb = int(np.ceil(float(N) / self.batch))
-        if self.classification == "wc":  # weighted classification initialization
-            ns = np.zeros((self.targets,))
-            for b in xrange(nb):  # batch sum is much faster
-                ns += T[b*self.batch: (b+1)*self.batch].sum(axis=0)
-            wc = (float(ns.sum()) / ns) * self.weights_wc  # class weights normalized to number of samples
-
-        # close X and T files
-        h5 = self.opened_hdf5.pop()
-        h5.close()
-        h5 = self.opened_hdf5.pop()
-        h5.close()
-
-        # start async reader and writer for HDF5 files
-        qX_in = mp.Queue()
-        qX_out = mp.Queue(1)
-        readerX = mp.Process(target=ireader, args=(fX, qX_in, qX_out))
-        readerX.daemon = True
-        readerX.start()
-        qT_in = mp.Queue()
-        qT_out = mp.Queue(1)
-        readerT = mp.Process(target=ireader, args=(fT, qT_in, qT_out))
-        readerT.daemon = True
-        readerT.start()
-
-        t = time()
-        t0 = time()
-        eta = 0
-
-        # main loop over all the data
-        for b in xrange(0, nb+1):
-            start_next = b*self.batch
-            stop_next = min((b+1)*self.batch, N)
-            # prefetch data
-            qX_in.put((start_next, stop_next))  # asyncronous reading of next data batch
-            qT_in.put((start_next, stop_next))
-
-            if b > 0:  # first iteration only prefetches data
-                Xb = qX_out.get()
-                Tb = qT_out.get()
-
-                # process data
-                if self.classification != "wc":
-                    self.solver.add_batch(Xb, Tb)
-                else:
-                    # weighted classification, split batch per classes
-                    for i in range(wc.shape[0]):
-                        idxc = Tb[:, i] == 1
-                        if idxc.sum() > 0:  # if batch contains class i
-                            Xbc = Xb[idxc]
-                            Tbc = Tb[idxc]
-                            self.solver.add_batch(Xbc, Tbc, wc[i])
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
 
-        readerX.join()
-        readerT.join()
+        # if storing output to disk
+        if HH is not None and HT is not None:
+            _write_fHH(fHH, fHT, HH, HT)
 
+    def solve_corr(self, fHH, fHT):
+        """Solves an ELM model with the given (covariance) fHH and (correlation) fHT HDF5 files.
+
+        Args:
+            fHH (hdf5): an hdf5 file with intermediate solution data
+            fHT (hdf5): an hdf5 file with intermediate solution data
+        """
+        try:
+            h5 = open_file(fHH, "r")
+        except:
+            raise IOError("Cannot read HDF5 file at %s" % fHH)
+        node = None
+        for node in h5.walk_nodes():
+            pass  # find a node with whatever name
+        if node:
+            HH = node[:]
+        else:
+            raise IOError("Empty HDF5 file at %s" % fHH)
+        h5.close()
+
+        try:
+            h5 = open_file(fHT, "r")
+        except:
+            raise IOError("Cannot read HDF5 file at %s" % fHT)
+        node = None
+        for node in h5.walk_nodes():
+            pass  # find a node with whatever name
+        if node:
+            HT = node[:]
+        else:
+            raise IOError("Empty HDF5 file at %s" % fHT)
+        h5.close()
+
+        L = self.nnet.L
+        c = self.nnet.outputs
+        assert len(self.nnet.neurons) > 0, "Cannot solve ELM without neurons"
+        assert HH.shape[0] == L and HH.shape[1] == L, "HH has wrong shape: (%d,%d) expected, (%d,%d) found" \
+                                                      % (L, L, HH.shape[0], HH.shape[1])
+        assert HT.shape[0] == L and HT.shape[1] == c, "HT has wrong shape: (%d,%d) expected, (%d,%d) found" \
+                                                      % (L, c, HH.shape[0], HH.shape[1])
+        B = self.nnet.solve_corr(HH, HT)
+        self.nnet.set_B(B)
+
+    def predict(self, fX, fY, istart=0, icount=np.inf):
+        """Iterative predict outputs and save them to HDF5, can use custom range.
+
+        Args:
+            fX (hdf5): hdf5 filename with input data from which outputs are predicted
+            fY (hdf5): hdf5 filename to store output data into
+            istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
+                all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
+            icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
+                adjusted to `istart` + `icount` <= N. If not given, all data starting from `start` is used.
+                The last sample used for training is `istart`+`icount`-1, so you can index data as:
+                istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
+        """
+        assert len(self.nnet.neurons) > 0, "Add neurons to ELM and train it before using"
+        assert self.nnet.B is not None, "Train ELM before predicting"
+        X, _ = self._checkdata(fX, None)
+        N = X.shape[0]
+        # custom range adjustments
+        icount = min(istart + icount, N)
+        nb = int(np.ceil(float(icount) / self.batch))  # number of batches
+        # make file to store results
+        make_hdf5((icount, self.outputs), fY, dtype=self.precision)
+        h5 = open_file(fY, "a")
+        for Y in h5.walk_nodes():
+            pass  # find a node with whatever name
+
+        t = time()
+        t0 = time()
+        eta = 0
+        for b in xrange(0, nb):
+            start = b*self.batch + istart
+            stop = min((b+1)*self.batch + istart, icount + istart)
+
+            # get data
+            Xb = X[start:stop]
+            # process data
+            Yb = self.nnet._predict(Xb)
+            # write data
+            Y[start-start:stop-istart] = Yb
+
+            # report time
+            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
+            if time() - t > self.tprint:
+                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                t = time()
+
+        h5.flush()
+        h5.close()
+
+    def project(self, fX, fH, istart=0, icount=np.inf):
+        """Iteratively project input data from HDF5 into HPELM hidden layer, and save in another HDF5.
+
+        Args:
+            fX (hdf5): hdf5 filename with input data from which outputs are predicted
+            fH (hdf5): hdf5 filename to store output data into
+            istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
+                all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
+            icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
+                adjusted to `istart` + `icount` <= N. If not given, all data starting from `start` is used.
+                The last sample used for training is `istart`+`icount`-1, so you can index data as:
+                istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
+        """
+        assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
+        X, _ = self._checkdata(fX, None)
+        N = X.shape[0]
+        # custom range adjustments
+        print N
+        print icount
+        print istart
+        icount = min(istart + icount, N)
+        nb = int(np.ceil(float(icount) / self.batch))  # number of batches
+        # make file to store results
+        make_hdf5((icount, self.nnet.L), fH, dtype=self.precision)
+        h5 = open_file(fH, "a")
+        for H in h5.walk_nodes():
+            pass  # find a node with whatever name
+
+        t = time()
+        t0 = time()
+        eta = 0
+        for b in xrange(0, nb):
+            start = b*self.batch + istart
+            stop = min((b+1)*self.batch + istart, icount + istart)
+
+            # get data
+            Xb = X[start:stop]
+            # process data
+            Hb = self.nnet._project(Xb)
+            # write data
+            H[start-start:stop-istart] = Hb
+
+            # report time
+            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
+            if time() - t > self.tprint:
+                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                t = time()
+
+        h5.flush()
+        h5.close()
 
     def _error(self, Y1, T1, H1=None, Beta=None, rank=None):
         """Do projection and calculate error in batch mode.
@@ -337,7 +321,7 @@ class HPELM(Object):
         if Y1 is None:
             H, T = self._checkdata(H1, T1)
             assert rank.shape[0] == Beta.shape[0], "Wrong dimension of Beta for the given ranking"
-            assert T.shape[1] == Beta.shape[1], "Wrong dimension of Beta for the given targets"
+            assert T.shape[1] == Beta.shape[1], "Wrong dimension of Beta for the given outputs"
             nn = rank.shape[0]
         else:
             _, Y = self._checkdata(None, Y1)
@@ -379,7 +363,7 @@ class HPELM(Object):
                     idxc = Tb[:, i] == 1
                     errb = np.mean(Yb[idxc].argmax(1) != i)
                     errc[i] += errb * float(stop-start)/N
-            err = np.mean(errc * self.weights_wc)
+            err = np.mean(errc * self.wc)
 
         elif self.classification == "mc":
             err = 0
@@ -411,7 +395,6 @@ class HPELM(Object):
 
         return err
 
-
     def train_hpv(self, HH, HT, Xv, Tv, steps=10):
         X, T = self._checkdata(Xv, Tv)
         N = X.shape[0]
@@ -427,7 +410,7 @@ class HPELM(Object):
 
         Betas = []  # keep all betas in memory
         for l in nns:
-            Betas.append(self.solver.solve_corr(HH[:l, :l], HT[:l, :]))
+            Betas.append(self.nnet.solve_corr(HH[:l, :l], HT[:l, :]))
 
         t = time()
         t0 = time()
@@ -442,7 +425,7 @@ class HPELM(Object):
             alpha = float(stop-start)/N
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
-            Hb = self.solver._project(Xb)
+            Hb = self.nnet._project(Xb)
             for i in xrange(k):
                 hb1 = Hb[:, :nns[i]]
                 Yb = np.dot(hb1, Betas[i])
@@ -451,13 +434,12 @@ class HPELM(Object):
         k_opt = np.argmin(err)
         best_nn = nns[k_opt]
         self._prune(np.arange(best_nn))
-        self.solver.B = Betas[k_opt]
+        self.nnet.B = Betas[k_opt]
         del Betas
         print "%d of %d neurons selected with a validation set" % (best_nn, nn)
         if best_nn > nn*0.9:
             print "Hint: try re-training with more hidden neurons"
         return nns, err
-
 
     def train_myhpv(self, HH, HT, Xv, Tv, steps=10):
         X, T = self._checkdata(Xv, Tv)
@@ -473,7 +455,7 @@ class HPELM(Object):
 
         Betas = []  # keep all betas in memory
         for l in nns:
-            Betas.append(self.solver.solve_corr(HH[:l, :l], HT[:l, :]))
+            Betas.append(self.nnet.solve_corr(HH[:l, :l], HT[:l, :]))
 
         t = time()
         t0 = time()
@@ -487,7 +469,7 @@ class HPELM(Object):
             stop = min((b+1)*self.batch, N)
             Tb = np.array(T[start:stop])
             Xb = np.array(X[start:stop])
-            Hb = self.solver._project(Xb)
+            Hb = self.nnet._project(Xb)
             Tc = np.argmax(Tb, axis=1)
             for i in xrange(k):
                 hb1 = Hb[:, :nns[i]]
@@ -500,9 +482,155 @@ class HPELM(Object):
 
         return nns, err, N
 
+    # async-IO versions of methods
 
+    def train_async(self, fX, fT, *args, **kwargs):
+        """Training HPELM with asyncronous I/O, good for network drives, etc. See `train()` for reference.
 
+        Spawns new processes using Python's `multiprocessing` module.
+        """
+        X, T = self._checkdata(fX, fT)
+        self._train_parse_args(args, kwargs)
 
+        istart = 0
+        icount = np.inf
+        if "istart" in kwargs.keys():
+            istart = max(0, int(kwargs["istart"]))
+        if "icount" in kwargs.keys():
+            icount = kwargs["icount"]
+        self.add_data_async(fX, fT, istart=istart, icount=icount)
+        self.nnet.solve()
+
+    def add_data_async(self, fX, fT, istart=0, icount=np.inf, fHH=None, fHT=None):
+        """Version of `add_data()` with asyncronous I/O. See `add_data()` for reference.
+
+        Spawns new processes using Python's `multiprocessing` module, and requires more memory than non-async version.
+        """
+        # initialize
+        assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
+        X, T = self._checkdata(fX, fT)
+        N = X.shape[0]
+        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.outputs, self.precision, self.nnet.norm)
+        # custom range adjustments
+        icount = min(istart + icount, N)
+        nb = int(np.ceil(float(icount) / self.batch))
+
+        # weighted classification initialization
+        if self.classification == "wc" and self.wc is None:
+            ns = np.zeros((self.outputs,))
+            for b in xrange(nb):  # batch sum is much faster
+                start = b*self.batch + istart
+                stop = min((b+1)*self.batch + istart, icount + istart)
+                ns += T[start:stop].sum(axis=0)
+            ns = ns.astype(self.precision)
+            self.wc = ns.sum() / ns  # class weights normalized to number of samples
+
+        # close X and T files opened by _checkdata()
+        h5 = self.opened_hdf5.pop()
+        h5.close()
+        h5 = self.opened_hdf5.pop()
+        h5.close()
+
+        # start async reader and writer for HDF5 files
+        qX_in = mp.Queue()
+        qX_out = mp.Queue(1)
+        readerX = mp.Process(target=ireader, args=(fX, qX_in, qX_out))
+        readerX.daemon = True
+        readerX.start()
+        qT_in = mp.Queue()
+        qT_out = mp.Queue(1)
+        readerT = mp.Process(target=ireader, args=(fT, qT_in, qT_out))
+        readerT.daemon = True
+        readerT.start()
+
+        # main loop over all the data
+        t = time()
+        t0 = time()
+        eta = 0
+        wc_vector = None
+        for b in xrange(0, nb+1):
+            start_next = b*self.batch + istart
+            stop_next = min((b+1)*self.batch + istart, icount + istart)
+            # prefetch data
+            qX_in.put((start_next, stop_next))  # asyncronous reading of next data batch
+            qT_in.put((start_next, stop_next))
+
+            if b > 0:  # first iteration only prefetches data
+                Xb = qX_out.get()
+                Tb = qT_out.get()
+                if self.classification == "wc":
+                    wc_vector = self.wc[np.where(Tb == 1)[1]]  # weights for samples in the batch
+
+                self.nnet.add_batch(Xb, Tb, wc_vector, HH_out=HH, HT_out=HT)
+
+            # report time
+            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
+            if time() - t > self.tprint:
+                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                t = time()
+
+        # close async reader and writer
+        readerX.join()
+        readerT.join()
+
+        # if storing output to disk
+        if HH is not None and HT is not None:
+            _write_fHH(fHH, fHT, HH, HT)
+
+    def predict_async(self, fX, fY, istart=0, icount=np.inf):
+        """Version of `predict()` with asyncronous I/O. See `predict()` for reference.
+
+        Spawns new processes using Python's `multiprocessing` module, and requires more memory than non-async version.
+        """
+        assert len(self.nnet.neurons) > 0, "Add neurons to ELM and train it before using"
+        assert self.nnet.B is not None, "Train ELM before predicting"
+        X, _ = self._checkdata(fX, None)
+        N = X.shape[0]
+        # custom range adjustments
+        icount = min(istart + icount, N)
+        nb = int(np.ceil(float(icount) / self.batch))  # number of batches
+        # make file to store results
+        make_hdf5((icount, self.outputs), fY)
+
+        # start async reader and writer for HDF5 files
+        qr_in = mp.Queue()
+        qr_out = mp.Queue(1)
+        reader = mp.Process(target=ireader, args=(fX, qr_in, qr_out))
+        reader.daemon = True
+        reader.start()
+        qw_in = mp.Queue(1)
+        writer = mp.Process(target=iwriter, args=(fY, qw_in))
+        writer.daemon = True
+        writer.start()
+
+        t = time()
+        t0 = time()
+        eta = 0
+        for b in xrange(0, nb+1):
+            start_next = b*self.batch + istart
+            stop_next = min((b+1)*self.batch + istart, icount + istart)
+            # prefetch data
+            qr_in.put((start_next, stop_next))  # asyncronous reading of next data batch
+
+            if b > 0:  # first iteration only prefetches data
+                # get data
+                Xb = qr_out.get()
+                # process data
+                Yb = self.nnet._predict(Xb)
+                # save data
+                qw_in.put((Yb, start-istart, stop-istart))
+
+            start = start_next
+            stop = stop_next
+            # report time
+            eta = int(((time()-t0) / (b+1)) * (nb-b-1))
+            if time() - t > self.tprint:
+                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                t = time()
+
+        qw_in.put(None)
+        reader.join()
+        writer.join()
 
 
 

@@ -44,6 +44,7 @@ class ELM(object):
     Note:
         Below the 'matrix' type means a 2-dimensional Numpy.ndarray.
     """
+    # TODO: note about HDF5 instead of matrix for Matlab compatibility
 
     def __init__(self, inputs, outputs, batch=1000, accelerator=None, precision='double', norm=None, tprint=5):
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
@@ -87,6 +88,46 @@ class ELM(object):
         s = s[:-2]
         return s
 
+    def _train_parse_args(self, args, kwargs):
+        """Parse training args and set corresponding class variables."""
+        assert len(self.nnet.neurons) > 0, "Add neurons to ELM before training it"
+        args = [a.upper() for a in args]  # make all arguments upper case
+
+        # reset parameters
+        self.nnet.reset()  # remove previous training
+        self.ranking = None
+        self.kmax_op = None
+        self.classification = None  # c / wc / mc
+        self.wc = None  # weigths for weighted classification
+
+        # check exclusive parameters
+        assert len(set(args).intersection({"V", "CV", "LOO"})) <= 1, "Use only one of V / CV / LOO"
+        msg = "Use only one of: C (classification) / MC (multiclass) / WC (weighted classification)"
+        assert len(set(args).intersection({"C", "WC", "MC"})) <= 1, msg
+
+        # parse parameters
+        for a in args:
+            if a == "OP":
+                self.ranking = "OP"
+                if "kmax" in kwargs.keys():
+                    self.kmax_op = int(kwargs["kmax"])
+            if a == "C":
+                assert self.outputs > 1, "Classification outputs must have 1 output per class"
+                self.classification = "c"
+            if a == "WC":
+                assert self.outputs > 1, "Classification outputs must have 1 output per class"
+                self.classification = "wc"
+                if 'w' in kwargs.keys():
+                    w = np.array(kwargs['w'])
+                    assert len(w) == self.outputs, "Number of class weights must be equal to the number of classes"
+                    self.wc = w
+            if a == "MC":
+                assert self.outputs > 1, "Classification outputs must have 1 output per class"
+                self.classification = "mc"
+
+        if "batch" in kwargs.keys():
+            self.batch = int(kwargs["batch"])
+
     def train(self, X, T, *args, **kwargs):
         """Universal training interface for ELM model with model structure selection.
 
@@ -112,49 +153,13 @@ class ELM(object):
             Tv (matrix, use with 'V'): validation set outputs data, size (Nv * `outputs`)
             k (int, use with 'CV'): number of splits for cross-validation, k>=3
             kmax (int, optional, use with 'OP'): maximum number of neurons to keep in ELM
-            batch (int, optional): batch size for ELM, overwrites batch size from an initialization
+            batch (int, optional): batch size for ELM, overwrites batch size from the initialization
         """
-
-        assert len(self.nnet.neurons) > 0, "Add neurons to ELM before training it"
         X, T = self._checkdata(X, T)
-        args = [a.upper() for a in args]  # make all arguments upper case
+        self._train_parse_args(args, kwargs)
 
-        # reset parameters
-        self.ranking = None
-        self.kmax_op = None
-        self.classification = None  # c / wc / mc
-        self.wc = None  # weigths for weighted classification
-
-        # check exclusive parameters
-        assert len(set(args).intersection({"V", "CV", "LOO"})) <= 1, "Use only one of V / CV / LOO"
-        msg = "Use only one of: C (classification) / MC (multiclass) / WC (weighted classification)"
-        assert len(set(args).intersection({"C", "WC", "MC"})) <= 1, msg
-
-        # parse parameters
-        for a in args:
-            if a == "OP":
-                self.ranking = "OP"
-                if "kmax" in kwargs.keys():
-                    self.kmax_op = int(kwargs["kmax"])
-            if a == "C":
-                assert self.outputs > 1, "Classification outputs must have 1 output per class"
-                self.classification = "c"
-            if a == "WC":
-                assert self.outputs > 1, "Classification outputs must have 1 output per class"
-                self.classification = "wc"
-                if 'w' in kwargs.keys():
-                    w = np.array(kwargs['w'])
-                    assert len(w) == T.shape[1], "Number of class weights must be equal to the number of classes"
-                    self.wc = w
-            if a == "MC":
-                assert self.outputs > 1, "Classification outputs must have 1 output per class"
-                self.classification = "mc"
-
-        if "batch" in kwargs.keys():
-            self.batch = int(kwargs["batch"])
-
+        # TODO: test upper case and lower case 'V', ...
         # train ELM with desired model structure selection
-        self.nnet.reset()  # remove previous training
         if "V" in args:  # use validation set
             assert "Xv" in kwargs.keys(), "Provide validation dataset (Xv)"
             assert "Tv" in kwargs.keys(), "Provide validation outputs (Tv)"
@@ -184,8 +189,8 @@ class ELM(object):
         For training an ELM use `ELM.train()` instead.
 
         Args:
-            X (matrix): input data
-            T (matrix): output data
+            X (matrix): input training data
+            T (matrix): output training data
         """
         # initialize batch size
         nb = int(np.ceil(float(X.shape[0]) / self.batch))

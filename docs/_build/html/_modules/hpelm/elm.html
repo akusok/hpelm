@@ -111,7 +111,7 @@
           <div role="main" class="document">
             
   <h1>Source code for hpelm.elm</h1><div class="highlight"><pre>
- <span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Created on Mon Oct 27 17:48:33 2014</span>
 
@@ -141,8 +141,9 @@
 <span class="sd">        precision (optional): data precision to use, supports signle (&#39;single&#39;, &#39;32&#39; or numpy.float32) or double</span>
 <span class="sd">            (&#39;double&#39;, &#39;64&#39; or numpy.float64). Single precision is faster but may cause numerical errors. Majority</span>
 <span class="sd">            of GPUs work in single precision. Default: **double**.</span>
-<span class="sd">        norm (double, optinal): L2-normalization parameter, None gives the default value.</span>
-<span class="sd">        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch, whatever takes longer.</span>
+<span class="sd">        norm (double, optinal): L2-normalization parameter, **None** gives the default value.</span>
+<span class="sd">        tprint (int, optional): ELM reports its progess every `tprint` seconds or after every batch,</span>
+<span class="sd">            whatever takes longer.</span>
 
 <span class="sd">    Class attributes; attributes that simply store initialization or `train()` parameters are omitted.</span>
 
@@ -186,6 +187,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c"># list of opened HDF5 files, they are closed in ELM descructor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># c / wc / mc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wc</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># weighted classification weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ranking</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kmax_op</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tprint</span> <span class="o">=</span> <span class="n">tprint</span>  <span class="c"># time intervals in seconds to report ETA</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flist</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;lin&quot;</span><span class="p">,</span> <span class="s">&quot;sigm&quot;</span><span class="p">,</span> <span class="s">&quot;tanh&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">)</span>  <span class="c"># supported neuron types</span>
 
@@ -209,12 +212,13 @@
 <span class="sd">            X (matrix): input data matrix, size (N * `inputs`)</span>
 <span class="sd">            T (matrix): outputs data matrix, size (N * `outputs`)</span>
 <span class="sd">            &#39;c&#39;/&#39;wc&#39;/&#39;mc&#39; (string, choose one): train ELM for classification (&#39;c&#39;), classification with weighted classes</span>
-<span class="sd">                (&#39;wc&#39;) or multi-label classification (&#39;mc&#39;) with several correct classes per data sample. In classification,</span>
-<span class="sd">                number of `outputs` is the number of classes; correct class(es) for each sample has value 1 and</span>
-<span class="sd">                incorrect classes have 0.</span>
-<span class="sd">            &#39;V&#39;/&#39;CV&#39;/&#39;LOO&#39; (sting, choose one): model structure selection: select optimal number of neurons using a validation set (&#39;V&#39;),</span>
-<span class="sd">                cross-validation (&#39;CV&#39;) or Leave-One-Out (&#39;LOO&#39;)</span>
-<span class="sd">            &#39;OP&#39; (string, use with &#39;V&#39;/&#39;CV&#39;/&#39;LOO&#39;): choose best neurons instead of random ones, training takes longer; equivalent to L1-regularization</span>
+<span class="sd">                (&#39;wc&#39;) or multi-label classification (&#39;mc&#39;) with several correct classes per data sample.</span>
+<span class="sd">                In classification, number of `outputs` is the number of classes; correct class(es) for each sample</span>
+<span class="sd">                has value 1 and incorrect classes have 0.</span>
+<span class="sd">            &#39;V&#39;/&#39;CV&#39;/&#39;LOO&#39; (sting, choose one): model structure selection: select optimal number of neurons using</span>
+<span class="sd">                a validation set (&#39;V&#39;), cross-validation (&#39;CV&#39;) or Leave-One-Out (&#39;LOO&#39;)</span>
+<span class="sd">            &#39;OP&#39; (string, use with &#39;V&#39;/&#39;CV&#39;/&#39;LOO&#39;): choose best neurons instead of random ones, training takes longer;</span>
+<span class="sd">                equivalent to L1-regularization</span>
 
 <span class="sd">        Keyword Args:</span>
 <span class="sd">            Xv (matrix, use with &#39;V&#39;): validation set input data, size (Nv * `inputs`)</span>
@@ -228,9 +232,6 @@
         <span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>  <span class="c"># make all arguments upper case</span>
 
-        <span class="c"># kind of &quot;enumerators&quot;, try to use only inside that script</span>
-        <span class="n">MODELSELECTION</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># V / CV / MCCV / LOO / None</span>
-
         <span class="c"># reset parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ranking</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kmax_op</span> <span class="o">=</span> <span class="bp">None</span>
@@ -238,27 +239,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">wc</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># weigths for weighted classification</span>
 
         <span class="c"># check exclusive parameters</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="s">&quot;V&quot;</span><span class="p">,</span> <span class="s">&quot;CV&quot;</span><span class="p">,</span> <span class="s">&quot;LOO&quot;</span><span class="p">])))</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Use only one of V / CV / LOO&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">({</span><span class="s">&quot;V&quot;</span><span class="p">,</span> <span class="s">&quot;CV&quot;</span><span class="p">,</span> <span class="s">&quot;LOO&quot;</span><span class="p">}))</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Use only one of V / CV / LOO&quot;</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Use only one of: C (classification) / MC (multiclass) / WC (weighted classification)&quot;</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="s">&quot;C&quot;</span><span class="p">,</span> <span class="s">&quot;WC&quot;</span><span class="p">,</span> <span class="s">&quot;MC&quot;</span><span class="p">])))</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">msg</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">({</span><span class="s">&quot;C&quot;</span><span class="p">,</span> <span class="s">&quot;WC&quot;</span><span class="p">,</span> <span class="s">&quot;MC&quot;</span><span class="p">}))</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">msg</span>
 
         <span class="c"># parse parameters</span>
-        <span class="c"># TODO: code coverage for model structure selection</span>
         <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;V&quot;</span><span class="p">:</span>  <span class="c"># validation set</span>
-                <span class="k">assert</span> <span class="s">&quot;Xv&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide validation dataset (Xv)&quot;</span>
-                <span class="k">assert</span> <span class="s">&quot;Tv&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide validation outputs (Tv)&quot;</span>
-                <span class="n">Xv</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;Xv&#39;</span><span class="p">]</span>
-                <span class="n">Tv</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;Tv&#39;</span><span class="p">]</span>
-                <span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">)</span>
-                <span class="n">MODELSELECTION</span> <span class="o">=</span> <span class="s">&quot;V&quot;</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;CV&quot;</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="s">&quot;k&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide Cross-Validation number of splits (k)&quot;</span>
-                <span class="n">k</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;k&#39;</span><span class="p">]</span>
-                <span class="k">assert</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;Use at least k=3 splits for Cross-Validation&quot;</span>
-                <span class="n">MODELSELECTION</span> <span class="o">=</span> <span class="s">&quot;CV&quot;</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;LOO&quot;</span><span class="p">:</span>
-                <span class="n">MODELSELECTION</span> <span class="o">=</span> <span class="s">&quot;LOO&quot;</span>
             <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;OP&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ranking</span> <span class="o">=</span> <span class="s">&quot;OP&quot;</span>
                 <span class="k">if</span> <span class="s">&quot;kmax&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -276,23 +262,30 @@
             <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s">&quot;MC&quot;</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Classification outputs must have 1 output per class&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="s">&quot;mc&quot;</span>
-            <span class="c"># TODO: Adaptive ELM model for timeseries (someday)</span>
 
         <span class="k">if</span> <span class="s">&quot;batch&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;batch&quot;</span><span class="p">])</span>
 
+        <span class="c"># train ELM with desired model structure selection</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c"># remove previous training</span>
-        <span class="c"># use &quot;train_x&quot; method which borrows _project(), _error() from the &quot;self&quot; object</span>
-        <span class="k">if</span> <span class="n">MODELSELECTION</span> <span class="o">==</span> <span class="s">&quot;V&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&quot;V&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>  <span class="c"># use validation set</span>
+            <span class="k">assert</span> <span class="s">&quot;Xv&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide validation dataset (Xv)&quot;</span>
+            <span class="k">assert</span> <span class="s">&quot;Tv&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide validation outputs (Tv)&quot;</span>
+            <span class="n">Xv</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;Xv&#39;</span><span class="p">]</span>
+            <span class="n">Tv</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;Tv&#39;</span><span class="p">]</span>
+            <span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">)</span>
             <span class="n">train_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Xv</span><span class="p">,</span> <span class="n">Tv</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">MODELSELECTION</span> <span class="o">==</span> <span class="s">&quot;CV&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="s">&quot;CV&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>  <span class="c"># use cross-validation</span>
+            <span class="k">assert</span> <span class="s">&quot;k&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s">&quot;Provide Cross-Validation number of splits (k)&quot;</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;k&#39;</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;Use at least k=3 splits for Cross-Validation&quot;</span>
             <span class="n">train_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">MODELSELECTION</span> <span class="o">==</span> <span class="s">&quot;LOO&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="s">&quot;LOO&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>  <span class="c"># use Leave-One-Out error on training set</span>
             <span class="n">train_loo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c"># basic training algorithm</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># basic training algorithm</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+        <span class="c"># TODO: Adaptive ELM model for timeseries (someday)</span>
 </div>
 <div class="viewcode-block" id="ELM.add_data"><a class="viewcode-back" href="../../hpelm.html#hpelm.elm.ELM.add_data">[docs]</a>    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Feed new training data (X,T) to ELM model in batches; does not solve ELM itself.</span>
@@ -313,8 +306,8 @@
 
         <span class="c"># find automatic weights if none are given</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;wc&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">wc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">ns</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>  <span class="c"># number of samples in classes</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wc</span> <span class="o">=</span> <span class="p">(</span><span class="n">ns</span> <span class="o">/</span> <span class="n">ns</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">**-</span><span class="mi">1</span>  <span class="c"># weights of classes</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>  <span class="c"># number of samples in classes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wc</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">ns</span>  <span class="c"># weights of classes</span>
 
         <span class="k">for</span> <span class="n">X0</span><span class="p">,</span> <span class="n">T0</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
                           <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)):</span>
@@ -357,12 +350,12 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">func</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">):</span>
-                    <span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c"># high dimensionality fix</span>
+                    <span class="n">W</span> <span class="o">*=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">**</span><span class="mf">0.5</span>  <span class="c"># high dimensionality fix</span>
         <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">func</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;rbf_l2&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_l1&quot;</span><span class="p">,</span> <span class="s">&quot;rbf_linf&quot;</span><span class="p">):</span>
                 <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
-                <span class="n">B</span> <span class="o">=</span> <span class="n">B</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
+                <span class="n">B</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
             <span class="k">if</span> <span class="n">func</span> <span class="o">==</span> <span class="s">&quot;lin&quot;</span><span class="p">:</span>
                 <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">number</span><span class="p">,))</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;W must be size [inputs, neurons] (expected [</span><span class="si">%d</span><span class="s">,</span><span class="si">%d</span><span class="s">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
@@ -379,12 +372,12 @@
         <span class="sd">&quot;&quot;&quot;Calculate error of model predictions.</span>
 
 <span class="sd">        Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.</span>
-<span class="sd">        For classification, computes corresponding classification error.</span>
+<span class="sd">        For classification, computes mis-classification error.</span>
 <span class="sd">        For multi-label classification, correct classes are all with Y&gt;0.5.</span>
 
 <span class="sd">        For weighted classification the error is an average weighted True Positive Rate,</span>
 <span class="sd">        or percentage of correctly predicted samples for each class, multiplied by weight</span>
-<span class="sd">        of that class and averaged. If you want something else, just write the code yourself :)</span>
+<span class="sd">        of that class and averaged. If you want something else, just write it yourself :)</span>
 <span class="sd">        See https://en.wikipedia.org/wiki/Confusion_matrix for details.</span>
 
 <span class="sd">        Args:</span>
@@ -427,7 +420,7 @@
                 <span class="n">Yb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
                     <span class="k">for</span> <span class="n">c1h</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
-                        <span class="n">conf</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c1h</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Tb</span> <span class="o">==</span> <span class="n">c1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">Yb</span> <span class="o">==</span> <span class="n">c1h</span><span class="p">))</span>
+                        <span class="n">conf</span><span class="p">[</span><span class="n">c1</span><span class="p">,</span> <span class="n">c1h</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">Tb</span> <span class="o">==</span> <span class="n">c1</span><span class="p">,</span> <span class="n">Yb</span> <span class="o">==</span> <span class="n">c1h</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;mc&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">batch</span>
@@ -451,7 +444,7 @@
 <span class="sd">            H (matrix): hidden layer representation matrix, size (N * number_of_neurons)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-        <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">_project</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">H</span>
 </div>
 <div class="viewcode-block" id="ELM.predict"><a class="viewcode-back" href="../../hpelm.html#hpelm.elm.ELM.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
@@ -464,7 +457,7 @@
 <span class="sd">            Y (matrix): output data or predicted classes, size (N * `outputs`).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkdata</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Y</span>
 </div>
 <div class="viewcode-block" id="ELM.save"><a class="viewcode-back" href="../../hpelm.html#hpelm.elm.ELM.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
@@ -531,22 +524,22 @@
         <span class="c"># TODO: change &#39;mc&#39; to &#39;ml&#39;, however leave &#39;mc&#39; working</span>
         <span class="k">if</span> <span class="n">R</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># normal classification error</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;c&quot;</span><span class="p">:</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">T</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>  <span class="c"># weighted classification</span>
                 <span class="n">c</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">errc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>  <span class="c"># per-class MSE</span>
                     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">T</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">errc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">i</span><span class="p">)</span>
+                        <span class="n">errc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
                 <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">errc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wc</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wc</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;mc&quot;</span><span class="p">:</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Y</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">T</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">Y</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">T</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c"># LOO_PRESS error</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;c&quot;</span><span class="p">:</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">T</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">/</span> <span class="n">R</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">R</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
                 <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">err</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;wc&quot;</span><span class="p">:</span>  <span class="c"># balanced classification</span>
                 <span class="n">c</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -554,11 +547,11 @@
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>  <span class="c"># per-class MSE</span>
                     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">T</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">/</span> <span class="n">R</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+                        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">R</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
                         <span class="n">errc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">t</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_wc</span><span class="p">)</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wc</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="s">&quot;mc&quot;</span><span class="p">:</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="p">((</span><span class="n">Y</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">T</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">/</span> <span class="n">R</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">Y</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">T</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">R</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
                 <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">err</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">err</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">R</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -569,9 +562,14 @@
     <span class="k">def</span> <span class="nf">_ranking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">H</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return ranking of hidden neurons; random or OP.</span>
 
-<span class="sd">        :param nn: number of neurons</span>
-<span class="sd">        :param H: data matrix needed for optimal pruning</span>
-<span class="sd">        :param T: outputs matrix needed for optimal pruning</span>
+<span class="sd">        Args:</span>
+<span class="sd">            nn (int): number of neurons</span>
+<span class="sd">            H (matrix): hidden layer representation matrix needed for optimal pruning</span>
+<span class="sd">            T (matrix): outputs matrix needed for optimal pruning</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            rank (vector): ranking of neurons</span>
+<span class="sd">            nn (int): number of selected neurons, can be changed by `self.kmax_op`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranking</span> <span class="o">==</span> <span class="s">&quot;OP&quot;</span><span class="p">:</span>  <span class="c"># optimal ranking (L1 normalization)</span>
             <span class="k">assert</span> <span class="n">H</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">T</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Need H and T to perform optimal pruning&quot;</span>
@@ -593,12 +591,16 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>  <span class="c"># open HDF5 file</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
-                        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
-                    <span class="n">X</span> <span class="o">=</span> <span class="n">node</span>
                 <span class="k">except</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot read HDF5 file at </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">X</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+                    <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+                <span class="k">if</span> <span class="n">node</span><span class="p">:</span>
+                    <span class="n">X</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Empty HDF5 file at </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">X</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c"># assert isinstance(X, np.ndarray) and</span>
                 <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&quot;OSU&quot;</span><span class="p">,</span> <span class="s">&quot;X must be a numerical numpy array&quot;</span>
@@ -612,12 +614,16 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>  <span class="c"># open HDF5 file</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
-                        <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
-                    <span class="n">T</span> <span class="o">=</span> <span class="n">node</span>
-                <span class="k">except</span><span class="p">:</span>
+                <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot read HDF5 file at </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">T</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">opened_hdf5</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="p">)</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+                    <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+                <span class="k">if</span> <span class="n">node</span><span class="p">:</span>
+                    <span class="n">T</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Empty HDF5 file at </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">X</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c"># assert isinstance(T, np.ndarray) and</span>
                 <span class="k">assert</span> <span class="n">T</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&quot;OSU&quot;</span><span class="p">,</span> <span class="s">&quot;T must be a numerical numpy array&quot;</span>
@@ -630,8 +636,8 @@
         <span class="k">if</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">T</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
             <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&quot;X and T cannot have different number of samples&quot;</span>
 
-        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span>
-</pre></div></div>
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span></div>
+</pre></div>
 
           </div>
           <footer>

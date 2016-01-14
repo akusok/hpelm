@@ -8,7 +8,94 @@ Created on Thu Apr  2 21:12:46 2015
 import numpy as np
 import csv
 from tables import open_file, Atom, Filters
-from time import time
+import os
+import fasteners  # inter-process file lock
+
+
+def _prepare_fHH(fHH, fHT, L, outputs, precision, norm):
+    """Prepares files for fHH, fHT if they are needed.
+
+    If fHH and fHT are not None, makes matrices HH and HT, and creates files fHH, fHT if they don't exist yet.
+
+    Args:
+        fHH (string): hdf5 filename to store HH, None for ignore disk storage
+        fHT (string): hdf5 filename to store HT, None for ignore disk storage
+        L (int): number of neurons
+        outputs (int): number of output dimensions, or classes
+        precision (np.float32/64): precision
+        norm (double): L2 normalization constant
+
+    Returns:
+        HH (matrix): matrix to store HH, or None if fHH is None
+        HT (matrix): matrix to store HT, or None if fHT is None
+    """
+    HH = None
+    HT = None
+    if (fHH is not None) and (fHT is not None):
+        HH = np.zeros((L, L), dtype=precision)
+        HT = np.zeros((L, outputs), dtype=precision)
+
+        # process fHH
+        if os.path.isfile(fHH):
+            h5 = open_file(fHH, 'r')
+            node = None
+            for node in h5.walk_nodes():
+                pass  # find a node with whatever name
+            try:
+                assert node is not None, "Matrix in %d does not exist" % fHH
+                assert node is not None and node.shape[0] == L and node.shape[1] == L, \
+                       "Matrix in %d has a wrong shape: (%d, %d) expected, (%d, %d) found" % \
+                       (fHH, L, L, node.shape[0], node.shape[1])
+            except AssertionError as e:
+                raise  # re-raise same error
+            finally:
+                h5.close()
+        else:
+            make_hdf5((L, L), fHH, precision)
+            np.fill_diagonal(HH, norm)
+
+        # process fHT
+        if os.path.isfile(fHT):
+            h5 = open_file(fHT, 'r')
+            node = None
+            for node in h5.walk_nodes():
+                pass  # find a node with whatever name
+            try:
+                assert node is not None, "Matrix in %d does not exist" % fHT
+                assert node is not None and node.shape[0] == L and node.shape[1] == outputs, \
+                       "Matrix in %d has a wrong shape: (%d, %d) expected, (%d, %d) found" % \
+                       (fHT, L, outputs, node.shape[0], node.shape[1])
+            except AssertionError as e:
+                raise  # re-raise same error
+            finally:
+                h5.close()
+        else:
+            make_hdf5((L, outputs), fHT, precision)
+
+    return HH, HT
+
+def _write_fHH(fHH, fHT, HH, HT):
+    """Writes HH,HT data into fHH,fHT files, multi-process safe with lock file.
+
+    Lock file has the same name as fHH,fHT, but with '.lock' extension.
+    """
+    fHH_lock = fHH + ".lock"
+    with fasteners.InterProcessLock(fHH_lock):
+        h5 = open_file(fHH, "a")
+        for node in h5.walk_nodes():
+            pass  # find a node with whatever name
+        node[:] += HH
+        h5.flush()
+        h5.close()
+
+    fHT_lock = fHT + ".lock"
+    with fasteners.InterProcessLock(fHT_lock):
+        h5 = open_file(fHT, "a")
+        for node in h5.walk_nodes():
+            pass  # find a node with whatever name
+        node[:] += HT
+        h5.flush()
+        h5.close()
 
 
 def normalize_hdf5(h5file, mean=None, std=None, batch=None):
