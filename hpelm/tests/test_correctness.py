@@ -223,6 +223,7 @@ class TestCorrectness(TestCase):
         X = np.array([1, 2, 3, 4, 5, 6])
         T = np.array([[1, 1], [1, 0], [1, 0], [0, 1], [0, 1], [1, 1]])
         elm.add_neurons(1, "lin")
+        elm.train(X, T, 'ml')
         elm.train(X, T, 'mc')
 
     def test_WeightedClassification_Works(self):
@@ -255,39 +256,35 @@ class TestCorrectness(TestCase):
         Y = np.array([1.1, 2.2, 3.3])
         err1 = np.mean((T - Y) ** 2)
         elm = ELM(1, 1)
-        e = elm.error(Y, T)
+        e = elm.error(T, Y)
         np.testing.assert_allclose(e, err1)
 
     def test_ClassificationError_Works(self):
         X = np.array([1, 2, 3])
         T = np.array([[0, 1], [0, 1], [1, 0]])
         Y = np.array([[0, 1], [0.4, 0.6], [0, 1]])
-        elm = ELM(1, 2)
+        elm = ELM(1, 2, classification='c')
         elm.add_neurons(1, "lin")
-        elm.classification = "c"
-        e = elm.error(Y, T)
+        e = elm.error(T, Y)
         np.testing.assert_allclose(e, 1.0 / 3)
 
     def test_WeightedClassError_Works(self):
-        X = np.array([1, 2, 3])
         T = np.array([[0, 1], [0, 1], [1, 0]])
         Y = np.array([[0, 1], [0.4, 0.6], [0, 1]])
         # here class 0 is totally incorrect, and class 1 is totally correct
         w = (9, 1)
-        elm = ELM(1, 2)
+        elm = ELM(1, 2, classification="wc", w=w)
         elm.add_neurons(1, "lin")
-        elm.train(X, T, "wc", w=w)
-        e = elm.error(Y, T)
+        e = elm.error(T, Y)
         np.testing.assert_allclose(e, 0.9)
 
     def test_MultiLabelClassError_Works(self):
         X = np.array([1, 2, 3])
         T = np.array([[0, 1], [1, 1], [1, 0]])
         Y = np.array([[0.4, 0.6], [0.8, 0.6], [1, 1]])
-        elm = ELM(1, 2)
+        elm = ELM(1, 2, classification="ml")
         elm.add_neurons(1, "lin")
-        elm.classification = "mc"
-        e = elm.error(Y, T)
+        e = elm.error(T, Y)
         np.testing.assert_allclose(e, 1.0 / 6)
 
     def test_ProjectELM_WorksCorrectly(self):
@@ -335,8 +332,8 @@ class TestCorrectness(TestCase):
             elm2.load(fname)
         finally:
             os.close(f)
-        self.assertEqual(elm2.inputs, 1)
-        self.assertEqual(elm2.outputs, 2)
+        self.assertEqual(elm2.nnet.inputs, 1)
+        self.assertEqual(elm2.nnet.outputs, 2)
         self.assertEqual(elm2.classification, "wc")
         self.assertIs(elm.precision, np.float32)
         self.assertIs(elm2.precision, np.float64)  # precision has changed
@@ -361,3 +358,19 @@ class TestCorrectness(TestCase):
             self.assertRaises(IOError, elm.load, fname + "ololo2")
         finally:
             os.close(f)
+
+    def test_ConfusionELM_Classification(self):
+        T = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+        Y = np.array([[0, 1], [0, 1], [1, 0], [0, 1]])
+        elm = ELM(1, 2)
+        elm.classification = "c"
+        C = elm.confusion(T, Y)
+        np.testing.assert_allclose(C, np.array([[0, 2], [1, 1]]))
+
+    def test_ConfusionELM_Multilabel(self):
+        T = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+        Y = np.array([[1, 1], [1, 0], [0, 1], [0, 1]])
+        elm = ELM(1, 2)
+        elm.classification = "ml"
+        C = elm.confusion(T, Y)
+        np.testing.assert_allclose(C, np.array([[2, 1], [0, 2]]))

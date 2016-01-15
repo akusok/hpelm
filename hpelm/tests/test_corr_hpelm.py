@@ -26,6 +26,13 @@ class TestCorrectness(TestCase):
         make_hdf5(data, fname)
         return fname
 
+    def makefile(self):
+        f, fname = tempfile.mkstemp()
+        os.close(f)
+        os.remove(fname)
+        self.tfiles.append(fname)
+        return fname
+
     def setUp(self):
         self.tfiles = []
 
@@ -277,12 +284,8 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(3, "lin")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
 
     def test_AddDataToFile_MultipleAdditions(self):
@@ -290,12 +293,8 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(3, "lin")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
         hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
 
@@ -304,12 +303,8 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(3, "lin")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data_async(X, T, fHH=fHH, fHT=fHT)
 
     def test_AddDataAsyncToFile_MultipleAdditions(self):
@@ -317,12 +312,8 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(3, "lin")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data_async(X, T, fHH=fHH, fHT=fHT)
         hpelm.add_data_async(X, T, fHH=fHH, fHT=fHT)
 
@@ -331,12 +322,8 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(3, "lin")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
         hpelm.add_data_async(X, T, fHH=fHH, fHT=fHT)
 
@@ -345,12 +332,8 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.array([[1], [2], [3], [4]]))
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(3, "lin")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
         hpelm.solve_corr(fHH, fHT)
         self.assertIsNot(hpelm.nnet.get_B(), None)
@@ -360,15 +343,22 @@ class TestCorrectness(TestCase):
         T = self.makeh5(np.random.rand(10, 2))
         hpelm = HPELM(3, 2)
         hpelm.add_neurons(6, "tanh")
-        f, fHH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHH)
-        f, fHT = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fHT)
+        fHH = self.makefile()
+        fHT = self.makefile()
         hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
-        nns, err = hpelm.validation_corr(fHH, fHT, X, T, steps=3)
+        nns, err, confs = hpelm.validation_corr(fHH, fHT, X, T, steps=3)
         self.assertGreater(err[0], err[-1])
+
+    def test_ValidationCorr_ReturnsConfusion(self):
+        X = self.makeh5(np.random.rand(10, 3))
+        T = self.makeh5(np.random.rand(10, 2))
+        hpelm = HPELM(3, 2, classification="c")
+        hpelm.add_neurons(6, "tanh")
+        fHH = self.makefile()
+        fHT = self.makefile()
+        hpelm.add_data(X, T, fHH=fHH, fHT=fHT)
+        _, _, confs = hpelm.validation_corr(fHH, fHT, X, T, steps=3)
+        self.assertGreater(np.sum(confs[0]), 1)
 
     def test_Predict_Works(self):
         X = self.makeh5(np.array([[1, 2], [3, 4], [5, 6], [7, 8]]))
@@ -376,9 +366,7 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(1, "lin")
         hpelm.train(X, T)
-        f, fY = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fY)
+        fY = self.makefile()
         hpelm.predict(X, fY)
 
     def test_PredictAsync_Works(self):
@@ -387,9 +375,7 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(1, "lin")
         hpelm.train(X, T)
-        f, fY = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fY)
+        fY = self.makefile()
         hpelm.predict_async(X, fY)
 
     def test_Project_Works(self):
@@ -398,9 +384,7 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(2, 1)
         hpelm.add_neurons(1, "lin")
         hpelm.train(X, T)
-        f, fH = tempfile.mkstemp()
-        os.close(f)
-        os.remove(fH)
+        fH = self.makefile()
         hpelm.project(X, fH)
 
     def test_RegressionError_Works(self):
@@ -410,7 +394,7 @@ class TestCorrectness(TestCase):
         fT = self.makeh5(T)
         fY = self.makeh5(Y)
         hpelm = HPELM(1, 1)
-        e = hpelm.error(fY, fT)
+        e = hpelm.error(fT, fY)
         np.testing.assert_allclose(e, err1)
 
     def test_ClassificationError_Works(self):
@@ -419,7 +403,7 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(1, 2)
         hpelm.add_neurons(1, "lin")
         hpelm.classification = "c"
-        e = hpelm.error(Y, T)
+        e = hpelm.error(T, Y)
         np.testing.assert_allclose(e, 1.0 / 3)
 
     def test_WeightedClassError_Works(self):
@@ -431,7 +415,7 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(1, 2)
         hpelm.add_neurons(1, "lin")
         hpelm.train(X, T, "wc", w=w)
-        e = hpelm.error(Y, T)
+        e = hpelm.error(T, Y)
         np.testing.assert_allclose(e, 0.9)
 
     def test_MultiLabelClassError_Works(self):
@@ -439,8 +423,8 @@ class TestCorrectness(TestCase):
         Y = self.makeh5(np.array([[0.4, 0.6], [0.8, 0.6], [1, 1]]))
         hpelm = HPELM(1, 2)
         hpelm.add_neurons(1, "lin")
-        hpelm.classification = "mc"
-        e = hpelm.error(Y, T)
+        hpelm.classification = "ml"
+        e = hpelm.error(T, Y)
         np.testing.assert_allclose(e, 1.0 / 6)
 
 

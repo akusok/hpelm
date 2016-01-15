@@ -212,8 +212,8 @@ To reset accumulated training data, use <cite>ELM.nnet.reset()</cite>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>X</strong> (<em>matrix</em>) &#8211; input data</li>
-<li><strong>T</strong> (<em>matrix</em>) &#8211; output data</li>
+<li><strong>X</strong> (<em>matrix</em>) &#8211; input training data</li>
+<li><strong>T</strong> (<em>matrix</em>) &#8211; output training data</li>
 </ul>
 </td>
 </tr>
@@ -252,15 +252,17 @@ For &#8216;<a href="#id3"><span class="problematic" id="id4">rbf_</span></a>&#82
 
 <dl class="method">
 <dt id="hpelm.elm.ELM.confusion">
-<code class="descname">confusion</code><span class="sig-paren">(</span><em>Y1</em>, <em>T1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.confusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.confusion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unfinished...</p>
+<code class="descname">confusion</code><span class="sig-paren">(</span><em>T</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.confusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.confusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes confusion matrix for classification.</p>
+<p>Confusion matrix <code class="docutils literal"><span class="pre">C</span></code> such that element <span class="math">\(C_{i,j}\)</span> equals to the number of observations known
+to be class <span class="math">\(i\)</span> but predicted to be class <span class="math">\(j\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>Y1</strong> (<em>matrix</em>) &#8211; predicted outputs by ELM model, size (N * <cite>outputs</cite>)</li>
-<li><strong>T1</strong> (<em>matrix</em>) &#8211; true outputs or classes, size (N * <cite>outputs</cite>)</li>
+<li><strong>T</strong> (<em>matrix</em>) &#8211; true outputs or classes, size (N * <cite>outputs</cite>)</li>
+<li><strong>Y</strong> (<em>matrix</em>) &#8211; predicted outputs by ELM model, size (N * <cite>outputs</cite>)</li>
 </ul>
 </td>
 </tr>
@@ -277,7 +279,7 @@ confusion matrix, size (<cite>outputs</cite> * <cite>outputs</cite>)</p>
 
 <dl class="method">
 <dt id="hpelm.elm.ELM.error">
-<code class="descname">error</code><span class="sig-paren">(</span><em>Y</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.error" title="Permalink to this definition">¶</a></dt>
+<code class="descname">error</code><span class="sig-paren">(</span><em>T</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate error of model predictions.</p>
 <p>Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
 For classification, computes mis-classification error.
@@ -286,13 +288,16 @@ For multi-label classification, correct classes are all with Y&gt;0.5.</p>
 or percentage of correctly predicted samples for each class, multiplied by weight
 of that class and averaged. If you want something else, just write it yourself :)
 See <a class="reference external" href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a> for details.</p>
+<p>Another option is to use scikit-learn&#8217;s performance metrics. Transform <cite>Y</cite> and <cite>T</cite> into scikit&#8217;s
+format by <code class="docutils literal"><span class="pre">y_true</span> <span class="pre">=</span> <span class="pre">T.argmax[1]</span></code>, <code class="docutils literal"><span class="pre">y_pred</span> <span class="pre">=</span> <span class="pre">Y.argmax[1]</span></code>.
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics">http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics</a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>Y</strong> (<em>matrix</em>) &#8211; ELM model predictions, can be computed with <cite>predict()</cite> function.</li>
 <li><strong>T</strong> (<em>matrix</em>) &#8211; true outputs.</li>
+<li><strong>Y</strong> (<em>matrix</em>) &#8211; ELM model predictions, can be computed with <cite>predict()</cite> function.</li>
 </ul>
 </td>
 </tr>
@@ -393,8 +398,8 @@ and in <cite>error()</cite> method output.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>X</strong> (<em>matrix</em>) &#8211; input data matrix, size (N * <cite>inputs</cite>)</li>
 <li><strong>T</strong> (<em>matrix</em>) &#8211; outputs data matrix, size (N * <cite>outputs</cite>)</li>
-<li><strong>'c'/'wc'/'mc'</strong> (<em>string, choose one</em>) &#8211; train ELM for classification (&#8216;c&#8217;), classification with weighted classes
-(&#8216;wc&#8217;) or multi-label classification (&#8216;mc&#8217;) with several correct classes per data sample.
+<li><strong>'c'/'wc'/'ml'</strong> (<em>string, choose one</em>) &#8211; train ELM for classification (&#8216;c&#8217;), classification with weighted classes
+(&#8216;wc&#8217;) or multi-label classification (&#8216;ml&#8217;) with several correct classes per data sample.
 In classification, number of <cite>outputs</cite> is the number of classes; correct class(es) for each sample
 has value 1 and incorrect classes have 0.</li>
 <li><strong>'V'/'CV'/'LOO'</strong> (<em>sting, choose one</em>) &#8211; model structure selection: select optimal number of neurons using
@@ -415,7 +420,7 @@ number of splits for cross-validation, k&gt;=3</li>
 <li><strong>kmax</strong> (<em>int, optional, use with &#8216;OP&#8217;</em>) &#8211;
 maximum number of neurons to keep in ELM</li>
 <li><strong>batch</strong> (<em>int, optional</em>) &#8211;
-batch size for ELM, overwrites batch size from an initialization</li>
+batch size for ELM, overwrites batch size from the initialization</li>
 </ul>
 </td>
 </tr>
@@ -433,7 +438,7 @@ batch size for ELM, overwrites batch size from an initialization</li>
 <dl class="class">
 <dt id="hpelm.hp_elm.HPELM">
 <em class="property">class </em><code class="descclassname">hpelm.hp_elm.</code><code class="descname">HPELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#hpelm.elm.ELM" title="hpelm.elm.ELM"><code class="xref py py-class docutils literal"><span class="pre">hpelm.elm.ELM</span></code></a></p>
 <p>Interface for training High-Performance Extreme Learning Machines (HP-ELM).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -477,49 +482,201 @@ by inheriting from <code class="docutils literal"><span class="pre">hpelm.nnets.
 
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>Below the &#8216;matrix&#8217; type means a 2-dimensional Numpy.ndarray.</p>
-<p class="last">The &#8216;hdf5&#8217; type denotes an HDF5 file type with a
-single 2-dimensional array inside. HPELM uses PyTables interface to HDF5: <a class="reference external" href="http://www.pytables.org/">http://www.pytables.org/</a>.
-For HDF5 array examples, see <a class="reference external" href="http://www.pytables.org/usersguide/libref/homogenous_storage.html">http://www.pytables.org/usersguide/libref/homogenous_storage.html</a>. Array name
-is irrelevant, but there must be <strong>only one array per HDF5 file</strong>.</p>
+<p>The &#8216;hdf5&#8217; type denotes a name of HDF5 file type with a single 2-dimensional array inside. HPELM uses PyTables
+interface to HDF5: <a class="reference external" href="http://www.pytables.org/">http://www.pytables.org/</a>. For HDF5 array examples, see
+<a class="reference external" href="http://www.pytables.org/usersguide/libref/homogenous_storage.html">http://www.pytables.org/usersguide/libref/homogenous_storage.html</a>. Array name is irrelevant,
+but there must be <strong>only one array per HDF5 file</strong>.</p>
+<p class="last">A 2-dimensional Numpy.ndarray can also be used.</p>
 </div>
 <dl class="method">
-<dt id="hpelm.hp_elm.HPELM.add_batch">
-<code class="descname">add_batch</code><span class="sig-paren">(</span><em>X</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.add_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.add_batch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create HH, HT matrices.</p>
-<p>HPELM-specific parallel projection.
-Returns solution Beta if solve=True.
-Runs on GPU if self.accelerator=&#8221;GPU&#8221;.
-Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="hpelm.hp_elm.HPELM.add_batch_async">
-<code class="descname">add_batch_async</code><span class="sig-paren">(</span><em>fX</em>, <em>fT</em>, <em>X</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.add_batch_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.add_batch_async" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create HH, HT matrices with async I/O.</p>
-<p>HPELM-specific parallel projection.
-Returns solution Beta if solve=True.
-Runs on GPU if self.accelerator=&#8221;GPU&#8221;.
-Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="hpelm.hp_elm.HPELM.predict_async">
-<code class="descname">predict_async</code><span class="sig-paren">(</span><em>fX</em>, <em>fY</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.predict_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.predict_async" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterative predict which saves data to HDF5, with asynchronous I/O by separate processes.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="hpelm.hp_elm.HPELM.train">
-<code class="descname">train</code><span class="sig-paren">(</span><em>fX</em>, <em>fT</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Universal training interface for ELM model with model structure selection.</p>
+<dt id="hpelm.hp_elm.HPELM.add_data">
+<code class="descname">add_data</code><span class="sig-paren">(</span><em>fX</em>, <em>fT</em>, <em>istart=0</em>, <em>icount=inf</em>, <em>fHH=None</em>, <em>fHT=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.add_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.add_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Feed new training data (X,T) to HP-ELM model in batches: does not solve ELM itself.</p>
+<p>This method prepares an intermediate solution data, that takes the most time. After that, obtaining
+the solution is fast.</p>
+<p>The intermediate solution consists of two matrices: <cite>HH</cite> and <cite>HT</cite>. They can be in memory for a model computed
+at once, or stored on disk for a model computed in parts or in parallel.</p>
+<p>For iterative solution, provide file names for on-disk matrices in the input parameters <cite>fHH</cite> and <cite>fHT</cite>.
+They will be created if they don&#8217;t exist, or new results will be merged with the existing ones. This method is
+multiprocess-safe for parallel writing into files <cite>fHH</cite> and <cite>fHT</cite>, that allows you to easily compute ELM
+in parallel. The multiprocess-safeness uses Python module &#8216;fasteners&#8217; and a lock file, which is named
+fHH+&#8217;.lock&#8217; and fHT+&#8217;.lock&#8217;.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fX</strong> &#8211; input data HDF5 or matrix</li>
-<li><strong>fT</strong> &#8211; target data HDF5 or matrix</li>
+<li><strong>fX</strong> (<em>hdf5</em>) &#8211; (part of) input training data size (N * <cite>inputs</cite>)</li>
+<li><strong>(hdf5) (part of) output training data size (N * outputs)</strong> (<em>fT</em>) &#8211; </li>
+<li><strong>istart</strong> (<em>int, optional</em>) &#8211; index of first data sample to use from <cite>fX</cite>, <cite>istart</cite> &lt; N. If not given,
+all data from <cite>fX</cite> is used. Sample with index <cite>istart</cite> is used for training, indexing is 0-based.</li>
+<li><strong>icount</strong> (<em>int, optional</em>) &#8211; number of data samples to use from <cite>fX</cite>, starting from <cite>istart</cite>, automatically
+adjusted to <cite>istart</cite> + <cite>icount</cite> &lt;= N. If not given, all data starting from <cite>start</cite> is used.
+The last sample used for training is <cite>istart`+`icount</cite>-1, so you can index data as:
+istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...</li>
+<li><strong>fHT</strong> (<em>fHH,</em>) &#8211; file names for storing HH and HT matrices. Files are created if they don&#8217;t
+exist, or new result is added to the existing files if they exist. Parallel writing to the same
+<cite>fHH</cite>, <cite>fHT</cite> files is multiprocess-safe, made specially for parallel training of HP-ELM. Another use
+is to split a very long training of huge ELM into smaller parts, so the training can be interrupted
+and resumed later.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.add_data_async">
+<code class="descname">add_data_async</code><span class="sig-paren">(</span><em>fX</em>, <em>fT</em>, <em>istart=0</em>, <em>icount=inf</em>, <em>fHH=None</em>, <em>fHT=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.add_data_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.add_data_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version of <cite>add_data()</cite> with asyncronous I/O. See <cite>add_data()</cite> for reference.</p>
+<p>Spawns new processes using Python&#8217;s <cite>multiprocessing</cite> module, and requires more memory than non-async version.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.error">
+<code class="descname">error</code><span class="sig-paren">(</span><em>fT</em>, <em>fY</em>, <em>istart=0</em>, <em>icount=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate error of model predictions of HPELM.</p>
+<p>Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
+For classification, computes mis-classification error.
+For multi-label classification, correct classes are all with Y&gt;0.5.</p>
+<p>For weighted classification the error is an average weighted True Positive Rate,
+or percentage of correctly predicted samples for each class, multiplied by weight
+of that class and averaged. If you want something else, just write it yourself :)
+See <a class="reference external" href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a> for details.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fT</strong> (<em>hdf5</em>) &#8211; hdf5 filename with true outputs</li>
+<li><strong>fY</strong> (<em>hdf5</em>) &#8211; hdf5 filename with predicted outputs</li>
+<li><strong>istart</strong> (<em>int, optional</em>) &#8211; index of first data sample to use from <cite>fX</cite>, <cite>istart</cite> &lt; N. If not given,
+all data from <cite>fX</cite> is used. Sample with index <cite>istart</cite> is used for training, indexing is 0-based.</li>
+<li><strong>icount</strong> (<em>int, optional</em>) &#8211; number of data samples to use from <cite>fX</cite>, starting from <cite>istart</cite>, automatically
+adjusted to <cite>istart</cite> + <cite>icount</cite> &lt;= N. If not given, all data starting from <cite>start</cite> is used.
+The last sample used for training is <cite>istart`+`icount</cite>-1, so you can index data as:
+istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>e</strong> &#8211;
+MSE for regression / classification error for classification.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">double</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>fX</em>, <em>fY</em>, <em>istart=0</em>, <em>icount=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterative predict outputs and save them to HDF5, can use custom range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fX</strong> (<em>hdf5</em>) &#8211; hdf5 filename with input data from which outputs are predicted</li>
+<li><strong>fY</strong> (<em>hdf5</em>) &#8211; hdf5 filename to store output data into</li>
+<li><strong>istart</strong> (<em>int, optional</em>) &#8211; index of first data sample to use from <cite>fX</cite>, <cite>istart</cite> &lt; N. If not given,
+all data from <cite>fX</cite> is used. Sample with index <cite>istart</cite> is used for training, indexing is 0-based.</li>
+<li><strong>icount</strong> (<em>int, optional</em>) &#8211; number of data samples to use from <cite>fX</cite>, starting from <cite>istart</cite>, automatically
+adjusted to <cite>istart</cite> + <cite>icount</cite> &lt;= N. If not given, all data starting from <cite>start</cite> is used.
+The last sample used for training is <cite>istart`+`icount</cite>-1, so you can index data as:
+istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.predict_async">
+<code class="descname">predict_async</code><span class="sig-paren">(</span><em>fX</em>, <em>fY</em>, <em>istart=0</em>, <em>icount=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.predict_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.predict_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version of <cite>predict()</cite> with asyncronous I/O. See <cite>predict()</cite> for reference.</p>
+<p>Spawns new processes using Python&#8217;s <cite>multiprocessing</cite> module, and requires more memory than non-async version.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.project">
+<code class="descname">project</code><span class="sig-paren">(</span><em>fX</em>, <em>fH</em>, <em>istart=0</em>, <em>icount=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iteratively project input data from HDF5 into HPELM hidden layer, and save in another HDF5.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fX</strong> (<em>hdf5</em>) &#8211; hdf5 filename with input data from which outputs are predicted</li>
+<li><strong>fH</strong> (<em>hdf5</em>) &#8211; hdf5 filename to store output data into</li>
+<li><strong>istart</strong> (<em>int, optional</em>) &#8211; index of first data sample to use from <cite>fX</cite>, <cite>istart</cite> &lt; N. If not given,
+all data from <cite>fX</cite> is used. Sample with index <cite>istart</cite> is used for training, indexing is 0-based.</li>
+<li><strong>icount</strong> (<em>int, optional</em>) &#8211; number of data samples to use from <cite>fX</cite>, starting from <cite>istart</cite>, automatically
+adjusted to <cite>istart</cite> + <cite>icount</cite> &lt;= N. If not given, all data starting from <cite>start</cite> is used.
+The last sample used for training is <cite>istart`+`icount</cite>-1, so you can index data as:
+istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.solve_corr">
+<code class="descname">solve_corr</code><span class="sig-paren">(</span><em>fHH</em>, <em>fHT</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.solve_corr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.solve_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solves an ELM model with the given (covariance) fHH and (correlation) fHT HDF5 files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fHH</strong> (<em>hdf5</em>) &#8211; an hdf5 file with intermediate solution data</li>
+<li><strong>fHT</strong> (<em>hdf5</em>) &#8211; an hdf5 file with intermediate solution data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>fX</em>, <em>fT</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Universal training interface for HP-ELM model.</p>
+<p>Always trains a basic ELM model without model structure selection.
+L2-regularization is available as <cite>norm</cite> parameter at HPELM initialization.
+Number of neurons selection with validation set for trained HPELM is available in <cite>train_hpv()</cite> method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fX</strong> (<em>hdf5</em>) &#8211; input data on disk, size (N * <cite>inputs</cite>)</li>
+<li><strong>fT</strong> (<em>hdf5</em>) &#8211; outputs data on disk, size (N * <cite>outputs</cite>)</li>
+<li><strong>'c'/'wc'/'ml'</strong> (<em>string, choose one</em>) &#8211; train HPELM for classification (&#8216;c&#8217;), classification with weighted
+classes (&#8216;wc&#8217;) or multi-label classification (&#8216;ml&#8217;) with several correct classes per data sample.
+In classification, number of <cite>outputs</cite> is the number of classes; correct class(es) for each sample
+has value 1 and incorrect classes have 0.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<li><strong>istart</strong> (<em>int, optional</em>) &#8211;
+index of first data sample to use from <cite>fX</cite>, <cite>istart</cite> &lt; N. If not given,
+all data from <cite>fX</cite> is used. Sample with index <cite>istart</cite> is used for training, indexing is 0-based.</li>
+<li><strong>icount</strong> (<em>int, optional</em>) &#8211;
+number of data samples to use from <cite>fX</cite>, starting from <cite>istart</cite>, automatically
+adjusted to <cite>istart</cite> + <cite>icount</cite> &lt;= N. If not given, all data starting from <cite>start</cite> is used.
+The last sample used for training is <cite>istart`+`icount</cite>-1, so you can index data as:
+istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...</li>
+<li><strong>batch</strong> (<em>int, optional</em>) &#8211;
+batch size for ELM, overwrites batch size from the initialization</li>
 </ul>
 </td>
 </tr>
@@ -530,30 +687,47 @@ Performs balanced classification if self.classification=&#8221;cb&#8221;.</p>
 <dl class="method">
 <dt id="hpelm.hp_elm.HPELM.train_async">
 <code class="descname">train_async</code><span class="sig-paren">(</span><em>fX</em>, <em>fT</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.train_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.train_async" title="Permalink to this definition">¶</a></dt>
-<dd><p>Universal training interface for ELM model with model structure selection.</p>
+<dd><p>Training HPELM with asyncronous I/O, good for network drives, etc. See <cite>train()</cite> for reference.</p>
+<p>Spawns new processes using Python&#8217;s <cite>multiprocessing</cite> module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hpelm.hp_elm.HPELM.validation_corr">
+<code class="descname">validation_corr</code><span class="sig-paren">(</span><em>fHH</em>, <em>fHT</em>, <em>fXv</em>, <em>fTv</em>, <em>steps=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.validation_corr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.validation_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick batch error evaluation with different numbers of neurons on a validation set.</p>
+<p>Only feasible implementation of model structure selection with HP-ELM. This method makes a single pass
+over the validation data, computing errors for all numbers of neurons at once. It requires HDF5 files with
+matrices HH and HT: <cite>fHH</cite> and <cite>fHT</cite>, obtained from <cite>add_data(..., fHH, fHT)</cite> method.</p>
+<p>The method writes the best solution to the HPELM model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fX</strong> &#8211; input data HDF5 or matrix</li>
-<li><strong>fT</strong> &#8211; target data HDF5 or matrix</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fHH</strong> (<em>string</em>) &#8211; name of HDF5 file with HH matrix</li>
+<li><strong>fHT</strong> (<em>string</em>) &#8211; name of HDF5 file with HT matrix</li>
+<li><strong>fXv</strong> (<em>string</em>) &#8211; name of HDF5 file with validation dataset inputs</li>
+<li><strong>fTv</strong> (<em>string</em>) &#8211; name of HDF5 file with validation dataset outputs</li>
+<li><strong>steps</strong> (<em>int or vector</em>) &#8211; amount of different numbers of neurons to test, choosen uniformly on a logarithmic
+scale from 3 to number of neurons in HPELM. Can be given exactly as a vector.</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>Ls</strong> &#8211;
+numbers of neurons used by <cite>validation_corr()</cite> method
+errs (vector): corresponding errors for number of neurons in <cite>Ls</cite>, with classification error if model</p>
+<blockquote>
+<div><p>is run for classification</p>
+</div></blockquote>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">vector</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
-
-<dl class="method">
-<dt id="hpelm.hp_elm.HPELM.train_hpv">
-<code class="descname">train_hpv</code><span class="sig-paren">(</span><em>HH</em>, <em>HT</em>, <em>Xv</em>, <em>Tv</em>, <em>steps=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.train_hpv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.train_hpv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hpelm.hp_elm.HPELM.train_myhpv">
-<code class="descname">train_myhpv</code><span class="sig-paren">(</span><em>HH</em>, <em>HT</em>, <em>Xv</em>, <em>Tv</em>, <em>steps=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM.train_myhpv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM.train_myhpv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 

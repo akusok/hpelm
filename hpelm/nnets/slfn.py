@@ -38,9 +38,10 @@ class SLFN(object):
             for new input data.
     """
 
-    def __init__(self, outputs, norm=None, precision=np.float64):
+    def __init__(self, inputs, outputs, norm=None, precision=np.float64):
         """Initialize class variables and transformation functions.
         """
+        self.inputs = inputs  # not used here, but logically are a part of SLFN
         self.outputs = outputs  # number of outputs, also number of classes (thus 'c')
         self.precision = precision
         if norm is None:

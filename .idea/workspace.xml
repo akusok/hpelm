@@ -2,8 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="113e7ec7-c14a-483b-93e3-5bb5db926990" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/develop/overwrite_inherited.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" afterPath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.doctree" afterPath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.doctree" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.tests.doctree" afterPath="$PROJECT_DIR$/docs/_build/doctrees/hpelm.tests.doctree" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/objects.inv" afterPath="$PROJECT_DIR$/docs/_build/html/objects.inv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/elm.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/elm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/hp_elm.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/hp_elm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/modules/hdf5_tools.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/modules/hdf5_tools.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_corr_hpelm.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_corr_hpelm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_correctness.html" afterPath="$PROJECT_DIR$/docs/_build/html/_modules/hpelm/tests/test_correctness.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/genindex.html" afterPath="$PROJECT_DIR$/docs/_build/html/genindex.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/hpelm.html" afterPath="$PROJECT_DIR$/docs/_build/html/hpelm.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/hpelm.tests.html" afterPath="$PROJECT_DIR$/docs/_build/html/hpelm.tests.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/_build/html/searchindex.js" afterPath="$PROJECT_DIR$/docs/_build/html/searchindex.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/elm.py" afterPath="$PROJECT_DIR$/hpelm/elm.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/hp_elm.py" afterPath="$PROJECT_DIR$/hpelm/hp_elm.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/nnets/slfn.py" afterPath="$PROJECT_DIR$/hpelm/nnets/slfn.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py" afterPath="$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hpelm/tests/test_correctness.py" afterPath="$PROJECT_DIR$/hpelm/tests/test_correctness.py" />
     </list>
@@ -19,10 +35,11 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_acceptance.coverage" NAME="Nosetests in test_acceptance Coverage Results" MODIFIED="1452767358771" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
-    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_correctness.coverage" NAME="Nosetests in test_correctness Coverage Results" MODIFIED="1452773448973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
+    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_acceptance.coverage" NAME="Nosetests in test_acceptance Coverage Results" MODIFIED="1452857678302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
+    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_correctness.coverage" NAME="Nosetests in test_correctness Coverage Results" MODIFIED="1452858883018" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
+    <SUITE FILE_PATH="coverage/hpelm$overwrite_inherited.coverage" NAME="overwrite_inherited Coverage Results" MODIFIED="1452847495088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/develop" />
     <SUITE FILE_PATH="coverage/hpelm$Nosetest_TestAcceptance_test_basic_elm_single_machine.coverage" NAME="Nosetest TestAcceptance.test_basic_elm_single_machine Coverage Results" MODIFIED="1452519502950" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
-    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_corr_hpelm.coverage" NAME="Nosetests in test_corr_hpelm Coverage Results" MODIFIED="1452776987235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
+    <SUITE FILE_PATH="coverage/hpelm$Nosetests_in_test_corr_hpelm.coverage" NAME="Nosetests in test_corr_hpelm Coverage Results" MODIFIED="1452859509818" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hpelm/tests" />
   </component>
   <component name="CoverageOptionsProvider">
     <option name="myAddOrReplace" value="0" />
@@ -43,23 +60,26 @@
     <favorites_list name="hpelm" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.544458">
+    <splitter split-orientation="horizontal" split-proportion="0.5858525">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="slfn.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="162" column="0" selection-start-line="162" selection-start-column="0" selection-end-line="163" selection-end-column="37" />
+                  <caret line="43" column="44" selection-start-line="43" selection-start-column="42" selection-end-line="43" selection-end-column="44" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="elm.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="27" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
                   <folding>
-                    <element signature="e#239#1858#1" expanded="false" />
-                    <element signature="e#1934#3088#0" expanded="false" />
-                    <element signature="e#3145#3753#1" expanded="false" />
-                    <element signature="e#4318#4534#1" expanded="false" />
-                    <element signature="e#4693#5054#1" expanded="false" />
-                    <element signature="e#5279#5615#1" expanded="false" />
-                    <element signature="e#5837#6477#1" expanded="false" />
-                    <element signature="e#7458#7794#1" expanded="false" />
+                    <element signature="e#86#104#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -68,8 +88,8 @@
           <file leaf-file-name="hp_elm.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.50308645">
-                  <caret line="175" column="55" selection-start-line="175" selection-start-column="55" selection-end-line="175" selection-end-column="55" />
+                <state vertical-scroll-proportion="-3.6391096">
+                  <caret line="414" column="40" selection-start-line="414" selection-start-column="40" selection-end-line="414" selection-end-column="40" />
                   <folding>
                     <element signature="e#86#104#0" expanded="true" />
                   </folding>
@@ -80,12 +100,12 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+        <leaf>
           <file leaf-file-name="test_corr_hpelm.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.95679015">
-                  <caret line="369" column="65" selection-start-line="369" selection-start-column="65" selection-end-line="369" selection-end-column="65" />
+                <state vertical-scroll-proportion="4.109698">
+                  <caret line="274" column="32" selection-start-line="274" selection-start-column="32" selection-end-line="274" selection-end-column="32" />
                   <folding>
                     <element signature="e#114#143#0" expanded="true" />
                   </folding>
@@ -93,31 +113,22 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="elm.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+          <file leaf-file-name="test_acceptance.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="429" column="0" selection-start-line="428" selection-start-column="0" selection-end-line="429" selection-end-column="0" />
+                  <caret line="20" column="11" selection-start-line="20" selection-start-column="8" selection-end-line="20" selection-end-column="11" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="hp_elm.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
+          <file leaf-file-name="test_correctness.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="121" column="47" selection-start-line="121" selection-start-column="47" selection-end-line="121" selection-end-column="47" />
-                  <folding>
-                    <element signature="e#86#104#0" expanded="true" />
-                    <element signature="e#390#2568#1" expanded="false" />
-                    <element signature="e#2624#4872#0" expanded="false" />
-                    <element signature="e#9517#11708#0" expanded="false" />
-                    <element signature="e#13969#15634#0" expanded="false" />
-                    <element signature="e#18308#21265#0" expanded="false" />
-                    <element signature="e#21363#21929#0" expanded="false" />
-                    <element signature="e#25054#27104#0" expanded="false" />
-                  </folding>
+                  <caret line="286" column="0" selection-start-line="286" selection-start-column="0" selection-end-line="286" selection-end-column="0" />
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -126,10 +137,9 @@
             <entry file="file://$PROJECT_DIR$/hpelm/modules/hdf5_tools.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="76" column="0" selection-start-line="76" selection-start-column="0" selection-end-line="76" selection-end-column="0" />
+                  <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
                   <folding>
                     <element signature="e#86#104#0" expanded="true" />
-                    <element signature="e#3475#5779#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -138,6 +148,13 @@
         </leaf>
       </split-second>
     </splitter>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
@@ -162,11 +179,12 @@
         <option value="$PROJECT_DIR$/hpelm/solvers/slfn.py" />
         <option value="$PROJECT_DIR$/hpelm/nnets/nnet.py" />
         <option value="$PROJECT_DIR$/hpelm/tests/test_acceptance.py" />
-        <option value="$PROJECT_DIR$/hpelm/elm.py" />
         <option value="$PROJECT_DIR$/hpelm/modules/__init__.py" />
         <option value="$PROJECT_DIR$/hpelm/modules/hdf5_tools.py" />
+        <option value="$PROJECT_DIR$/develop/overwrite_inherited.py" />
         <option value="$PROJECT_DIR$/hpelm/nnets/slfn.py" />
         <option value="$PROJECT_DIR$/hpelm/tests/test_correctness.py" />
+        <option value="$PROJECT_DIR$/hpelm/elm.py" />
         <option value="$PROJECT_DIR$/hpelm/hp_elm.py" />
         <option value="$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py" />
       </list>
@@ -245,6 +263,9 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches">
+        <subPane />
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -277,52 +298,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tests" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hpelm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
-      </pane>
-      <pane id="Scratches">
-        <subPane />
       </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="coverage" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FullScreen" value="true" />
@@ -341,6 +323,24 @@
     </key>
   </component>
   <component name="RunManager" selected="Python tests.Nosetests in test_corr_hpelm">
+    <configuration default="false" name="overwrite_inherited" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/develop" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="hpelm" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/develop/overwrite_inherited.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
     <configuration default="false" name="Nosetest TestAcceptance.test_basic_elm_single_machine" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -538,7 +538,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="hpelm" />
+      <module name="" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
       <option name="CLASS_NAME" value="" />
@@ -649,17 +649,18 @@
       <option name="USE_PARAM" value="false" />
       <method />
     </configuration>
-    <list size="5">
+    <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Compound.HPELM unittest" />
-      <item index="1" class="java.lang.String" itemvalue="Python tests.Nosetests in test_acceptance" />
-      <item index="2" class="java.lang.String" itemvalue="Python tests.Nosetests in test_correctness" />
-      <item index="3" class="java.lang.String" itemvalue="Python tests.Nosetest TestAcceptance.test_basic_elm_single_machine" />
-      <item index="4" class="java.lang.String" itemvalue="Python tests.Nosetests in test_corr_hpelm" />
+      <item index="1" class="java.lang.String" itemvalue="Python.overwrite_inherited" />
+      <item index="2" class="java.lang.String" itemvalue="Python tests.Nosetests in test_acceptance" />
+      <item index="3" class="java.lang.String" itemvalue="Python tests.Nosetests in test_correctness" />
+      <item index="4" class="java.lang.String" itemvalue="Python tests.Nosetest TestAcceptance.test_basic_elm_single_machine" />
+      <item index="5" class="java.lang.String" itemvalue="Python tests.Nosetests in test_corr_hpelm" />
     </list>
     <recent_temporary>
       <list size="2">
         <item index="0" class="java.lang.String" itemvalue="Python tests.Nosetests in test_corr_hpelm" />
-        <item index="1" class="java.lang.String" itemvalue="Python tests.Nosetest TestAcceptance.test_basic_elm_single_machine" />
+        <item index="1" class="java.lang.String" itemvalue="Python.overwrite_inherited" />
       </list>
     </recent_temporary>
   </component>
@@ -686,38 +687,44 @@
       <option name="project" value="LOCAL" />
       <updated>1452768472331</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Complete HPELM with unittest, only confusion matrix is missing">
+      <created>1452777152162</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1452777152162</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 14h 12m 18s.xml">
+    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.15 at 14h 01m 15s.xml">
       <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 14h 12m 30s.xml">
+    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.15 at 14h 01m 58s.xml">
       <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 14h 36m 15s.xml">
+    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.15 at 14h 04m 54s.xml">
       <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 15h 05m 32s.xml">
+    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.15 at 14h 05m 10s.xml">
       <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 15h 08m 15s.xml">
-      <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.15 at 13h 36m 18s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 15h 08m 35s.xml">
-      <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.15 at 13h 37m 47s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 15h 09m 20s.xml">
-      <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.15 at 13h 38m 02s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 15h 09m 36s.xml">
-      <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.15 at 13h 38m 10s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_corr_hpelm - 2016.01.14 at 15h 09m 48s.xml">
-      <configuration name="Nosetests in test_corr_hpelm" configurationId="tests" />
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.15 at 13h 54m 25s.xml">
+      <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_in_test_correctness - 2016.01.14 at 14h 10m 49s.xml">
+    <history-entry file="Nosetests_in_test_correctness - 2016.01.15 at 13h 54m 43s.xml">
       <configuration name="Nosetests in test_correctness" configurationId="tests" />
     </history-entry>
   </component>
@@ -734,26 +741,26 @@
     <frame x="-1" y="-26" width="1922" height="1107" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4170243" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33399406" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32970297" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32771084" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.16168623" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12379936" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32903865" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4370664" sideWeight="0.4914621" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4370664" sideWeight="0.5085379" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4370664" sideWeight="0.5085379" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32903865" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32857144" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4170243" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32857144" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.117395945" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.113127" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32857144" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43571427" sideWeight="0.4914621" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32771084" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -771,7 +778,8 @@
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Unittested  elm.py" />
     <MESSAGE value="Mostly completed HPELM with basic unittests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Mostly completed HPELM with basic unittests" />
+    <MESSAGE value="Complete HPELM with unittest, only confusion matrix is missing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Complete HPELM with unittest, only confusion matrix is missing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -780,16 +788,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="256" column="0" selection-start-line="256" selection-start-column="0" selection-end-line="256" selection-end-column="0" />
-          <folding>
-            <element signature="e#114#143#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -804,16 +802,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="172" column="38" selection-start-line="172" selection-start-column="38" selection-end-line="172" selection-end-column="38" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -821,7 +810,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="264" column="0" selection-start-line="264" selection-start-column="0" selection-end-line="264" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -829,7 +820,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -837,10 +827,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#24#84#1" expanded="false" />
-            <element signature="e#86#95#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -848,16 +834,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="172" column="38" selection-start-line="172" selection-start-column="38" selection-end-line="172" selection-end-column="38" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -865,7 +842,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="264" column="0" selection-start-line="264" selection-start-column="0" selection-end-line="264" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -873,7 +852,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -881,10 +859,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#24#84#1" expanded="false" />
-            <element signature="e#86#95#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -892,16 +866,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="150" column="27" selection-start-line="150" selection-start-column="27" selection-end-line="150" selection-end-column="27" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -909,7 +874,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="468" column="0" selection-start-line="468" selection-start-column="0" selection-end-line="468" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -917,7 +884,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -925,10 +891,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#24#84#1" expanded="false" />
-            <element signature="e#86#95#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -936,16 +898,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="96" column="61" selection-start-line="96" selection-start-column="61" selection-end-line="96" selection-end-column="61" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -953,7 +906,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="177" column="29" selection-start-line="177" selection-start-column="29" selection-end-line="177" selection-end-column="29" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -971,7 +926,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="52" column="49" selection-start-line="52" selection-start-column="49" selection-end-line="52" selection-end-column="49" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -979,10 +933,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#24#84#1" expanded="false" />
-            <element signature="e#86#95#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -990,7 +940,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="201" column="52" selection-start-line="201" selection-start-column="52" selection-end-line="201" selection-end-column="52" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1012,16 +964,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1029,7 +972,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="187" column="45" selection-start-line="187" selection-start-column="45" selection-end-line="187" selection-end-column="45" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1037,16 +982,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1054,7 +990,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="39" column="20" selection-start-line="39" selection-start-column="20" selection-end-line="39" selection-end-column="20" />
-          <folding />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1125,7 +1063,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="14" column="32" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1150,21 +1087,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="51" column="29" selection-start-line="51" selection-start-column="29" selection-end-line="51" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/modules/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.15306123">
           <caret line="10" column="31" selection-start-line="10" selection-start-column="31" selection-end-line="10" selection-end-column="31" />
-          <folding>
-            <element signature="e#86#107#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1172,7 +1098,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.46031746">
           <caret line="96" column="27" selection-start-line="96" selection-start-column="23" selection-end-line="96" selection-end-column="27" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1180,17 +1105,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33333334">
           <caret line="56" column="31" selection-start-line="56" selection-start-column="27" selection-end-line="56" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-16.714285">
-          <caret line="288" column="33" selection-start-line="288" selection-start-column="33" selection-end-line="288" selection-end-column="33" />
-          <folding>
-            <element signature="e#24#84#1" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1198,7 +1112,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.42857143">
           <caret line="43" column="34" selection-start-line="43" selection-start-column="34" selection-end-line="43" selection-end-column="34" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1206,31 +1119,20 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.41326532">
           <caret line="45" column="34" selection-start-line="45" selection-start-column="30" selection-end-line="45" selection-end-column="34" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/develop/overwrite_inherited.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3179551">
+          <caret line="17" column="11" selection-start-line="17" selection-start-column="11" selection-end-line="17" selection-end-column="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/nnets/slfn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="162" column="0" selection-start-line="162" selection-start-column="0" selection-end-line="163" selection-end-column="37" />
-          <folding>
-            <element signature="e#239#1858#1" expanded="false" />
-            <element signature="e#1934#3088#0" expanded="false" />
-            <element signature="e#3145#3753#1" expanded="false" />
-            <element signature="e#4318#4534#1" expanded="false" />
-            <element signature="e#4693#5054#1" expanded="false" />
-            <element signature="e#5279#5615#1" expanded="false" />
-            <element signature="e#5837#6477#1" expanded="false" />
-            <element signature="e#7458#7794#1" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="429" column="0" selection-start-line="428" selection-start-column="0" selection-end-line="429" selection-end-column="0" />
+          <caret line="43" column="44" selection-start-line="43" selection-start-column="42" selection-end-line="43" selection-end-column="44" />
           <folding />
         </state>
       </provider>
@@ -1238,18 +1140,43 @@
     <entry file="file://$PROJECT_DIR$/hpelm/modules/hdf5_tools.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="76" column="0" selection-start-line="76" selection-start-column="0" selection-end-line="76" selection-end-column="0" />
+          <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
           <folding>
             <element signature="e#86#104#0" expanded="true" />
-            <element signature="e#3475#5779#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_acceptance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="20" column="11" selection-start-line="20" selection-start-column="8" selection-end-line="20" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/tests/test_correctness.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="286" column="0" selection-start-line="286" selection-start-column="0" selection-end-line="286" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hpelm/elm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="27" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+          <folding>
+            <element signature="e#86#104#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/tests/test_corr_hpelm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.95679015">
-          <caret line="369" column="65" selection-start-line="369" selection-start-column="65" selection-end-line="369" selection-end-column="65" />
+        <state vertical-scroll-proportion="4.109698">
+          <caret line="274" column="32" selection-start-line="274" selection-start-column="32" selection-end-line="274" selection-end-column="32" />
           <folding>
             <element signature="e#114#143#0" expanded="true" />
           </folding>
@@ -1258,8 +1185,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/hpelm/hp_elm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.50308645">
-          <caret line="175" column="55" selection-start-line="175" selection-start-column="55" selection-end-line="175" selection-end-column="55" />
+        <state vertical-scroll-proportion="-3.6391096">
+          <caret line="414" column="40" selection-start-line="414" selection-start-column="40" selection-end-line="414" selection-end-column="40" />
           <folding>
             <element signature="e#86#104#0" expanded="true" />
           </folding>

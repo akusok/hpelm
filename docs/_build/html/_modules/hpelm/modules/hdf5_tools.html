@@ -121,7 +121,94 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">from</span> <span class="nn">tables</span> <span class="kn">import</span> <span class="n">open_file</span><span class="p">,</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Filters</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">fasteners</span>  <span class="c"># inter-process file lock</span>
+
+
+<span class="k">def</span> <span class="nf">_prepare_fHH</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">norm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Prepares files for fHH, fHT if they are needed.</span>
+
+<span class="sd">    If fHH and fHT are not None, makes matrices HH and HT, and creates files fHH, fHT if they don&#39;t exist yet.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fHH (string): hdf5 filename to store HH, None for ignore disk storage</span>
+<span class="sd">        fHT (string): hdf5 filename to store HT, None for ignore disk storage</span>
+<span class="sd">        L (int): number of neurons</span>
+<span class="sd">        outputs (int): number of output dimensions, or classes</span>
+<span class="sd">        precision (np.float32/64): precision</span>
+<span class="sd">        norm (double): L2 normalization constant</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HH (matrix): matrix to store HH, or None if fHH is None</span>
+<span class="sd">        HT (matrix): matrix to store HT, or None if fHT is None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">HH</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">HT</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fHH</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fHT</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">HH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
+        <span class="n">HT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
+
+        <span class="c"># process fHH</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fHH</span><span class="p">):</span>
+            <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+                <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Matrix in </span><span class="si">%d</span><span class="s"> does not exist&quot;</span> <span class="o">%</span> <span class="n">fHH</span>
+                <span class="k">assert</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">L</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">L</span><span class="p">,</span> \
+                       <span class="s">&quot;Matrix in </span><span class="si">%d</span><span class="s"> has a wrong shape: (</span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">) expected, (</span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">) found&quot;</span> <span class="o">%</span> \
+                       <span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span>  <span class="c"># re-raise same error</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">make_hdf5</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">fHH</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">HH</span><span class="p">,</span> <span class="n">norm</span><span class="p">)</span>
+
+        <span class="c"># process fHT</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fHT</span><span class="p">):</span>
+            <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fHT</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+                <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Matrix in </span><span class="si">%d</span><span class="s"> does not exist&quot;</span> <span class="o">%</span> <span class="n">fHT</span>
+                <span class="k">assert</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">L</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">outputs</span><span class="p">,</span> \
+                       <span class="s">&quot;Matrix in </span><span class="si">%d</span><span class="s"> has a wrong shape: (</span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">) expected, (</span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">) found&quot;</span> <span class="o">%</span> \
+                       <span class="p">(</span><span class="n">fHT</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">node</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span>  <span class="c"># re-raise same error</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">make_hdf5</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">),</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span>
+
+<span class="k">def</span> <span class="nf">_write_fHH</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Writes HH,HT data into fHH,fHT files, multi-process safe with lock file.</span>
+
+<span class="sd">    Lock file has the same name as fHH,fHT, but with &#39;.lock&#39; extension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fHH_lock</span> <span class="o">=</span> <span class="n">fHH</span> <span class="o">+</span> <span class="s">&quot;.lock&quot;</span>
+    <span class="k">with</span> <span class="n">fasteners</span><span class="o">.</span><span class="n">InterProcessLock</span><span class="p">(</span><span class="n">fHH_lock</span><span class="p">):</span>
+        <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+            <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+        <span class="n">node</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">HH</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">fHT_lock</span> <span class="o">=</span> <span class="n">fHT</span> <span class="o">+</span> <span class="s">&quot;.lock&quot;</span>
+    <span class="k">with</span> <span class="n">fasteners</span><span class="o">.</span><span class="n">InterProcessLock</span><span class="p">(</span><span class="n">fHT_lock</span><span class="p">):</span>
+        <span class="n">h5</span> <span class="o">=</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fHT</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">h5</span><span class="o">.</span><span class="n">walk_nodes</span><span class="p">():</span>
+            <span class="k">pass</span>  <span class="c"># find a node with whatever name</span>
+        <span class="n">node</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">HT</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="normalize_hdf5"><a class="viewcode-back" href="../../../hpelm.modules.html#hpelm.modules.hdf5_tools.normalize_hdf5">[docs]</a><span class="k">def</span> <span class="nf">normalize_hdf5</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>

@@ -21,6 +21,10 @@ class ELM(object):
     Args:
         inputs (int): dimensionality of input data, or number of data features
         outputs (int): dimensionality of output data, or number of classes
+        classification ('c'/'wc'/'ml', optional): train ELM for classfication ('c') / weighted classification ('wc') /
+            multi-label classification ('ml'). For weighted classification you can provide weights in `w`. ELM will
+            compute and use the corresponding classification error instead of Mean Squared Error.
+        w (vector, optional): weights vector for weighted classification, lenght (`outputs` * 1).
         batch (int, optional): batch size for data processing in ELM, reduces memory requirements. Does not work
             for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
             as a class attribute.
@@ -46,13 +50,12 @@ class ELM(object):
     """
     # TODO: note about HDF5 instead of matrix for Matlab compatibility
 
-    def __init__(self, inputs, outputs, batch=1000, accelerator=None, precision='double', norm=None, tprint=5):
+    def __init__(self, inputs, outputs, classification="", w=None, batch=1000, accelerator=None,
+                 precision='double', norm=None, tprint=5):
         assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
         assert isinstance(outputs, (int, long)), "Number of outputs must be integer"
         assert batch > 0, "Batch should be positive"
 
-        self.inputs = inputs
-        self.outputs = outputs
         self.batch = int(batch)
         self.precision = np.float64
 
@@ -68,20 +71,26 @@ class ELM(object):
         # create SLFN solver to do actual computations
         self.accelerator = accelerator
         if accelerator is None:  # double precision Numpy solver
-            self.nnet = SLFN(self.outputs, precision=self.precision, norm=norm)
+            self.nnet = SLFN(inputs, outputs, precision=self.precision, norm=norm)
             # TODO: add advanced and GPU nnets, in load also
 
         # init other stuff
-        self.opened_hdf5 = []  # list of opened HDF5 files, they are closed in ELM descructor
-        self.classification = None  # c / wc / mc
+        self.classification = None  # train ELM for classification
+        if classification.lower() in ("c", "wc", "ml", "mc"):  # allow 'mc'=='ml' for compatibility
+            self.classification = classification.replace("mc", "ml")
         self.wc = None  # weighted classification weights
+        if w is not None:
+            w = np.array(w)
+            assert len(w) == outputs, "Number of class weights must be equal to the number of classes"
+            self.wc = w
+        self.opened_hdf5 = []  # list of opened HDF5 files, they are closed in ELM descructor
         self.ranking = None
         self.kmax_op = None
         self.tprint = tprint  # time intervals in seconds to report ETA
         self.flist = ("lin", "sigm", "tanh", "rbf_l1", "rbf_l2", "rbf_linf")  # supported neuron types
 
     def __str__(self):
-        s = "ELM with %d inputs and %d outputs\n" % (self.inputs, self.outputs)
+        s = "ELM with %d inputs and %d outputs\n" % (self.nnet.inputs, self.nnet.outputs)
         s += "Hidden layer neurons: "
         for n, func, _, _ in self.nnet.neurons:
             s += "%d %s, " % (n, func)
@@ -97,13 +106,13 @@ class ELM(object):
         self.nnet.reset()  # remove previous training
         self.ranking = None
         self.kmax_op = None
-        self.classification = None  # c / wc / mc
+        self.classification = None  # c / wc / ml
         self.wc = None  # weigths for weighted classification
 
         # check exclusive parameters
         assert len(set(args).intersection({"V", "CV", "LOO"})) <= 1, "Use only one of V / CV / LOO"
-        msg = "Use only one of: C (classification) / MC (multiclass) / WC (weighted classification)"
-        assert len(set(args).intersection({"C", "WC", "MC"})) <= 1, msg
+        msg = "Use only one of: C (classification) / WC (weighted classification) / ML (multi-label classification)"
+        assert len(set(args).intersection({"C", "WC", "ML", "MC"})) <= 1, msg
 
         # parse parameters
         for a in args:
@@ -112,18 +121,20 @@ class ELM(object):
                 if "kmax" in kwargs.keys():
                     self.kmax_op = int(kwargs["kmax"])
             if a == "C":
-                assert self.outputs > 1, "Classification outputs must have 1 output per class"
+                assert self.nnet.outputs > 1, "Classification outputs must have 1 output per class"
                 self.classification = "c"
             if a == "WC":
-                assert self.outputs > 1, "Classification outputs must have 1 output per class"
+                assert self.nnet.outputs > 1, "Classification outputs must have 1 output per class"
                 self.classification = "wc"
                 if 'w' in kwargs.keys():
                     w = np.array(kwargs['w'])
-                    assert len(w) == self.outputs, "Number of class weights must be equal to the number of classes"
+                    assert len(w) == self.nnet.outputs, "Number of class weights must be equal to the number of classes"
                     self.wc = w
-            if a == "MC":
-                assert self.outputs > 1, "Classification outputs must have 1 output per class"
-                self.classification = "mc"
+            if a == "ML" or a == "MC":
+                assert self.nnet.outputs > 1, "Classification outputs must have 1 output per class"
+                self.classification = "ml"
+            if a == "R":
+                self.classification = None  # reset to regression
 
         if "batch" in kwargs.keys():
             self.batch = int(kwargs["batch"])
@@ -139,14 +150,15 @@ class ELM(object):
         Args:
             X (matrix): input data matrix, size (N * `inputs`)
             T (matrix): outputs data matrix, size (N * `outputs`)
-            'c'/'wc'/'mc' (string, choose one): train ELM for classification ('c'), classification with weighted classes
-                ('wc') or multi-label classification ('mc') with several correct classes per data sample.
-                In classification, number of `outputs` is the number of classes; correct class(es) for each sample
-                has value 1 and incorrect classes have 0.
             'V'/'CV'/'LOO' (sting, choose one): model structure selection: select optimal number of neurons using
                 a validation set ('V'), cross-validation ('CV') or Leave-One-Out ('LOO')
             'OP' (string, use with 'V'/'CV'/'LOO'): choose best neurons instead of random ones, training takes longer;
                 equivalent to L1-regularization
+            'c'/'wc'/'ml'/'r' (string, choose one): train ELM for classification ('c'), classification with weighted
+                classes ('wc'), multi-label classification ('ml') with several correct classes per data sample, or
+                regression ('r') without any classification. In classification, number of `outputs` is the number
+                of classes; correct class(es) for each sample has value 1 and incorrect classes have 0.
+                Overwrites parameters given an ELM initialization time.
 
         Keyword Args:
             Xv (matrix, use with 'V'): validation set input data, size (Nv * `inputs`)
@@ -233,25 +245,26 @@ class ELM(object):
             "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
         assert isinstance(W, (np.ndarray, type(None))), "Projection matrix (W) must be a Numpy ndarray"
         assert isinstance(B, (np.ndarray, type(None))), "Bias vector (B) must be a Numpy ndarray"
+        inputs = self.nnet.inputs
 
         # default neuron initializer
         if W is None:
             if func == "lin":  # copying input features for linear neurons
-                number = min(number, self.inputs)  # cannot have more linear neurons than features
-                W = np.eye(self.inputs, number)
+                number = min(number, inputs)  # cannot have more linear neurons than features
+                W = np.eye(inputs, number)
             else:
-                W = np.random.randn(self.inputs, number)
+                W = np.random.randn(inputs, number)
                 if func not in ("rbf_l1", "rbf_l2", "rbf_linf"):
-                    W *= 3.0 / self.inputs**0.5  # high dimensionality fix
+                    W *= 3.0 / inputs**0.5  # high dimensionality fix
         if B is None:
             B = np.random.randn(number)
             if func in ("rbf_l2", "rbf_l1", "rbf_linf"):
                 B = np.abs(B)
-                B *= self.inputs
+                B *= inputs
             if func == "lin":
                 B = np.zeros((number,))
-        msg = "W must be size [inputs, neurons] (expected [%d,%d])" % (self.inputs, number)
-        assert W.shape == (self.inputs, number), msg
+        msg = "W must be size [inputs, neurons] (expected [%d,%d])" % (inputs, number)
+        assert W.shape == (inputs, number), msg
         assert B.shape == (number,), "B must be size [neurons] (expected [%d])" % number
         # set to correct precision
         W = W.astype(self.precision)
@@ -260,7 +273,7 @@ class ELM(object):
         # add prepared neurons to the model
         self.nnet.add_neurons(number, func, W, B)
 
-    def error(self, Y, T):
+    def error(self, T, Y):
         """Calculate error of model predictions.
 
         Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
@@ -272,58 +285,62 @@ class ELM(object):
         of that class and averaged. If you want something else, just write it yourself :)
         See https://en.wikipedia.org/wiki/Confusion_matrix for details.
 
+        Another option is to use scikit-learn's performance metrics. Transform `Y` and `T` into scikit's
+        format by ``y_true = T.argmax[1]``, ``y_pred = Y.argmax[1]``.
+        http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
+
         Args:
-            Y (matrix): ELM model predictions, can be computed with `predict()` function.
             T (matrix): true outputs.
+            Y (matrix): ELM model predictions, can be computed with `predict()` function.
 
         Returns:
             e (double): MSE for regression / classification error for classification.
         """
-        _, Y = self._checkdata(None, Y)
         _, T = self._checkdata(None, T)
-        return self._error(Y, T)
+        _, Y = self._checkdata(None, Y)
+        return self._error(T, Y)
 
-    def confusion(self, Y1, T1):
-        """Unfinished...
+    def confusion(self, T, Y):
+        """Computes confusion matrix for classification.
+
+        Confusion matrix :math:`C` such that element :math:`C_{i,j}` equals to the number of observations known
+        to be class :math:`i` but predicted to be class :math:`j`.
 
         Args:
-            Y1 (matrix): predicted outputs by ELM model, size (N * `outputs`)
-            T1 (matrix): true outputs or classes, size (N * `outputs`)
+            T (matrix): true outputs or classes, size (N * `outputs`)
+            Y (matrix): predicted outputs by ELM model, size (N * `outputs`)
 
         Returns:
             conf (matrix): confusion matrix, size (`outputs` * `outputs`)
         """
-        # TODO: Fix confusion matrix code
-        _, Y = self._checkdata(None, Y1)
-        _, T = self._checkdata(None, T1)
-        nn = np.sum([n1[1] for n1 in self.nnet.neurons])
+        # TODO: ELM type can be assigned at creation time: "c", "wc", "ml"
+        assert self.classification in ("c", "wc", "ml"), "Confusion matrix works only for regression"
+        _, T = self._checkdata(None, T)
+        _, Y = self._checkdata(None, Y)
         N = T.shape[0]
-        batch = max(self.batch, nn)
         nb = int(np.ceil(float(N) / self.batch))  # number of batches
 
-        C = self.outputs
+        C = self.nnet.outputs
         conf = np.zeros((C, C))
 
         if self.classification in ("c", "wc"):
             for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
+                start = b*self.batch
+                stop = min((b+1)*self.batch, N)
                 Tb = np.array(T[start:stop]).argmax(1)
                 Yb = np.array(Y[start:stop]).argmax(1)
                 for c1 in xrange(C):
                     for c1h in xrange(C):
                         conf[c1, c1h] += np.logical_and(Tb == c1, Yb == c1h).sum()
-        elif self.classification == "mc":
+        elif self.classification == "ml":
             for b in xrange(nb):
-                start = b*batch
-                stop = min((b+1)*batch, N)
+                start = b*self.batch
+                stop = min((b+1)*self.batch, N)
                 Tb = np.array(T[start:stop]) > 0.5
                 Yb = np.array(Y[start:stop]) > 0.5
                 for c1 in xrange(C):
                     for c1h in xrange(C):
                         conf[c1, c1h] += np.sum(Tb[:, c1] * Yb[:, c1h])
-        else:  # No confusion matrix
-            conf = None
         return conf
 
     def project(self, X):
@@ -365,8 +382,8 @@ class ELM(object):
             fname (string): filename to save model into.
         """
         assert isinstance(fname, basestring), "Model file name must be a string"
-        m = {"inputs": self.inputs,
-             "outputs": self.outputs,
+        m = {"inputs": self.nnet.inputs,
+             "outputs": self.nnet.outputs,
              "Classification": self.classification,
              "Weights_WC": self.wc,
              "neurons": self.nnet.neurons,
@@ -390,14 +407,14 @@ class ELM(object):
             m = cPickle.load(open(fname, "rb"))
         except IOError:
             raise IOError("Model file not found: %s" % fname)
-        self.inputs = m["inputs"]
-        self.outputs = m["outputs"]
+        inputs = m["inputs"]
+        outputs = m["outputs"]
         self.classification = m["Classification"]
         self.wc = m["Weights_WC"]
 
         # create a new solver and load neurons / Beta into it with correct precision
         if self.accelerator is None:
-            self.nnet = SLFN(self.outputs, precision=self.precision)
+            self.nnet = SLFN(inputs, outputs, precision=self.precision)
         for number, func, W, B in m["neurons"]:
             self.nnet.add_neurons(number, func, W.astype(self.precision), B.astype(self.precision))
         self.nnet.norm = m["norm"]
@@ -408,12 +425,11 @@ class ELM(object):
         for h5 in self.opened_hdf5:
             h5.close()
 
-    def _error(self, Y, T, R=None):
+    def _error(self, T, Y, R=None):
         """Returns regression/classification/multiclass error, also for PRESS.
 
         An ELM-specific error with PRESS support.
         """
-        # TODO: change 'mc' to 'ml', however leave 'mc' working
         if R is None:  # normal classification error
             if self.classification == "c":
                 err = np.not_equal(Y.argmax(1), T.argmax(1)).mean()
@@ -425,7 +441,7 @@ class ELM(object):
                     if len(idx) > 0:
                         errc[i] = np.not_equal(Y[idx].argmax(1), i).mean()
                 err = np.sum(errc * self.wc) / np.sum(self.wc)
-            elif self.classification == "mc":
+            elif self.classification == "ml":
                 err = np.not_equal(Y > 0.5, T > 0.5).mean()
             else:
                 err = np.mean((Y - T)**2)
@@ -442,7 +458,7 @@ class ELM(object):
                         t = np.not_equal(Y[idx].argmax(1), i) / R[idx].ravel()
                         errc[i] = np.mean(t**2)
                 err = np.mean(errc * self.wc)
-            elif self.classification == "mc":
+            elif self.classification == "ml":
                 err = np.not_equal(Y > 0.5, T > 0.5) / R.reshape((-1, 1))
                 err = np.mean(err**2)
             else:
@@ -499,8 +515,8 @@ class ELM(object):
                 if len(X.shape) == 1:
                     X = X.reshape(-1, 1)
             assert len(X.shape) == 2, "X must have 2 dimensions"
-            msg = "X has wrong dimensionality: expected %d, found %d" % (self.inputs, X.shape[1])
-            assert X.shape[1] == self.inputs, msg
+            assert X.shape[1] == self.nnet.inputs, "X has wrong dimensionality: expected %d, found %d" % \
+                                                   (self.nnet.inputs, X.shape[1])
 
         if T is not None:
             if isinstance(T, basestring):  # open HDF5 file
@@ -522,8 +538,9 @@ class ELM(object):
                 if len(T.shape) == 1:
                     T = T.reshape(-1, 1)
             assert len(T.shape) == 2, "T must have 2 dimensions"
-            msg = "T has wrong dimensionality: expected %d, found %d" % (self.outputs, T.shape[1])
-            assert T.shape[1] == self.outputs, msg
+
+            assert T.shape[1] == self.nnet.outputs, "T has wrong dimensionality: expected %d, found %d" % \
+                                                    (self.nnet.outputs, T.shape[1])
 
         if (X is not None) and (T is not None):
             assert X.shape[0] == T.shape[0], "X and T cannot have different number of samples"

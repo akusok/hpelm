@@ -11,7 +11,6 @@ from time import time
 from hpelm.modules import make_hdf5, ireader, iwriter, _prepare_fHH, _write_fHH
 from tables import open_file
 from elm import ELM
-# TODO: fix double storage of self.(nnet).outputs and self.(nnet).inputs problem
 
 
 class HPELM(ELM):
@@ -20,6 +19,10 @@ class HPELM(ELM):
     Args:
         inputs (int): dimensionality of input data, or number of data features
         outputs (int): dimensionality of output data, or number of classes
+        classification ('c'/'wc'/'ml', optional): train ELM for classfication ('c') / weighted classification ('wc') /
+            multi-label classification ('ml'). For weighted classification you can provide weights in `w`. ELM will
+            compute and use the corresponding classification error instead of Mean Squared Error.
+        w (vector, optional): weights vector for weighted classification, lenght (`outputs` * 1).
         batch (int, optional): batch size for data processing in ELM, reduces memory requirements. Does not work
             for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
             as a class attribute.
@@ -59,8 +62,8 @@ class HPELM(ELM):
         Args:
             fX (hdf5): input data on disk, size (N * `inputs`)
             fT (hdf5): outputs data on disk, size (N * `outputs`)
-            'c'/'wc'/'mc' (string, choose one): train HPELM for classification ('c'), classification with weighted
-                classes ('wc') or multi-label classification ('mc') with several correct classes per data sample.
+            'c'/'wc'/'ml' (string, choose one): train HPELM for classification ('c'), classification with weighted
+                classes ('wc') or multi-label classification ('ml') with several correct classes per data sample.
                 In classification, number of `outputs` is the number of classes; correct class(es) for each sample
                 has value 1 and incorrect classes have 0.
 
@@ -73,7 +76,8 @@ class HPELM(ELM):
                 istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
             batch (int, optional): batch size for ELM, overwrites batch size from the initialization
         """
-        # TODO: move to h5py completely with async io (mpio), because I don't need pyTables features
+        # TODO: move to h5py, because I don't need pyTables features
+        # TODO: move to h5py with MPI async IO (driver='mpio')
         # TODO: explain why I don't support parallel processing (huge amount of data to transfer, or fast enough)
         X, T = self._checkdata(fX, fT)
         self._train_parse_args(args, kwargs)
@@ -122,14 +126,14 @@ class HPELM(ELM):
         assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
         X, T = self._checkdata(fX, fT)
         N = X.shape[0]
-        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.outputs, self.precision, self.nnet.norm)
+        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.nnet.outputs, self.precision, self.nnet.norm)
         # custom range adjustments
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
 
         # weighted classification initialization
         if self.classification == "wc" and self.wc is None:
-            ns = np.zeros((self.outputs,))
+            ns = np.zeros((self.nnet.outputs,))
             for b in xrange(nb):  # batch sum is much faster
                 start = b*self.batch + istart
                 stop = min((b+1)*self.batch + istart, icount + istart)
@@ -194,7 +198,7 @@ class HPELM(ELM):
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
-        make_hdf5((icount, self.outputs), fY, dtype=self.precision)
+        make_hdf5((icount, self.nnet.outputs), fY, dtype=self.precision)
         h5 = open_file(fY, "a")
         for Y in h5.walk_nodes():
             pass  # find a node with whatever name
@@ -249,7 +253,6 @@ class HPELM(ELM):
 
         t = time()
         t0 = time()
-        eta = 0
         for b in xrange(0, nb):
             start = b*self.batch + istart
             stop = min((b+1)*self.batch + istart, icount + istart)
@@ -270,7 +273,7 @@ class HPELM(ELM):
         h5.flush()
         h5.close()
 
-    def error(self, fY, fT, istart=0, icount=np.inf):
+    def error(self, fT, fY, istart=0, icount=np.inf):
         """Calculate error of model predictions of HPELM.
 
         Computes Mean Squared Error (MSE) between model predictions Y and true outputs T.
@@ -283,8 +286,8 @@ class HPELM(ELM):
         See https://en.wikipedia.org/wiki/Confusion_matrix for details.
 
         Args:
-            fY (hdf5): hdf5 filename with predicted outputs
             fT (hdf5): hdf5 filename with true outputs
+            fY (hdf5): hdf5 filename with predicted outputs
             istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
                 all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
             icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
@@ -295,18 +298,16 @@ class HPELM(ELM):
         Returns:
             e (double): MSE for regression / classification error for classification.
         """
-        _, Y = self._checkdata(None, fY)
         _, T = self._checkdata(None, fT)
-        return self._error(Y, T, istart=istart, icount=icount)
+        _, Y = self._checkdata(None, fY)
+        return self._error(T, Y, istart=istart, icount=icount)
 
-    def _error(self, Y, T, istart=0, icount=np.inf):
+    def _error(self, T, Y, istart=0, icount=np.inf):
         """Iterative batch error calcualtion.
 
-        Can be _error(Y, T) or _error(None, T, H, Beta, rank)
-
         Args:
-            Y (matrix): predicted targets for error calculation
-            T (matrix): true targets for error calculation
+            T (matrix): true outputs for error calculation
+            Y (matrix): predicted outputs for error calculation
             istart (int): index of first sample to process
             icount (int): number of samples to process
         """
@@ -342,7 +343,7 @@ class HPELM(ELM):
             errc = errc / countc  # get mean value
             err = np.sum(errc * self.wc) / np.sum(self.wc)
 
-        elif self.classification == "mc":
+        elif self.classification == "ml":
             err = 0
             for b in xrange(nb):
                 start = b*self.batch + istart
@@ -385,12 +386,13 @@ class HPELM(ELM):
             Ls (vector): numbers of neurons used by `validation_corr()` method
             errs (vector): corresponding errors for number of neurons in `Ls`, with classification error if model
                 is run for classification
+            confs (list of matrix): list of confusion matrices corresponding to elements in Ls (empty for regression)
         """
-        # TODO: add confusion matrix support here
         X, T = self._checkdata(fXv, fTv)
         HH, HT = self._checkcorr(fHH, fHT)
         N = X.shape[0]
         L = self.nnet.L
+        classification = self.classification is not None
 
         Ls = np.logspace(np.log(3), np.log(L), steps, base=np.e, endpoint=True)
         Ls = np.ceil(Ls).astype(np.int)
@@ -400,12 +402,13 @@ class HPELM(ELM):
         nb = int(np.ceil(float(N) / self.batch))
 
         Betas = []  # keep all betas in memory
+        confs = []
         for l in Ls:
             Betas.append(self.nnet.solve_corr(HH[:l, :l], HT[:l, :]))
+            if classification: confs.append(np.zeros((self.nnet.outputs, self.nnet.outputs)))
 
         t = time()
         t0 = time()
-        eta = 0
         for b in xrange(nb):
             start = b*self.batch
             stop = min((b+1)*self.batch, N)
@@ -415,7 +418,8 @@ class HPELM(ELM):
             for i in xrange(k):
                 hb1 = Hb[:, :Ls[i]]
                 Yb = np.dot(hb1, Betas[i])
-                errs[i] += self._error(Yb, Tb) * float(stop-start)/N
+                errs[i] += self._error(Tb, Yb) * float(stop-start)/N
+                if classification: confs[i] += self.confusion(Tb, Yb)
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
@@ -430,7 +434,7 @@ class HPELM(ELM):
         print "%d of %d neurons selected with a validation set" % (best_L, L)
         if best_L > L*0.9:
             print "Hint: try re-training with more hidden neurons"
-        return Ls, errs
+        return Ls, errs, confs
 
     # async-IO versions of methods
 
@@ -460,14 +464,14 @@ class HPELM(ELM):
         assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
         X, T = self._checkdata(fX, fT)
         N = X.shape[0]
-        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.outputs, self.precision, self.nnet.norm)
+        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.nnet.outputs, self.precision, self.nnet.norm)
         # custom range adjustments
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))
 
         # weighted classification initialization
         if self.classification == "wc" and self.wc is None:
-            ns = np.zeros((self.outputs,))
+            ns = np.zeros((self.nnet.outputs,))
             for b in xrange(nb):  # batch sum is much faster
                 start = b*self.batch + istart
                 stop = min((b+1)*self.batch + istart, icount + istart)
@@ -540,7 +544,7 @@ class HPELM(ELM):
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
-        make_hdf5((icount, self.outputs), fY)
+        make_hdf5((icount, self.nnet.outputs), fY)
 
         # start async reader and writer for HDF5 files
         qr_in = mp.Queue()
@@ -619,18 +623,3 @@ class HPELM(ELM):
         assert HT.shape[0] == L and HT.shape[1] == c, "HT has wrong shape: (%d,%d) expected, (%d,%d) found" \
                                                       % (L, c, HH.shape[0], HH.shape[1])
         return HH, HT
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
