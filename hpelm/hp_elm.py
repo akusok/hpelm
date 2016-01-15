@@ -215,7 +215,7 @@ class HPELM(ELM):
             # process data
             Yb = self.nnet._predict(Xb)
             # write data
-            Y[start-start:stop-istart] = Yb
+            Y[start-istart:stop-istart] = Yb
 
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))

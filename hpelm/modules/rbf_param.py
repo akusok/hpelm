@@ -9,6 +9,7 @@ from tables import open_file
 import numpy as np
 from scipy.spatial.distance import cdist
 
+# TODO: use these parameters, or remove them
 
 def rbf_param(data, k, kind="sqeuclidean"):
     """Calculates parameters for RBF neurons.

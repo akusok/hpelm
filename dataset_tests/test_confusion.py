@@ -29,7 +29,7 @@ def classification_conf(folder, nn, ntype="sigm", b=1):
     elm.add_neurons(nn, ntype)
     elm.train(Xtr, Ttr, 'c')
     Yts = elm.predict(Xts)
-    conf = elm.confusion(Yts, Tts)
+    conf = elm.confusion(Tts, Yts)
     return conf
 
 

@@ -70,7 +70,9 @@ class ELM(object):
 
         # create SLFN solver to do actual computations
         self.accelerator = accelerator
-        if accelerator is None:  # double precision Numpy solver
+        if accelerator is "GPU":
+            raise NotImplementedError
+        else: # double precision Numpy solver
             self.nnet = SLFN(inputs, outputs, precision=self.precision, norm=norm)
             # TODO: add advanced and GPU nnets, in load also
 
@@ -465,32 +467,32 @@ class ELM(object):
                 err = (Y - T) / R.reshape((-1, 1))
                 err = np.mean(err**2)
         assert not np.isnan(err), "Error is NaN at %s" % self.classification
-        return err
+        return np.float64(err)
 
-    def _ranking(self, nn, H=None, T=None):
+    def _ranking(self, L, H=None, T=None):
         """Return ranking of hidden neurons; random or OP.
 
         Args:
-            nn (int): number of neurons
+            L (int): number of neurons
             H (matrix): hidden layer representation matrix needed for optimal pruning
             T (matrix): outputs matrix needed for optimal pruning
 
         Returns:
             rank (vector): ranking of neurons
-            nn (int): number of selected neurons, can be changed by `self.kmax_op`
+            L (int): number of selected neurons, can be changed by `self.kmax_op`
         """
         if self.ranking == "OP":  # optimal ranking (L1 normalization)
             assert H is not None and T is not None, "Need H and T to perform optimal pruning"
             if self.kmax_op is not None:  # apply maximum number of neurons
-                nn = self.kmax_op
+                L = min(self.kmax_op, L)
             if T.shape[1] < 10:  # fast mrsr for less outputs but O(2^t) in outputs
-                rank = mrsr(H, T, nn)
+                rank = mrsr(H, T, L)
             else:  # slow mrsr for many outputs but O(t) in outputs
-                rank = mrsr2(H, T, nn)
+                rank = mrsr2(H, T, L)
         else:  # random ranking
-            rank = np.arange(nn)
+            rank = np.arange(L)
             np.random.shuffle(rank)
-        return rank, nn
+        return rank, L
 
     def _checkdata(self, X, T):
         """Checks data variables and fixes matrix dimensionality issues.

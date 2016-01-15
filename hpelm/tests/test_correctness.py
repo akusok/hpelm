@@ -374,3 +374,22 @@ class TestCorrectness(TestCase):
         elm.classification = "ml"
         C = elm.confusion(T, Y)
         np.testing.assert_allclose(C, np.array([[2, 1], [0, 2]]))
+
+    def test_MRSR_Works(self):
+        X = np.random.rand(10, 3)
+        T = np.random.rand(10, 2)
+        elm = ELM(3, 2)
+        elm.add_neurons(5, "tanh")
+        elm.train(X, T, "LOO", "OP")
+
+    def test_MRSR2_Works(self):
+        X = np.random.rand(20, 9)
+        T = np.random.rand(20, 12)
+        elm = ELM(9, 12)
+        elm.add_neurons(5, "tanh")
+        elm.train(X, T, "LOO", "OP")
+
+
+
+
+

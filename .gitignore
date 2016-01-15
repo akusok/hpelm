@@ -17,3 +17,8 @@
 # OSX stuff
 *.DS_Store
 *~
+
+# PyCharm crap
+.idea/
+.idea
+.coverage
