@@ -70,7 +70,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-hpelm.elm">hpelm.elm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hpelm-mss-hpv-module">hpelm.mss_hpv module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-hpelm.mss_v">hpelm.mss_v module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-hpelm">Module contents</a></li>
@@ -126,10 +126,12 @@
 <li class="toctree-l2"><a class="reference internal" href="hpelm.modules.html#module-hpelm.modules">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="hpelm.solvers.html">hpelm.solvers package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#hpelm-solvers-slfn-module">hpelm.solvers.slfn module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hpelm.solvers.html#module-contents">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hpelm.nnets.html">hpelm.nnets package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.nnets.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.nnets.html#module-hpelm.nnets.slfn">hpelm.nnets.slfn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.nnets.html#hpelm-nnets-slfn-python-module">hpelm.nnets.slfn_python module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.nnets.html#hpelm-nnets-slfn-skcuda-module">hpelm.nnets.slfn_skcuda module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.nnets.html#module-hpelm.nnets">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="hpelm.tests.html">hpelm.tests package</a><ul>
@@ -152,7 +154,7 @@
 <p>&#64;author: akusok</p>
 <dl class="class">
 <dt id="hpelm.elm.ELM">
-<em class="property">class </em><code class="descclassname">hpelm.elm.</code><code class="descname">ELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">hpelm.elm.</code><code class="descname">ELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>classification=''</em>, <em>w=None</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Interface for training Extreme Learning Machines (ELM).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -162,6 +164,10 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>inputs</strong> (<em>int</em>) &#8211; dimensionality of input data, or number of data features</li>
 <li><strong>outputs</strong> (<em>int</em>) &#8211; dimensionality of output data, or number of classes</li>
+<li><strong>classification</strong> (<em>&#8216;c&#8217;/&#8217;wc&#8217;/&#8217;ml&#8217;, optional</em>) &#8211; train ELM for classfication (&#8216;c&#8217;) / weighted classification (&#8216;wc&#8217;) /
+multi-label classification (&#8216;ml&#8217;). For weighted classification you can provide weights in <cite>w</cite>. ELM will
+compute and use the corresponding classification error instead of Mean Squared Error.</li>
+<li><strong>w</strong> (<em>vector, optional</em>) &#8211; weights vector for weighted classification, lenght (<cite>outputs</cite> * 1).</li>
 <li><strong>batch</strong> (<em>int, optional</em>) &#8211; batch size for data processing in ELM, reduces memory requirements. Does not work
 for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
 as a class attribute.</li>
@@ -254,7 +260,7 @@ For &#8216;<a href="#id3"><span class="problematic" id="id4">rbf_</span></a>&#82
 <dt id="hpelm.elm.ELM.confusion">
 <code class="descname">confusion</code><span class="sig-paren">(</span><em>T</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/elm.html#ELM.confusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.elm.ELM.confusion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes confusion matrix for classification.</p>
-<p>Confusion matrix <code class="docutils literal"><span class="pre">C</span></code> such that element <span class="math">\(C_{i,j}\)</span> equals to the number of observations known
+<p>Confusion matrix <span class="math">\(C\)</span> such that element <span class="math">\(C_{i,j}\)</span> equals to the number of observations known
 to be class <span class="math">\(i\)</span> but predicted to be class <span class="math">\(j\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -398,14 +404,15 @@ and in <cite>error()</cite> method output.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>X</strong> (<em>matrix</em>) &#8211; input data matrix, size (N * <cite>inputs</cite>)</li>
 <li><strong>T</strong> (<em>matrix</em>) &#8211; outputs data matrix, size (N * <cite>outputs</cite>)</li>
-<li><strong>'c'/'wc'/'ml'</strong> (<em>string, choose one</em>) &#8211; train ELM for classification (&#8216;c&#8217;), classification with weighted classes
-(&#8216;wc&#8217;) or multi-label classification (&#8216;ml&#8217;) with several correct classes per data sample.
-In classification, number of <cite>outputs</cite> is the number of classes; correct class(es) for each sample
-has value 1 and incorrect classes have 0.</li>
 <li><strong>'V'/'CV'/'LOO'</strong> (<em>sting, choose one</em>) &#8211; model structure selection: select optimal number of neurons using
 a validation set (&#8216;V&#8217;), cross-validation (&#8216;CV&#8217;) or Leave-One-Out (&#8216;LOO&#8217;)</li>
 <li><strong>'OP'</strong> (<em>string, use with &#8216;V&#8217;/&#8217;CV&#8217;/&#8217;LOO&#8217;</em>) &#8211; choose best neurons instead of random ones, training takes longer;
 equivalent to L1-regularization</li>
+<li><strong>'c'/'wc'/'ml'/'r'</strong> (<em>string, choose one</em>) &#8211; train ELM for classification (&#8216;c&#8217;), classification with weighted
+classes (&#8216;wc&#8217;), multi-label classification (&#8216;ml&#8217;) with several correct classes per data sample, or
+regression (&#8216;r&#8217;) without any classification. In classification, number of <cite>outputs</cite> is the number
+of classes; correct class(es) for each sample has value 1 and incorrect classes have 0.
+Overwrites parameters given an ELM initialization time.</li>
 </ul>
 </td>
 </tr>
@@ -437,7 +444,7 @@ batch size for ELM, overwrites batch size from the initialization</li>
 <p>&#64;author: akusok</p>
 <dl class="class">
 <dt id="hpelm.hp_elm.HPELM">
-<em class="property">class </em><code class="descclassname">hpelm.hp_elm.</code><code class="descname">HPELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">hpelm.hp_elm.</code><code class="descname">HPELM</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>classification=''</em>, <em>w=None</em>, <em>batch=1000</em>, <em>accelerator=None</em>, <em>precision='double'</em>, <em>norm=None</em>, <em>tprint=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/hp_elm.html#HPELM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.hp_elm.HPELM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#hpelm.elm.ELM" title="hpelm.elm.ELM"><code class="xref py py-class docutils literal"><span class="pre">hpelm.elm.ELM</span></code></a></p>
 <p>Interface for training High-Performance Extreme Learning Machines (HP-ELM).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -447,6 +454,10 @@ batch size for ELM, overwrites batch size from the initialization</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>inputs</strong> (<em>int</em>) &#8211; dimensionality of input data, or number of data features</li>
 <li><strong>outputs</strong> (<em>int</em>) &#8211; dimensionality of output data, or number of classes</li>
+<li><strong>classification</strong> (<em>&#8216;c&#8217;/&#8217;wc&#8217;/&#8217;ml&#8217;, optional</em>) &#8211; train ELM for classfication (&#8216;c&#8217;) / weighted classification (&#8216;wc&#8217;) /
+multi-label classification (&#8216;ml&#8217;). For weighted classification you can provide weights in <cite>w</cite>. ELM will
+compute and use the corresponding classification error instead of Mean Squared Error.</li>
+<li><strong>w</strong> (<em>vector, optional</em>) &#8211; weights vector for weighted classification, lenght (<cite>outputs</cite> * 1).</li>
 <li><strong>batch</strong> (<em>int, optional</em>) &#8211; batch size for data processing in ELM, reduces memory requirements. Does not work
 for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
 as a class attribute.</li>
@@ -719,6 +730,7 @@ errs (vector): corresponding errors for number of neurons in <cite>Ls</cite>, wi
 <blockquote>
 <div><p>is run for classification</p>
 </div></blockquote>
+<p>confs (list of matrix): list of confusion matrices corresponding to elements in Ls (empty for regression)</p>
 </p>
 </td>
 </tr>
@@ -739,18 +751,40 @@ errs (vector): corresponding errors for number of neurons in <cite>Ls</cite>, wi
 <dl class="function">
 <dt id="hpelm.mss_cv.train_cv">
 <code class="descclassname">hpelm.mss_cv.</code><code class="descname">train_cv</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>T</em>, <em>k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/mss_cv.html#train_cv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.mss_cv.train_cv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Model structure selection with cross-validation.</p>
+<p>Trains ELM, cross-validates model and sets an optimal validated solution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>self</strong> (<a class="reference internal" href="#hpelm.elm.ELM" title="hpelm.elm.ELM"><em>ELM</em></a>) &#8211; ELM object that calls <cite>train_v()</cite></li>
+<li><strong>X</strong> (<em>matrix</em>) &#8211; training set inputs</li>
+<li><strong>T</strong> (<em>matrix</em>) &#8211; training set outputs</li>
+<li><strong>k</strong> (<em>int</em>) &#8211; number of parts to split the dataset into, k-2 parts are used for training and 2 parts are
+left out: 1 for validation and 1 for test; repeated k times until all parts have been left out for
+validation and test, and results averaged over these k repetitions.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>err_t</strong> &#8211;
+error for the optimal model, computed in the &#8216;cross-testing&#8217; manner on data part</p>
+<blockquote>
+<div><p>which is not used for training or validation</p>
+</div></blockquote>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">double</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
-<div class="section" id="module-hpelm.mss_hpv">
-<span id="hpelm-mss-hpv-module"></span><h2>hpelm.mss_hpv module<a class="headerlink" href="#module-hpelm.mss_hpv" title="Permalink to this headline">¶</a></h2>
-<p>Created on Mon Oct 27 17:48:33 2014</p>
-<p>&#64;author: akusok</p>
-<dl class="function">
-<dt id="hpelm.mss_hpv.train_hpv">
-<code class="descclassname">hpelm.mss_hpv.</code><code class="descname">train_hpv</code><span class="sig-paren">(</span><em>self</em>, <em>HH</em>, <em>HT</em>, <em>Xv</em>, <em>Tv</em>, <em>Yv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/mss_hpv.html#train_hpv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.mss_hpv.train_hpv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="hpelm-mss-hpv-module">
+<h2>hpelm.mss_hpv module<a class="headerlink" href="#hpelm-mss-hpv-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-hpelm.mss_loo">
 <span id="hpelm-mss-loo-module"></span><h2>hpelm.mss_loo module<a class="headerlink" href="#module-hpelm.mss_loo" title="Permalink to this headline">¶</a></h2>
@@ -759,7 +793,23 @@ errs (vector): corresponding errors for number of neurons in <cite>Ls</cite>, wi
 <dl class="function">
 <dt id="hpelm.mss_loo.train_loo">
 <code class="descclassname">hpelm.mss_loo.</code><code class="descname">train_loo</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>T</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/mss_loo.html#train_loo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.mss_loo.train_loo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Model structure selection with Leave-One-Out (LOO) validation.</p>
+<p>Trains ELM, validates model with LOO and sets an optimal validated solution. Effect is similar to
+cross-validation with k==N, but ELM has explicit formula of solution for LOO without iterating k times.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self</strong> (<a class="reference internal" href="#hpelm.elm.ELM" title="hpelm.elm.ELM"><em>ELM</em></a>) &#8211; ELM object that calls <cite>train_v()</cite></li>
+<li><strong>X</strong> (<em>matrix</em>) &#8211; training set inputs</li>
+<li><strong>T</strong> (<em>matrix</em>) &#8211; training set outputs</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-hpelm.mss_v">
@@ -769,7 +819,24 @@ errs (vector): corresponding errors for number of neurons in <cite>Ls</cite>, wi
 <dl class="function">
 <dt id="hpelm.mss_v.train_v">
 <code class="descclassname">hpelm.mss_v.</code><code class="descname">train_v</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>T</em>, <em>Xv</em>, <em>Tv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hpelm/mss_v.html#train_v"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hpelm.mss_v.train_v" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Model structure selection with a validation set.</p>
+<p>Trains ELM, validates model and sets an optimal validated solution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self</strong> (<a class="reference internal" href="#hpelm.elm.ELM" title="hpelm.elm.ELM"><em>ELM</em></a>) &#8211; ELM object that calls <cite>train_v()</cite></li>
+<li><strong>X</strong> (<em>matrix</em>) &#8211; training set inputs</li>
+<li><strong>T</strong> (<em>matrix</em>) &#8211; training set outputs</li>
+<li><strong>Xv</strong> (<em>matrix</em>) &#8211; validation set inputs</li>
+<li><strong>Tv</strong> (<em>matrix</em>) &#8211; validation set outputs</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-hpelm">

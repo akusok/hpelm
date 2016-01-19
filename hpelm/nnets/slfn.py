@@ -133,7 +133,7 @@ class SLFN(object):
         Y = np.dot(H, self.B)
         return Y
 
-    def add_batch(self, X, T, wc=None, HH_out=None, HT_out=None):
+    def add_batch(self, X, T, wc=None):
         """Add a batch of training data to an iterative solution, weighted if neeed.
 
         The batch is processed as a whole, the training data is splitted in `ELM.add_data()` method.
@@ -152,17 +152,13 @@ class SLFN(object):
             H *= w
             T *= w
 
-        if HH_out is not None and HT_out is not None:
-            HH_out += np.dot(H.T, H) + np.eye(H.shape[1]) * self.norm
-            HT_out += np.dot(H.T, T)
-        else:
-            if self.HH is None:  # initialize space for self.HH, self.HT
-                self.HH = np.zeros((self.L, self.L), dtype=self.precision)
-                self.HT = np.zeros((self.L, self.outputs), dtype=self.precision)
-                np.fill_diagonal(self.HH, self.norm)
+        if self.HH is None:  # initialize space for self.HH, self.HT
+            self.HH = np.zeros((self.L, self.L), dtype=self.precision)
+            self.HT = np.zeros((self.L, self.outputs), dtype=self.precision)
+            np.fill_diagonal(self.HH, self.norm)
 
-            self.HH += np.dot(H.T, H)
-            self.HT += np.dot(H.T, T)
+        self.HH += np.dot(H.T, H)
+        self.HT += np.dot(H.T, T)
 
     def solve(self):
         """Redirects to solve_corr, to avoid duplication of code.
@@ -236,6 +232,14 @@ class SLFN(object):
         assert HT.shape[1] == self.outputs, "Number of columns in HT must equal number of outputs (%d)" % self.outputs
         self.HH = HH.astype(self.precision)
         self.HT = HT.astype(self.precision)
+
+    def get_neurons(self):
+        """Return current neurons.
+
+        Returns:
+            neurons (list of tuples (number/int, func/string, W/matrix, B/vector)): current neurons in the model
+        """
+        return self.neurons
 
     def fix_affinity(self):
         """Numpy processor core affinity fix.

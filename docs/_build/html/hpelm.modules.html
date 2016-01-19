@@ -71,7 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.elm">hpelm.elm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpelm.html#hpelm-mss-hpv-module">hpelm.mss_hpv module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm.mss_v">hpelm.mss_v module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hpelm.html#module-hpelm">Module contents</a></li>
@@ -248,11 +248,15 @@ for more details.</p>
 </div>
 <div class="section" id="module-hpelm.modules.mrsr2">
 <span id="hpelm-modules-mrsr2-module"></span><h2>hpelm.modules.mrsr2 module<a class="headerlink" href="#module-hpelm.modules.mrsr2" title="Permalink to this headline">¶</a></h2>
+<p>Multi-Responce Sparse Regression with linear scaling in number of outputs.</p>
+<p>Basically an L1-regularized regression with multiple outputs, regularization considers all outputs together,
+method returns the best input features one by one and can be stopped early. Compared to an original MRSR this method
+is slower for small problems, but has a linear complexity in the number of outputs instead of exponential one,
+so it is suitable for auto-encoders and other tasks with large output dimensionality.</p>
 <p>Better MRSR implementation according to:
 &#8216;Common subset selection of inputs in multiresponse regression&#8221; by
 Timo Similä and Jarkko Tikka,
 International Joint Conference on Neural Networks 2006</p>
-<p>Linear complexity with the number of targets.</p>
 <p>Created on Sun Jan 26 13:48:54 2014
 &#64;author: Anton Akusok</p>
 <dl class="function">

@@ -69,7 +69,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.elm">hpelm.elm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.hp_elm">hpelm.hp_elm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_cv">hpelm.mss_cv module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_hpv">hpelm.mss_hpv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#hpelm-mss-hpv-module">hpelm.mss_hpv module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_loo">hpelm.mss_loo module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm.mss_v">hpelm.mss_v module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../hpelm.html#module-hpelm">Module contents</a></li>
@@ -125,28 +125,21 @@
 <span class="kn">import</span> <span class="nn">fasteners</span>  <span class="c"># inter-process file lock</span>
 
 
-<span class="k">def</span> <span class="nf">_prepare_fHH</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">norm</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_prepare_fHH</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">nnet</span><span class="p">,</span> <span class="n">precision</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Prepares files for fHH, fHT if they are needed.</span>
-
-<span class="sd">    If fHH and fHT are not None, makes matrices HH and HT, and creates files fHH, fHT if they don&#39;t exist yet.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        fHH (string): hdf5 filename to store HH, None for ignore disk storage</span>
 <span class="sd">        fHT (string): hdf5 filename to store HT, None for ignore disk storage</span>
-<span class="sd">        L (int): number of neurons</span>
-<span class="sd">        outputs (int): number of output dimensions, or classes</span>
+<span class="sd">        nent (nnets Object): neural network implementation from HPELM</span>
 <span class="sd">        precision (np.float32/64): precision</span>
-<span class="sd">        norm (double): L2 normalization constant</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        HH (matrix): matrix to store HH, or None if fHH is None</span>
-<span class="sd">        HT (matrix): matrix to store HT, or None if fHT is None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">HH</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">HT</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">fHH</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fHT</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
-        <span class="n">HH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
-        <span class="n">HT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
+        <span class="c"># reset accumulated data in ELM</span>
+        <span class="n">nnet</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">nnet</span><span class="o">.</span><span class="n">L</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">nnet</span><span class="o">.</span><span class="n">outputs</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">nnet</span><span class="o">.</span><span class="n">norm</span>
 
         <span class="c"># process fHH</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fHH</span><span class="p">):</span>
@@ -164,8 +157,7 @@
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">make_hdf5</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">fHH</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">HH</span><span class="p">,</span> <span class="n">norm</span><span class="p">)</span>
+            <span class="n">make_hdf5</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span><span class="o">*</span><span class="n">norm</span><span class="p">,</span> <span class="n">fHH</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
 
         <span class="c"># process fHT</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fHT</span><span class="p">):</span>
@@ -184,8 +176,6 @@
                 <span class="n">h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">make_hdf5</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">outputs</span><span class="p">),</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span>
 
 <span class="k">def</span> <span class="nf">_write_fHH</span><span class="p">(</span><span class="n">fHH</span><span class="p">,</span> <span class="n">fHT</span><span class="p">,</span> <span class="n">HH</span><span class="p">,</span> <span class="n">HT</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Writes HH,HT data into fHH,fHT files, multi-process safe with lock file.</span>

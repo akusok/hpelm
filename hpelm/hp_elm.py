@@ -126,7 +126,7 @@ class HPELM(ELM):
         assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
         X, T = self._checkdata(fX, fT)
         N = X.shape[0]
-        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.nnet.outputs, self.precision, self.nnet.norm)
+        _prepare_fHH(fHH, fHT, self.nnet, self.precision)
         # custom range adjustments
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
@@ -154,7 +154,7 @@ class HPELM(ELM):
             if self.classification == "wc":
                 wc_vector = self.wc[np.where(Tb == 1)[1]]  # weights for samples in the batch
 
-            self.nnet.add_batch(Xb, Tb, wc_vector, HH_out=HH, HT_out=HT)
+            self.nnet.add_batch(Xb, Tb, wc_vector)
 
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
@@ -163,7 +163,9 @@ class HPELM(ELM):
                 t = time()
 
         # if storing output to disk
-        if HH is not None and HT is not None:
+        if fHH is not None and fHT is not None:
+            HH, HT = self.nnet.get_corr()
+            HH[np.diag_indices_from(HH)] -= self.nnet.norm  # norm is already included
             _write_fHH(fHH, fHT, HH, HT)
 
     def solve_corr(self, fHH, fHT):
@@ -464,7 +466,8 @@ class HPELM(ELM):
         assert len(self.nnet.neurons) > 0, "Add neurons to ELM before using it"
         X, T = self._checkdata(fX, fT)
         N = X.shape[0]
-        HH, HT = _prepare_fHH(fHH, fHT, self.nnet.L, self.nnet.outputs, self.precision, self.nnet.norm)
+        # TODO: adapt for GPU solver
+        _prepare_fHH(fHH, fHT, self.nnet, self.precision)
         # custom range adjustments
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))
@@ -515,7 +518,7 @@ class HPELM(ELM):
                 if self.classification == "wc":
                     wc_vector = self.wc[np.where(Tb == 1)[1]]  # weights for samples in the batch
 
-                self.nnet.add_batch(Xb, Tb, wc_vector, HH_out=HH, HT_out=HT)
+                self.nnet.add_batch(Xb, Tb, wc_vector)
 
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
@@ -528,7 +531,9 @@ class HPELM(ELM):
         readerT.join()
 
         # if storing output to disk
-        if HH is not None and HT is not None:
+        if fHH is not None and fHT is not None:
+            HH, HT = self.nnet.get_corr()
+            HH[np.diag_indices_from(HH)] -= self.nnet.norm  # norm is already included
             _write_fHH(fHH, fHT, HH, HT)
 
     def predict_async(self, fX, fY, istart=0, icount=np.inf):

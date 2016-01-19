@@ -86,55 +86,55 @@ class TestCorrectness(TestCase):
     def test_LinearNeurons_MoreThanInputs_Truncated(self):
         elm = ELM(2, 1)
         elm.add_neurons(3, "lin")
-        self.assertEqual(2, elm.nnet.neurons[0][0])
+        self.assertEqual(2, elm.nnet.get_neurons()[0][0])
 
     def test_LinearNeurons_DefaultMatrix_Identity(self):
         elm = ELM(4, 1)
         elm.add_neurons(3, "lin")
-        np.testing.assert_array_almost_equal(np.eye(4, 3), elm.nnet.neurons[0][2])
+        np.testing.assert_array_almost_equal(np.eye(4, 3), elm.nnet.get_neurons()[0][2])
 
     def test_SLFN_AddLinearNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "lin")
-        self.assertEquals("lin", elm.nnet.neurons[0][1])
+        self.assertEquals("lin", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddSigmoidalNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "sigm")
-        self.assertEquals("sigm", elm.nnet.neurons[0][1])
+        self.assertEquals("sigm", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddTanhNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "tanh")
-        self.assertEquals("tanh", elm.nnet.neurons[0][1])
+        self.assertEquals("tanh", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfL1Neurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "rbf_l1")
-        self.assertEquals("rbf_l1", elm.nnet.neurons[0][1])
+        self.assertEquals("rbf_l1", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfL2Neurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "rbf_l2")
-        self.assertEquals("rbf_l2", elm.nnet.neurons[0][1])
+        self.assertEquals("rbf_l2", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfLinfNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "rbf_linf")
-        self.assertEquals("rbf_linf", elm.nnet.neurons[0][1])
+        self.assertEquals("rbf_linf", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddUfuncNeurons_GotThem(self):
         elm = ELM(1, 1)
         func = np.frompyfunc(lambda a: a + 1, 1, 1)
         elm.add_neurons(1, func)
-        self.assertIs(func, elm.nnet.neurons[0][1])
+        self.assertIs(func, elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddTwoNeuronTypes_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "lin")
         elm.add_neurons(1, "sigm")
-        self.assertEquals(2, len(elm.nnet.neurons))
-        ntypes = [nr[1] for nr in elm.nnet.neurons]
+        self.assertEquals(2, len(elm.nnet.get_neurons()))
+        ntypes = [nr[1] for nr in elm.nnet.get_neurons()]
         self.assertIn("lin", ntypes)
         self.assertIn("sigm", ntypes)
 
@@ -142,26 +142,26 @@ class TestCorrectness(TestCase):
         elm = ELM(1, 1)
         elm.add_neurons(1, "lin")
         elm.add_neurons(1, "lin")
-        self.assertEquals(1, len(elm.nnet.neurons))
-        self.assertEquals(2, elm.nnet.neurons[0][0])
+        self.assertEquals(1, len(elm.nnet.get_neurons()))
+        self.assertEquals(2, elm.nnet.get_neurons()[0][0])
 
     def test_AddNeurons_InitBias_BiasInModel(self):
         elm = ELM(1, 1)
         bias = np.array([1, 2, 3])
         elm.add_neurons(3, "sigm", None, bias)
-        np.testing.assert_array_almost_equal(bias, elm.nnet.neurons[0][3])
+        np.testing.assert_array_almost_equal(bias, elm.nnet.get_neurons()[0][3])
 
     def test_AddNeurons_InitW_WInModel(self):
         elm = ELM(2, 1)
         W = np.array([[1, 2, 3], [4, 5, 6]])
         elm.add_neurons(3, "sigm", W, None)
-        np.testing.assert_array_almost_equal(W, elm.nnet.neurons[0][2])
+        np.testing.assert_array_almost_equal(W, elm.nnet.get_neurons()[0][2])
 
     def test_AddNeurons_InitDefault_BiasWNotZero(self):
         elm = ELM(2, 1)
         elm.add_neurons(3, "sigm")
-        W = elm.nnet.neurons[0][2]
-        bias = elm.nnet.neurons[0][3]
+        W = elm.nnet.get_neurons()[0][2]
+        bias = elm.nnet.get_neurons()[0][3]
         self.assertGreater(np.sum(np.abs(W)), 0.001)
         self.assertGreater(np.sum(np.abs(bias)), 0.001)
 
@@ -173,8 +173,8 @@ class TestCorrectness(TestCase):
         bias2 = np.random.rand(4, )
         elm.add_neurons(3, "sigm", W1, bias1)
         elm.add_neurons(4, "sigm", W2, bias2)
-        np.testing.assert_array_almost_equal(np.hstack((W1, W2)), elm.nnet.neurons[0][2])
-        np.testing.assert_array_almost_equal(np.hstack((bias1, bias2)), elm.nnet.neurons[0][3])
+        np.testing.assert_array_almost_equal(np.hstack((W1, W2)), elm.nnet.get_neurons()[0][2])
+        np.testing.assert_array_almost_equal(np.hstack((bias1, bias2)), elm.nnet.get_neurons()[0][3])
 
     def test_Str_Works(self):
         elm = ELM(1, 1)
@@ -340,8 +340,8 @@ class TestCorrectness(TestCase):
         np.testing.assert_allclose(np.array([0.7, 0.3]), elm2.wc)
         np.testing.assert_allclose(0.02, elm2.nnet.norm)
         np.testing.assert_allclose(B1, elm2.nnet.get_B())
-        self.assertEqual(elm2.nnet.neurons[0][1], "lin")
-        self.assertEqual(elm2.nnet.neurons[1][1], "tanh")
+        self.assertEqual(elm2.nnet.get_neurons()[0][1], "lin")
+        self.assertEqual(elm2.nnet.get_neurons()[1][1], "tanh")
 
     def test_SaveELM_WrongFile(self):
         elm = ELM(1, 1)

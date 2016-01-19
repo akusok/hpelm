@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-"""
+"""Multi-Responce Sparse Regression with linear scaling in number of outputs.
+
+Basically an L1-regularized regression with multiple outputs, regularization considers all outputs together,
+method returns the best input features one by one and can be stopped early. Compared to an original MRSR this method
+is slower for small problems, but has a linear complexity in the number of outputs instead of exponential one,
+so it is suitable for auto-encoders and other tasks with large output dimensionality.
+
 Better MRSR implementation according to:
 'Common subset selection of inputs in multiresponse regression" by
 Timo Similä and Jarkko Tikka, 
 International Joint Conference on Neural Networks 2006
-
-Linear complexity with the number of targets.
 
 Created on Sun Jan 26 13:48:54 2014
 @author: Anton Akusok

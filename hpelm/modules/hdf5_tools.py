@@ -12,28 +12,21 @@ import os
 import fasteners  # inter-process file lock
 
 
-def _prepare_fHH(fHH, fHT, L, outputs, precision, norm):
+def _prepare_fHH(fHH, fHT, nnet, precision):
     """Prepares files for fHH, fHT if they are needed.
-
-    If fHH and fHT are not None, makes matrices HH and HT, and creates files fHH, fHT if they don't exist yet.
 
     Args:
         fHH (string): hdf5 filename to store HH, None for ignore disk storage
         fHT (string): hdf5 filename to store HT, None for ignore disk storage
-        L (int): number of neurons
-        outputs (int): number of output dimensions, or classes
+        nent (nnets Object): neural network implementation from HPELM
         precision (np.float32/64): precision
-        norm (double): L2 normalization constant
-
-    Returns:
-        HH (matrix): matrix to store HH, or None if fHH is None
-        HT (matrix): matrix to store HT, or None if fHT is None
     """
-    HH = None
-    HT = None
     if (fHH is not None) and (fHT is not None):
-        HH = np.zeros((L, L), dtype=precision)
-        HT = np.zeros((L, outputs), dtype=precision)
+        # reset accumulated data in ELM
+        nnet.reset()
+        L = nnet.L
+        outputs = nnet.outputs
+        norm = nnet.norm
 
         # process fHH
         if os.path.isfile(fHH):
@@ -51,8 +44,7 @@ def _prepare_fHH(fHH, fHT, L, outputs, precision, norm):
             finally:
                 h5.close()
         else:
-            make_hdf5((L, L), fHH, precision)
-            np.fill_diagonal(HH, norm)
+            make_hdf5(np.eye(L, L, dtype=precision)*norm, fHH, precision)
 
         # process fHT
         if os.path.isfile(fHT):
@@ -71,8 +63,6 @@ def _prepare_fHH(fHH, fHT, L, outputs, precision, norm):
                 h5.close()
         else:
             make_hdf5((L, outputs), fHT, precision)
-
-    return HH, HT
 
 def _write_fHH(fHH, fHT, HH, HT):
     """Writes HH,HT data into fHH,fHT files, multi-process safe with lock file.

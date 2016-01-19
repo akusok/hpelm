@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
 
     hpelm.modules
-    hpelm.solvers
+    hpelm.nnets
     hpelm.tests
 
 Submodules

@@ -45,9 +45,9 @@ def train_cv(self, X, T, k):
         Tvl = T[idx_vl]
         Xts = X[idx_ts]
         Tts = T[idx_ts]
-        HH = np.zeros((L, L), dtype=self.precision)
-        HT = np.zeros((L, c), dtype=self.precision)
-        self.nnet.add_batch(Xtr, Ttr, HH_out=HH, HT_out=HT)
+        self.nnet.reset()
+        self.nnet.add_batch(Xtr, Ttr)
+        HH, HT = self.nnet.get_corr()
         Hvl = self.nnet._project(Xvl)
         Hts = self.nnet._project(Xts)
         rank, L = self._ranking(Hvl.shape[1], Hvl, Tvl)

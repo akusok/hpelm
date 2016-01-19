@@ -9,6 +9,7 @@ import numpy as np
 import cPickle
 from tables import open_file
 from nnets.slfn import SLFN
+from nnets.slfn_python import SLFNPython
 from hpelm.modules import mrsr, mrsr2
 from mss_v import train_v
 from mss_cv import train_cv
@@ -28,7 +29,7 @@ class ELM(object):
         batch (int, optional): batch size for data processing in ELM, reduces memory requirements. Does not work
             for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
             as a class attribute.
-        accelerator (string, optional): type of accelerated ELM to use: None, 'GPU', ...
+        accelerator ("GPU"/"basic", optional): type of accelerated ELM to use: None, 'GPU', 'basic', ...
         precision (optional): data precision to use, supports signle ('single', '32' or numpy.float32) or double
             ('double', '64' or numpy.float64). Single precision is faster but may cause numerical errors. Majority
             of GPUs work in single precision. Default: **double**.
@@ -71,10 +72,14 @@ class ELM(object):
         # create SLFN solver to do actual computations
         self.accelerator = accelerator
         if accelerator is "GPU":
-            raise NotImplementedError
-        else: # double precision Numpy solver
+            print "Using CUDA GPU acceleration with Scikit-CUDA"
+            from nnets.slfn_skcuda import SLFNSkCUDA
+            self.nnet = SLFNSkCUDA(inputs, outputs, precision=self.precision, norm=norm)
+        elif accelerator is "basic":
+            print "Using slower basic Python solver"
             self.nnet = SLFN(inputs, outputs, precision=self.precision, norm=norm)
-            # TODO: add advanced and GPU nnets, in load also
+        else: # double precision Numpy solver
+            self.nnet = SLFNPython(inputs, outputs, precision=self.precision, norm=norm)
 
         # init other stuff
         self.classification = None  # train ELM for classification
