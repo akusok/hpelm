@@ -46,7 +46,11 @@ autodoc_mock_imports = [#'numpy',
                         'tables',
                         'scipy.linalg',
                         'scipy.spatial.distance',
-                        'fasteners'] #17:40
+                        'fasteners',
+                        'pycuda',
+                        'pycuda.compiler',
+                        'skcuda'
+    ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
