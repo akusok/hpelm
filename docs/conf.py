@@ -41,9 +41,9 @@ extensions = [
     'sphinx.ext.napoleon',
 ]
 
-autodoc_mock_imports = ['tables',
-                        'numpy',
+autodoc_mock_imports = [#'numpy',
                         'scipy',
+                        'tables',
                         'scipy.linalg',
                         'scipy.spatial.distance'] #17:40
 

@@ -6,7 +6,6 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
-from numpy.linalg import inv
 
 
 def train_loo(self, X, T):
@@ -31,7 +30,7 @@ def train_loo(self, X, T):
     rank, L = self._ranking(L, H, T)  # create ranking of neurons
 
     # PRESS_LOO
-    P = inv(HH)
+    P = np.linalg.inv(HH)
     Bt = np.dot(P, HT)
     R = np.ones((N,)) - np.einsum('ij,ji->i', np.dot(H, P), H.T)
     Y = np.dot(H, Bt)
@@ -63,7 +62,7 @@ def train_loo(self, X, T):
                 HH1 = HH[rank1, :][:, rank1]
                 HT1 = HT[rank1, :]
 
-                P = inv(HH1)
+                P = np.linalg.inv(HH1)
                 Bt1 = np.dot(P, HT1)
                 R = np.ones((N,)) - np.einsum('ij,ji->i', np.dot(H1, P), H1.T)
                 Y1 = np.dot(H1, Bt1)

@@ -10,7 +10,6 @@ import platform
 
 from slfn import SLFN
 import numpy as np
-from scipy.spatial.distance import cdist
 from scipy.linalg import blas, lapack
 
 

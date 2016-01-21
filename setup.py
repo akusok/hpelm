@@ -38,10 +38,10 @@ setup(name='hpelm',
                 'hpelm.tests',
                 'hpelm.nnets'],
       install_requires=[
-          'numpy',
-          'scipy>=0.12',
-          'tables',
-          'cython'
+          'numpy'#,
+#          'scipy>=0.12',
+#          'tables',
+#          'cython'
       ],
       scripts=['bin/elm_naive.py'],
       test_suite='nose.collector',
