@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""HP-ELM iterative solver, just interface.
+"""This is a fast Python implementation of SLFN.
 
 Created on Sun Sep  6 11:18:55 2015
 @author: akusok
@@ -16,8 +16,6 @@ from scipy.linalg import blas, lapack
 
 class SLFNPython(SLFN):
     """Single Layer Feed-forward Network (SLFN), the neural network that ELM trains.
-
-    This is a fast Python implementation.
     """
 
     def __init__(self, inputs, outputs, norm=None, precision=np.float64):

@@ -1,19 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Multi-Responce Sparse Regression with linear scaling in number of outputs.
 
-Basically an L1-regularized regression with multiple outputs, regularization considers all outputs together,
-method returns the best input features one by one and can be stopped early. Compared to an original MRSR this method
-is slower for small problems, but has a linear complexity in the number of outputs instead of exponential one,
-so it is suitable for auto-encoders and other tasks with large output dimensionality.
-
-Better MRSR implementation according to:
-'Common subset selection of inputs in multiresponse regression" by
-Timo Similä and Jarkko Tikka, 
-International Joint Conference on Neural Networks 2006
-
-Created on Sun Jan 26 13:48:54 2014
-@author: Anton Akusok
-"""
 
 import numpy as np
 from scipy import optimize
@@ -21,6 +7,30 @@ from scipy.linalg import lu_factor, lu_solve
 
 
 def mrsr2(X, T, kmax, norm=2):
+    """Multi-Responce Sparse Regression implementation with linear scaling in number of outputs.
+
+    Basically an L1-regularized regression with multiple outputs, regularization considers all outputs together,
+    method returns the best input features one by one and can be stopped early. Compared to an original MRSR this method
+    is slower for small problems, but has a linear complexity in the number of outputs instead of exponential one,
+    so it is suitable for auto-encoders and other tasks with large output dimensionality.
+
+    Args:
+        T (matrix): an (n x p) matrix of targets. The columns of T should have zero mean and same scale (e.g. equal variance).
+        X (matrix): an (n x m) matrix of regressors. The columns of X should have zero mean and same scale (e.g. equal variance).
+        kmax (int): an integer fixing the number of steps to be run, which equals to the maximum number of regressors in the model.
+        norm (from Numpy.linalg.norm): norm to use in MRSR2, can be `1` for L1 or `2` for L2 norm, default `2`.
+
+    Returns:
+        i1 (vector): a (1 x kmax) vector of indices revealing the order in which the regressors enter model.
+
+    Reference:
+        Better MRSR implementation according to:
+        "Common subset selection of inputs in multiresponse regression" by
+        Timo Similä and Jarkko Tikka, International Joint Conference on Neural Networks 2006
+
+    Created on Sun Jan 26 13:48:54 2014
+    @author: Anton Akusok
+    """
 
     # initializing
     ins = X.shape[1]

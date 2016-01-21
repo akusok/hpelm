@@ -8,7 +8,7 @@ Created on Mon Oct 27 17:48:33 2014
 import numpy as np
 import multiprocessing as mp
 from time import time
-from hpelm.modules import make_hdf5, ireader, iwriter, _prepare_fHH, _write_fHH
+from hpelm.modules import make_hdf5, _ireader, _iwriter, _prepare_fHH, _write_fHH
 from tables import open_file
 from elm import ELM
 
@@ -491,12 +491,12 @@ class HPELM(ELM):
         # start async reader and writer for HDF5 files
         qX_in = mp.Queue()
         qX_out = mp.Queue(1)
-        readerX = mp.Process(target=ireader, args=(fX, qX_in, qX_out))
+        readerX = mp.Process(target=_ireader, args=(fX, qX_in, qX_out))
         readerX.daemon = True
         readerX.start()
         qT_in = mp.Queue()
         qT_out = mp.Queue(1)
-        readerT = mp.Process(target=ireader, args=(fT, qT_in, qT_out))
+        readerT = mp.Process(target=_ireader, args=(fT, qT_in, qT_out))
         readerT.daemon = True
         readerT.start()
 
@@ -554,11 +554,11 @@ class HPELM(ELM):
         # start async reader and writer for HDF5 files
         qr_in = mp.Queue()
         qr_out = mp.Queue(1)
-        reader = mp.Process(target=ireader, args=(fX, qr_in, qr_out))
+        reader = mp.Process(target=_ireader, args=(fX, qr_in, qr_out))
         reader.daemon = True
         reader.start()
         qw_in = mp.Queue(1)
-        writer = mp.Process(target=iwriter, args=(fY, qw_in))
+        writer = mp.Process(target=_iwriter, args=(fY, qw_in))
         writer.daemon = True
         writer.start()
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
+"""Different tools to work with datasets in HDF5 file format.
+
 Created on Thu Apr  2 21:12:46 2015
 
 @author: akusok
@@ -219,7 +220,7 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
     h5.close()
 
 
-def ireader(fX, q_in, q_out):
+def _ireader(fX, q_in, q_out):
     """Asyncronous reader for an HDF5 file.
 
     q_in - a (start, stop) tuple of read indexes; if start >= stop then reader terminates
@@ -238,7 +239,7 @@ def ireader(fX, q_in, q_out):
     hX.close()
 
 
-def iwriter(fX, q_in):
+def _iwriter(fX, q_in):
     """Asyncronous writer for an HDF5 file.
 
     q_in - a (Xbatch, start, stop) tuple of data to write indexes; if q_in is None then writer terminates

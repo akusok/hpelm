@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Sep 12 13:10:23 2015
+"""Nvidia GPU-accelerated solver based on Scikit-CUDA, works without compiling anything.
 
+GPU computations run in asyncronous mode: GPU is processing one batch of data while CPU prepares
+the next batch. Loads GPU for 100% without waiting times, very fast and efficient. The requied
+Scikit-CUDA is a single-line install in Linux: ``pip install scikit-cuda``. Tested on CUDA 7.
+
+Created on Sat Sep 12 13:10:23 2015
 @author: akusok
 """
 

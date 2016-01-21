@@ -1,51 +1,29 @@
 # -*- coding: utf-8 -*-
-"""Multiresponse Sparse Regression algorithm in Python
-
-Uses np library from Python
-
-| Input:
-| **T**    is an (n x p) matrix of targets. The columns of T should
-      have zero mean and same scale (e.g. equal variance).
-| **X**    is an (n x m) matrix of regressors. The columns of X should
-      have zero mean and same scale (e.g. equal variance).
-| **kmax** is an integer fixing the number of steps to be run, which
-      equals to the maximum number of regressors in the model.
-  
-| Output:
-| **W**    is an (m x p*kmax) sparse matrix of regression
-      coefficients. It can be converted to full matrix by command   
-      full(W). Regression coefficients of the k:th step are given
-      by W(:,(k-1)*p+1:k*p).
-| **i1**   is a (1 x kmax) vector of indices revealing the order in
-      which the regressors enter model. 
- 
-The estimates for T may be obtained by Y = X*W, where the k:th
-estimate Y(:,(k-1)*p+1:k*p) uses k regressors.
-  
-| Reference: 
-| Timo Simila, Jarkko Tikka. Multiresponse sparse regression with
- application to multidimensional scaling. International Conference
- on Artificial Neural Networks (ICANN). Warsaw, Poland. September
- 11-15, 2005. LNCS 3697, pp. 97-102.
-
-Copyright (C) 2005 by Timo Simila and Jarkko Tikka.
-
-This function is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of
-the License, or any later version.   
-
-The function is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU
-General Public License  <http://www.gnu.org/copyleft/gpl.html>`_  
-for more details.
-"""
 
 import numpy as np
 
 
 def mrsr(X, T, kmax):
+    """Multiresponse Sparse Regression (MRSR) algorithm in Python, accelerated by Numpy.
+
+    Finds most relevant inputs for a regression problem with multiple outputs, returns
+    these inputs one-by-one. Fast implementation, but has complexity O(2^m) for `m` features in output.
+
+    Args:
+        T (matrix): an (n x p) matrix of targets. The columns of T should have zero mean and same scale (e.g. equal variance).
+        X (matrix): an (n x m) matrix of regressors. The columns of X should have zero mean and same scale (e.g. equal variance).
+        kmax (int): an integer fixing the number of steps to be run, which equals to the maximum number of regressors in the model.
+
+    Returns:
+        i1 (vector): a (1 x kmax) vector of indices revealing the order in which the regressors enter model.
+
+
+    Reference:
+     Timo Simila, Jarkko Tikka. Multiresponse sparse regression with
+     application to multidimensional scaling. International Conference
+     on Artificial Neural Networks (ICANN). Warsaw, Poland. September
+     11-15, 2005. LNCS 3697, pp. 97-102.
+    """
 
     n,m = X.shape
     n,p = T.shape

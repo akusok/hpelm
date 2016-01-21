@@ -8,7 +8,8 @@
 /try/
 
 # HTML documentation
-/docs/_build
+_build/
+_build
 
 # Python egg metadata, regenerated from source files by setuptools
 /*.egg-info

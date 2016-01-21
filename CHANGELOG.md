@@ -1,6 +1,11 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.1] - 21-01-2016
+### New
+- Major toolbox update
+- Support for Nvidia GPU with Scikit-CUDA, no compilation needed
+
 ## [0.6.13] - 18-08-2015
 ### Fixed
 - Fixed a bug (typo) which caused HPELM to skip the last batch of data in training/predicting/etc.

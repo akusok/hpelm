@@ -15,9 +15,8 @@ def readme():
 # sphinx-apidoc -f -o docs hpelm
 
 setup(name='hpelm',
-      version='0.6.22',
-      description='High-Performance implementation of an\
-                   Extreme Learning Machine',
+      version='1.0.1',
+      description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -37,7 +36,7 @@ setup(name='hpelm',
       packages=['hpelm',
                 'hpelm.modules',
                 'hpelm.tests',
-                'hpelm.solver'],
+                'hpelm.nnets'],
       install_requires=[
           'numpy',
           'scipy>=0.12',

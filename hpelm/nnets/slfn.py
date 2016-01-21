@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""HP-ELM iterative solver, just interface.
+"""Basic SLFN solver that follows paper notations, defines interface for all solvers.
+
 
 Created on Sun Sep  6 11:18:55 2015
 @author: akusok
@@ -16,6 +17,7 @@ class SLFN(object):
     """Single Layer Feed-forward Network (SLFN), the neural network that ELM trains.
 
     This implementation is not the fastest but very simple, and it defines interface.
+    Gives correct output, other solvers should provide the same output as this guy.
 
     Args:
         outputs (int): number of outputs, or classes for classification
@@ -244,7 +246,7 @@ class SLFN(object):
     def fix_affinity(self):
         """Numpy processor core affinity fix.
 
-        Fixes a problem when all Numpy processes are pushed to core 0.
+        Fixes a problem if all Numpy processes are pushed to CPU core 0.
         """
         if "Linux" in platform.system():
             a = np.random.rand(3, 1)

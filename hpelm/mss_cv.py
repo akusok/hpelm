@@ -23,7 +23,7 @@ def train_cv(self, X, T, k):
 
     Returns:
         err_t (double): error for the optimal model, computed in the 'cross-testing' manner on data part
-            which is not used for training or validation
+        which is not used for training or validation
     """
     N = X.shape[0]
     L = self.nnet.L

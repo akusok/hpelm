@@ -1,3 +1,2 @@
 include README.rst
 include CHANGELOG.md
-include acc/gpu_code.cpp acc/gpu_code.h acc/gpu_solver.pyx
