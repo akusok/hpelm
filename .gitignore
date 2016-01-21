@@ -2,10 +2,15 @@
 *.pyc
 
 # Setuptools distribution folder
+/acc/
 /dist/
 /datasets_big/
 /benchmark/
 /try/
+/develop/
+/develop_HtH/
+/develop_os/
+/develop_solver/
 
 # HTML documentation
 _build/

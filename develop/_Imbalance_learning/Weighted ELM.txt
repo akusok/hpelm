@@ -1,1 +1,0 @@
-Weighted Extreme Learning Machine for imbalance learning
