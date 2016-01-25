@@ -1,6 +1,10 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.2] - 25-01-2016
+### Fixed
+- Install requirements
+
 ## [1.0.1] - 21-01-2016
 ### New
 - Major toolbox update

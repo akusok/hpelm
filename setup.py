@@ -6,7 +6,18 @@ Created on Sat Oct 18 17:21:12 2014
 """
 
 from setuptools import setup, Extension
-#from distutils.core import setup
+import os
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    ireqs = ['numpy']
+else:
+    ireqs = [
+          'numpy',
+          'scipy>=0.12',
+          'tables',
+          'fasteners'
+      ]
+
 
 def readme():
     with open('README.rst') as f:
@@ -15,7 +26,7 @@ def readme():
 # sphinx-apidoc -f -o docs hpelm
 
 setup(name='hpelm',
-      version='1.0.1',
+      version='1.0.2',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
@@ -37,12 +48,7 @@ setup(name='hpelm',
                 'hpelm.modules',
                 'hpelm.tests',
                 'hpelm.nnets'],
-      install_requires=[
-          'numpy'#,
-#          'scipy>=0.12',
-#          'tables',
-#          'cython'
-      ],
+      install_requires=ireqs,  # ReadTheDocs fix
       scripts=['bin/elm_naive.py'],
       test_suite='nose.collector',
       tests_require=['nose'],
