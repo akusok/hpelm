@@ -5,17 +5,17 @@ Running HP-ELM in parallel
 
 
 An ELM model is very easy to run in parallel. Its solution has two main steps: compute helper matrices :math:`HH`
-and :math:`HT` (takes 99% runtime for large dataset) and solve output matrix :math:`B` from :math:`HH` and :math:`HT`
-(takes 1% runtime). Partial matrices :math:`HH^p` and :math:`HT^p` are computed from different parts of input data
+and :math:`HT` (99% runtime for large dataset and many hidden neurons) and solve output matrix :math:`B` from :math:`HH` 
+and :math:`HT` (1% runtime). Partial matrices :math:`HH^p` and :math:`HT^p` are computed from different parts of input data
 independently, and then simply summed together: :math:`HH = HH^1 + HH^2 + ... + HH^n`, :math:`HT = HT^1 + HT^2 + ... + HT^n`.
-Final solution of :math:`B` cannot be easily split across multiple computers, but it is fast enough to not needing it.
+The final solution of :math:`B` cannot be easily split across multiple computers, but it is very fast anyway.
 
 .. note::
-    On a single computer HP-ELM already uses all the cores. Parallel HP-ELM is useful for splitting job across
-    multiple machines like on a computer cluster.
+    On a single computer HP-ELM already uses all the cores. Parallel HP-ELM takes advantage of distributing work across
+    multiple machines, for instance on a computer cluster.
 
 
-To run HP-ELM in parallel, we need the following (separated code blocks are in different files):
+An example of running HP-ELM in parallel is given below. Separate code blocks are in different files.
 
 1. Put data on a disk in HDF5 format. For example:
 
@@ -36,15 +36,18 @@ To run HP-ELM in parallel, we need the following (separated code blocks are in d
         model0.add_neurons(15, 'sigm')
         model0.save("fmodel.h5")
 
-3. Run computations at different machines in parallel, from different Python scripts. All scripts can read from the same
-   data files (and you need to set `istart` and `icount` parameters to tell them what data to read), or from separate
-   data files which you have prepared and distributed. All scripts write their partial matrices :math:`HH^p, HT^p` to
-   the same files incrementing their existing values; this is done multiprocess-safely with file locking mechanism.
-   HP-ELM will create empty starting files :math:`HH, HT` for you if they don't exist yet.
+3. Compute partial matrices :math:`HH^p, HT^p` on different machines in parallel by running different Python scripts. 
+   All scripts can read data from the same data files (then you need to set parameters `istart` and `icount` that
+   specify where to start reading data and how many rows to read). Scripts can also read data from separate
+   files which you have prepared and distributed, or even from the given Numpy matrices (not sure about that :).
+   
+   All scripts write their partial matrices :math:`HH^p, HT^p` to the same files on disk, incrementing existing data
+   in these files. Writes are multiprocess-safe using file locks (from `fasteners` library). HP-ELM will create starting 
+   files with zero matrices :math:`HH, HT` for you if they don't exist yet.
 
    .. note::
-        The folder where :math:`HH, HT` files are located must be writable to all parallel scripts, because they use
-        auxiliary files as locks.
+        The folder where :math:`HH, HT` files are located must be writable by all parallel scripts, because they use
+        auxiliary files as write locks.
 
    .. code:: python
 
@@ -71,7 +74,7 @@ To run HP-ELM in parallel, we need the following (separated code blocks are in d
         model4 = HPELM(10, 3)
         model4.load("model.pkl")
         model4.solve_corr("HH.hdf5", "HT.hdf5")
-        model4.save("fmodel.h5")
+        model4.save("model.pkl")
 
    .. code:: python
 
