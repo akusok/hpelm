@@ -179,12 +179,13 @@ class HPELM(ELM):
         B = self.nnet.solve_corr(HH, HT)
         self.nnet.set_B(B)
 
-    def predict(self, fX, fY, istart=0, icount=np.inf):
+    def predict(self, fX, fY=None, istart=0, icount=np.inf):
         """Iterative predict outputs and save them to HDF5, can use custom range.
 
         Args:
-            fX (hdf5): hdf5 filename with input data from which outputs are predicted
-            fY (hdf5): hdf5 filename to store output data into
+            fX (hdf5): hdf5 filename or Numpy matrix with input data from which outputs are predicted
+            fY (hdf5): hdf5 filename or Numpy matrix to store output data into, if 'None' then Numpy matrix
+                is generated automatically.
             istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
                 all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
             icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
@@ -192,6 +193,7 @@ class HPELM(ELM):
                 The last sample used for training is `istart`+`icount`-1, so you can index data as:
                 istart_1=0, icount_1=1000; istart_2=1000, icount_2=1000; istart_3=2000, icount_3=1000, ...
         """
+        # TODO: Accept Numpy arrays in addition to HDF5 files
         assert len(self.nnet.neurons) > 0, "Add neurons to ELM and train it before using"
         assert self.nnet.B is not None, "Train ELM before predicting"
         X, _ = self._checkdata(fX, None)
@@ -200,10 +202,15 @@ class HPELM(ELM):
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
-        make_hdf5((icount, self.nnet.outputs), fY, dtype=self.precision)
-        h5 = open_file(fY, "a")
-        for Y in h5.walk_nodes():
-            pass  # find a node with whatever name
+        if isinstance(fY, basestring):
+            make_hdf5((icount, self.nnet.outputs), fY, dtype=self.precision)
+            h5 = open_file(fY, "a")
+            for Y in h5.walk_nodes():
+                pass  # find a node with whatever name
+        elif fY is None:  # create Numpy array
+            Y = np.zeros((icount, self.nnet.outputs), dtype=self.precision)
+        else:  # fY is Numpy array
+            _, Y = self._checkdata(None, fY)
 
         t = time()
         t0 = time()
@@ -225,15 +232,19 @@ class HPELM(ELM):
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
 
-        h5.flush()
-        h5.close()
+        if isinstance(fY, basestring):
+            h5.flush()
+            h5.close()
+        elif fY is None:
+            return Y
 
-    def project(self, fX, fH, istart=0, icount=np.inf):
+    def project(self, fX, fH=None, istart=0, icount=np.inf):
         """Iteratively project input data from HDF5 into HPELM hidden layer, and save in another HDF5.
 
         Args:
-            fX (hdf5): hdf5 filename with input data from which outputs are predicted
-            fH (hdf5): hdf5 filename to store output data into
+            fX (hdf5): hdf5 filename or Numpy matrix with input data to project
+            fH (hdf5): hdf5 filename or Numpy matrix to store projected inputs, if 'None' then Numpy matrix
+                is generated automatically.
             istart (int, optional): index of first data sample to use from `fX`, `istart` < N. If not given,
                 all data from `fX` is used. Sample with index `istart` is used for training, indexing is 0-based.
             icount (int, optional): number of data samples to use from `fX`, starting from `istart`, automatically
@@ -248,10 +259,17 @@ class HPELM(ELM):
         icount = min(istart + icount, N)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
-        make_hdf5((icount, self.nnet.L), fH, dtype=self.precision)
-        h5 = open_file(fH, "a")
-        for H in h5.walk_nodes():
-            pass  # find a node with whatever name
+        if isinstance(fH, basestring):
+            make_hdf5((icount, self.nnet.L), fH, dtype=self.precision)
+            h5 = open_file(fH, "a")
+            for H in h5.walk_nodes():
+                pass  # find a node with whatever name
+        elif fH is None:  # create Numpy array
+            H = np.zeros((icount, self.nnet.L), dtype=self.precision)
+        else:  # fY is Numpy array
+            assert fH.shape[0] >= icount, "Numpy matrix fH has not enough rows to store projected inputs"
+            assert fH.shape[1] == self.nnet.L, "Numpy matrix fH must have same number of columns as number of neurons"
+            H = fH
 
         t = time()
         t0 = time()
@@ -272,8 +290,11 @@ class HPELM(ELM):
                 print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
                 t = time()
 
-        h5.flush()
-        h5.close()
+        if isinstance(fH, basestring):
+            h5.flush()
+            h5.close()
+        elif fH is None:
+            return H
 
     def error(self, fT, fY, istart=0, icount=np.inf):
         """Calculate error of model predictions of HPELM.

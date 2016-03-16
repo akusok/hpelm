@@ -34,6 +34,11 @@ self-driving vehicles, ELM is the best model for anything else: prototyping, any
 short-term projects, and for obtaining results on Big Data in reasonable time.
 
 
+Parallel HP-ELM on multiple machines
+------------------------------------
+
+HP-ELM uses all cores of a single machine, and is easily run on multiple machines that can access shared storage.
+See the manual and working example here: :ref:`my-reference-label`.
 
 
 
@@ -44,6 +49,7 @@ short-term projects, and for obtaining results on Big Data in reasonable time.
     * `HPELM toolbox paper <http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=7140733&punumber%3D6287639>`_
 
 .. toctree::
+    parallel
     api/index
 
 

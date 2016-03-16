@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Oct 18 17:21:12 2014
 
-@author: akusok
-"""
-
-from setuptools import setup, Extension
 import os
+
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
     ireqs = ['numpy']
@@ -19,18 +14,21 @@ else:
       ]
 
 
+############################
+from setuptools import setup
+
 def readme():
     with open('README.rst') as f:
         return f.read()
 
-# sphinx-apidoc -f -o docs hpelm
+# sphinx-apidoc -f -o docs hpelm; cd docs; make html; cd ../
 
 setup(name='hpelm',
-      version='1.0.2',
+      version='1.0.3',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: BSD License',

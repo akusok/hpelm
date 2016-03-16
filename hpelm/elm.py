@@ -173,6 +173,10 @@ class ELM(object):
             k (int, use with 'CV'): number of splits for cross-validation, k>=3
             kmax (int, optional, use with 'OP'): maximum number of neurons to keep in ELM
             batch (int, optional): batch size for ELM, overwrites batch size from the initialization
+
+        Returns:
+            e (double, for 'CV'): test error for cross-validation, computed from one separate test chunk in each
+                split of data during the cross-validation procedure
         """
         X, T = self._checkdata(X, T)
         self._train_parse_args(args, kwargs)
@@ -190,7 +194,8 @@ class ELM(object):
             assert "k" in kwargs.keys(), "Provide Cross-Validation number of splits (k)"
             k = kwargs['k']
             assert k >= 3, "Use at least k=3 splits for Cross-Validation"
-            train_cv(self, X, T, k)
+            e = train_cv(self, X, T, k)
+            return e
         elif "LOO" in args:  # use Leave-One-Out error on training set
             train_loo(self, X, T)
         else:  # basic training algorithm
@@ -247,7 +252,7 @@ class ELM(object):
             B (vector, optional): bias vector of size (`number` * 1), a 1-dimensional Numpy.ndarray object.
                 For 'rbf_' neurons, B gives widths of radial basis functions.
         """
-        assert isinstance(number, int), "Number of neurons must be integer"
+        assert isinstance(number, (int, long)), "Number of neurons must be integer"
         assert (func in self.flist or isinstance(func, np.ufunc)),\
             "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
         assert isinstance(W, (np.ndarray, type(None))), "Projection matrix (W) must be a Numpy ndarray"
@@ -393,7 +398,7 @@ class ELM(object):
              "outputs": self.nnet.outputs,
              "Classification": self.classification,
              "Weights_WC": self.wc,
-             "neurons": self.nnet.neurons,
+             "neurons": self.nnet.get_neurons(),
              "norm": self.nnet.norm,  # W and bias are here
              "Beta": self.nnet.get_B()}
         try:
@@ -425,7 +430,8 @@ class ELM(object):
         for number, func, W, B in m["neurons"]:
             self.nnet.add_neurons(number, func, W.astype(self.precision), B.astype(self.precision))
         self.nnet.norm = m["norm"]
-        self.nnet.set_B(np.array(m["Beta"], dtype=self.precision))
+        if m["Beta"] is not None:
+            self.nnet.set_B(np.array(m["Beta"], dtype=self.precision))
 
     def __del__(self):
         # Closes any HDF5 files opened during HPELM usage.

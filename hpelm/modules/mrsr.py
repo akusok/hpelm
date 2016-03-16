@@ -73,7 +73,7 @@ def mrsr(X, T, kmax):
     G     = (cmax+np.dot(S,A))/(cmax+np.dot(S,B))
     g     = G[G>=0].min()
     Y = g*Yols
-	
+
     # Rest of the steps
     for k in np.arange(2,kmax+1):
         #print "calculating rank %d/%d" % (k-1, kmax)		
@@ -98,9 +98,8 @@ def mrsr(X, T, kmax):
         try:
             invXX = np.linalg.inv(v3)	   
         except np.linalg.linalg.LinAlgError:
-            print 'got singular matrix, using pinv()', i1
             invXX = np.linalg.pinv(v3)
-    
+
         Wols = np.dot(invXX, XT.take(i1,axis=0))
         Yols = np.dot(Xi1, Wols)  # true slow
         # deletes [cind] row, slow for large k

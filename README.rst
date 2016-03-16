@@ -12,6 +12,8 @@ and this toolbox is created as their fastest and most scalable implementation.
 Documentation is available here: http://hpelm.readthedocs.org, 
 it uses Numpydocs.
 
+NEW: Parallel HP-ELM tutorial! See the documentation: http://hpelm.readthedocs.org
+
 Highlights:
     - Efficient matrix math implementation without bottlenecks
     - Efficient data storage (HDF5 file format)

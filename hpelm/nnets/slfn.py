@@ -116,7 +116,6 @@ class SLFN(object):
             H (matrix): an SLFN hidden layer representation, size (N * `L`) where 'L' is number of neurons
         """
         assert self.neurons is not None, "ELM has no neurons"
-        X = X.astype(self.precision)
         return np.hstack([self.func[ftype](X, W, B) for _, ftype, W, B in self.neurons])
 
     def _predict(self, X):
@@ -210,6 +209,8 @@ class SLFN(object):
         Args:
             B (matrix): output layer weights matrix, size (`L` * `outputs`)
         """
+        assert isinstance(B, np.ndarray), "B should be a Numpy ndarray"
+        assert len(B.shape) > 0, "Cannot set empty B"
         assert B.shape[0] == self.L, "Incorrect first dimension: %d expected, %d found" % (self.L, B.shape[0])
         assert B.shape[1] == self.outputs, "Incorrect output dimension: %d expected, %d found" % (self.outputs, B.shape[1])
         self.B = B.astype(self.precision)

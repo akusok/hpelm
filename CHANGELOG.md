@@ -1,6 +1,12 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.3] - 15-03-2016
+### Fixed
+- HPELM loading, various small errors
+### New
+- Online docs how to run HP-ELM in parallel on many computers
+
 ## [1.0.2] - 25-01-2016
 ### Fixed
 - Install requirements
