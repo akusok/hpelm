@@ -24,9 +24,9 @@ class TestAcceptance(TestCase):
 
         elm = hpelm.ELM(1, 1)
         elm.add_neurons(3, "sigm")
-        print elm.nnet.get_B()
+        print(elm.nnet.get_B())
         elm.train(X, Y)
-        print elm.nnet.get_B()
+        print(elm.nnet.get_B())
         Yt = elm.predict(X)
 
         MSE = np.mean((Y - Yt) ** 2)

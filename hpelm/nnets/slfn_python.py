@@ -8,7 +8,7 @@ Created on Sun Sep  6 11:18:55 2015
 import os
 import platform
 
-from slfn import SLFN
+from .slfn import SLFN
 import numpy as np
 from scipy.linalg import blas, lapack
 
@@ -59,8 +59,8 @@ class SLFNPython(SLFN):
         """
         _, B, info = self.posv(HH, HT)
         if info > 0:
-            print "Covariance matrix is not full rank; solving with SVD (slow)"
-            print "This happened because you have duplicated or too many neurons"
+            print("Covariance matrix is not full rank; solving with SVD (slow)")
+            print("This happened because you have duplicated or too many neurons")
             HH = HH + np.triu(HH, k=1).T
             B = np.linalg.lstsq(HH, HT)[0]
         return B

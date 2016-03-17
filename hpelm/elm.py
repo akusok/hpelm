@@ -6,14 +6,15 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
-import cPickle
+from six.moves import cPickle
+from six import integer_types
 from tables import open_file
-from nnets.slfn import SLFN
-from nnets.slfn_python import SLFNPython
-from hpelm.modules import mrsr, mrsr2
-from mss_v import train_v
-from mss_cv import train_cv
-from mss_loo import train_loo
+from .nnets.slfn import SLFN
+from .nnets.slfn_python import SLFNPython
+from .modules import mrsr, mrsr2
+from .mss_v import train_v
+from .mss_cv import train_cv
+from .mss_loo import train_loo
 
 
 class ELM(object):
@@ -53,8 +54,8 @@ class ELM(object):
 
     def __init__(self, inputs, outputs, classification="", w=None, batch=1000, accelerator=None,
                  precision='double', norm=None, tprint=5):
-        assert isinstance(inputs, (int, long)), "Number of inputs must be integer"
-        assert isinstance(outputs, (int, long)), "Number of outputs must be integer"
+        assert isinstance(inputs, integer_types), "Number of inputs must be integer"
+        assert isinstance(outputs, integer_types), "Number of outputs must be integer"
         assert batch > 0, "Batch should be positive"
 
         self.batch = int(batch)
@@ -67,16 +68,16 @@ class ELM(object):
         elif 'single' in precision or '32' in precision:
             self.precision = np.float32
         else:
-            print "Unknown precision parameter: %s, using double precision" % precision
+            print("Unknown precision parameter: %s, using double precision" % precision)
 
         # create SLFN solver to do actual computations
         self.accelerator = accelerator
         if accelerator is "GPU":
-            print "Using CUDA GPU acceleration with Scikit-CUDA"
+            print("Using CUDA GPU acceleration with Scikit-CUDA")
             from nnets.slfn_skcuda import SLFNSkCUDA
             self.nnet = SLFNSkCUDA(inputs, outputs, precision=self.precision, norm=norm)
         elif accelerator is "basic":
-            print "Using slower basic Python solver"
+            print("Using slower basic Python solver")
             self.nnet = SLFN(inputs, outputs, precision=self.precision, norm=norm)
         else: # double precision Numpy solver
             self.nnet = SLFNPython(inputs, outputs, precision=self.precision, norm=norm)
@@ -252,7 +253,7 @@ class ELM(object):
             B (vector, optional): bias vector of size (`number` * 1), a 1-dimensional Numpy.ndarray object.
                 For 'rbf_' neurons, B gives widths of radial basis functions.
         """
-        assert isinstance(number, (int, long)), "Number of neurons must be integer"
+        assert isinstance(number, integer_types), "Number of neurons must be integer"
         assert (func in self.flist or isinstance(func, np.ufunc)),\
             "'%s' neurons not suppored: use a standard neuron function or a custom <numpy.ufunc>" % func
         assert isinstance(W, (np.ndarray, type(None))), "Projection matrix (W) must be a Numpy ndarray"

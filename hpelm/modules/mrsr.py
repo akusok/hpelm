@@ -29,7 +29,7 @@ def mrsr(X, T, kmax):
     n,p = T.shape
     kmax = min(kmax, m)
     if p > 15:
-        print "Too many targets (%d) - MRSR has O(2^targets) complexity"
+        print("Too many targets (%d) - MRSR has O(2^targets) complexity")
     """    print "Reducing to 15 randomly selected targets (6x slowdown)"
         print "Using max 10 targets (1.08x slowdown) recommended"
         ti = np.arange(p)

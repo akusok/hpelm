@@ -214,7 +214,6 @@ class TestCorrectness(TestCase):
         elm.add_neurons(1, "lin")
         elm.train(X, T, 'c')
         Y = elm.predict(X)
-        print Y
         self.assertGreater(Y[0, 0], Y[0, 1])
         self.assertLess(Y[5, 0], Y[5, 1])
 

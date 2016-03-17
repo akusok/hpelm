@@ -1,4 +1,4 @@
-.. _my-reference-label:
+.. _parallel:
 
 Running HP-ELM in parallel
 ==========================

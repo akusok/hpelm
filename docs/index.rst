@@ -38,7 +38,7 @@ Parallel HP-ELM on multiple machines
 ------------------------------------
 
 HP-ELM uses all cores of a single machine, and is easily run on multiple machines that can access shared storage.
-See the manual and working example here: :ref:`my-reference-label`.
+See the manual and working example here: :ref:`parallel`.
 
 
 

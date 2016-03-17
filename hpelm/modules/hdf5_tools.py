@@ -110,7 +110,7 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
 
     if mean is None or std is None:
         if node.attrs.mean is None:  # data was not normalized before
-            print "calculating mean and standard deviation of data"
+            print("calculating mean and standard deviation of data")
             E_x = np.zeros((d,), dtype=np.float64)
             E_x2 = np.zeros((d,), dtype=np.float64)
             for b in xrange(nb):
@@ -126,8 +126,8 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
             node.attrs.std = std
             return mean, std
         else:  # data is already normalized
-            print "data was already normalized, returning 'mean', 'std' parameters"
-            print "if you want to run normalization anyway, call the function with 'mean' and 'std' params"
+            print("data was already normalized, returning 'mean', 'std' parameters")
+            print("if you want to run normalization anyway, call the function with 'mean' and 'std' params")
             return node.attrs.mean, node.attrs.std
     else:
         assert len(mean) == d, "Incorrect lenght of a vector of means: %d expected, %d found" % (d, len(mean))
@@ -136,7 +136,7 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
         node.attrs.std = std
     std[std == 0] = 1  # prevent division by zero for std=0
 
-    print "applying normalization"
+    print("applying normalization")
     for b in xrange(nb):
         start = b*batch
         step = min(batch, N-start)
@@ -264,4 +264,4 @@ if __name__ == "__main__":
     # make_hdf5("textfile.txt", "text.h5")
     # make_hdf5("textfile.txt", "textz.h5", comp_level=3)
     normalize_hdf5("text.h5")
-    print "Done!"
+    print("Done!")

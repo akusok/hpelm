@@ -9,6 +9,7 @@ import os
 import tempfile
 from unittest import TestCase
 import numpy as np
+import sys
 
 
 from hpelm import ELM
@@ -16,8 +17,12 @@ from hpelm import ELM
 class TestCorrectness(TestCase):
 
     def test_AddNeurons_WorksWithLongType(self):
+        if sys.version_info[0] == 2:
+            ltype = long
+        else:
+            ltype = int
         model = ELM(3, 2)
-        L = 10L
+        L = ltype(10)
         model.add_neurons(L, 'tanh')
 
     def test_CrossValidation_ReturnsError(self):

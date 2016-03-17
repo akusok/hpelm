@@ -8,9 +8,9 @@ Created on Mon Oct 27 17:48:33 2014
 import numpy as np
 import multiprocessing as mp
 from time import time
-from hpelm.modules import make_hdf5, _ireader, _iwriter, _prepare_fHH, _write_fHH
+from .modules import make_hdf5, _ireader, _iwriter, _prepare_fHH, _write_fHH
 from tables import open_file
-from elm import ELM
+from .elm import ELM
 
 
 class HPELM(ELM):
@@ -159,7 +159,7 @@ class HPELM(ELM):
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
         # if storing output to disk
@@ -229,7 +229,7 @@ class HPELM(ELM):
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
         if isinstance(fY, basestring):
@@ -287,7 +287,7 @@ class HPELM(ELM):
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
         if isinstance(fH, basestring):
@@ -446,7 +446,7 @@ class HPELM(ELM):
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
         k_opt = np.argmin(errs)
@@ -454,9 +454,9 @@ class HPELM(ELM):
         self.nnet._prune(np.arange(best_L))
         self.nnet.set_B(Betas[k_opt])
         del Betas
-        print "%d of %d neurons selected with a validation set" % (best_L, L)
+        print("%d of %d neurons selected with a validation set" % (best_L, L))
         if best_L > L*0.9:
-            print "Hint: try re-training with more hidden neurons"
+            print("Hint: try re-training with more hidden neurons")
         return Ls, errs, confs
 
     # async-IO versions of methods
@@ -544,7 +544,7 @@ class HPELM(ELM):
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
         # close async reader and writer
@@ -605,7 +605,7 @@ class HPELM(ELM):
             # report time
             eta = int(((time()-t0) / (b+1)) * (nb-b-1))
             if time() - t > self.tprint:
-                print "processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60)
+                print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
         qw_in.put(None)
