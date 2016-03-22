@@ -128,7 +128,7 @@ class HPELM(ELM):
         N = X.shape[0]
         _prepare_fHH(fHH, fHT, self.nnet, self.precision)
         # custom range adjustments
-        icount = min(istart + icount, N)
+        icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
 
         # weighted classification initialization
@@ -199,7 +199,7 @@ class HPELM(ELM):
         X, _ = self._checkdata(fX, None)
         N = X.shape[0]
         # custom range adjustments
-        icount = min(istart + icount, N)
+        icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
         if isinstance(fY, basestring):
@@ -256,7 +256,7 @@ class HPELM(ELM):
         X, _ = self._checkdata(fX, None)
         N = X.shape[0]
         # custom range adjustments
-        icount = min(istart + icount, N)
+        icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
         if isinstance(fH, basestring):
@@ -335,7 +335,7 @@ class HPELM(ELM):
             icount (int): number of samples to process
         """
         N = T.shape[0]
-        icount = min(istart + icount, N)
+        icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
 
         if self.classification == "c":
@@ -490,7 +490,7 @@ class HPELM(ELM):
         # TODO: adapt for GPU solver
         _prepare_fHH(fHH, fHT, self.nnet, self.precision)
         # custom range adjustments
-        icount = min(istart + icount, N)
+        icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))
 
         # weighted classification initialization
@@ -567,7 +567,7 @@ class HPELM(ELM):
         X, _ = self._checkdata(fX, None)
         N = X.shape[0]
         # custom range adjustments
-        icount = min(istart + icount, N)
+        icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
         make_hdf5((icount, self.nnet.outputs), fY)

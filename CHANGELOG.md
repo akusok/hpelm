@@ -1,6 +1,10 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.3] - 22-03-2016
+### Fixed
+- Fixed a bug with "icount" size
+
 ## [1.0.3] - 15-03-2016
 ### Fixed
 - HPELM loading, various small errors
