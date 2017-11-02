@@ -10,7 +10,9 @@ else:
           'numpy',
           'scipy>=0.12',
           'tables',
-          'fasteners'
+          'fasteners',
+          'six',
+          'nose'
       ]
 
 
@@ -24,7 +26,7 @@ def readme():
 # sphinx-apidoc -f -o docs hpelm; cd docs; make html; cd ../
 
 setup(name='hpelm',
-      version='1.0.4',
+      version='1.0.5',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
@@ -34,7 +36,7 @@ setup(name='hpelm',
           'License :: OSI Approved :: BSD License',
           'Natural Language :: English',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python',
           'Topic :: Scientific/Engineering :: Information Analysis',
       ],
       keywords='ELM HPC regression classification ANN',

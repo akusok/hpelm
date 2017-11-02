@@ -2,6 +2,7 @@
 
 
 import numpy as np
+from six.moves import xrange
 from scipy import optimize
 from scipy.linalg import lu_factor, lu_solve
 

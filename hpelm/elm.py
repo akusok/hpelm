@@ -6,8 +6,8 @@ Created on Mon Oct 27 17:48:33 2014
 """
 
 import numpy as np
-from six.moves import cPickle
-from six import integer_types
+from six.moves import cPickle, xrange
+from six import integer_types, string_types
 from tables import open_file
 from .nnets.slfn import SLFN
 from .nnets.slfn_python import SLFNPython
@@ -394,7 +394,7 @@ class ELM(object):
         Args:
             fname (string): filename to save model into.
         """
-        assert isinstance(fname, basestring), "Model file name must be a string"
+        assert isinstance(fname, string_types), "Model file name must be a string"
         m = {"inputs": self.nnet.inputs,
              "outputs": self.nnet.outputs,
              "Classification": self.classification,
@@ -415,7 +415,7 @@ class ELM(object):
         Args:
             fname (string): filename to load model from.
         """
-        assert isinstance(fname, basestring), "Model file name must be a string"
+        assert isinstance(fname, string_types), "Model file name must be a string"
         try:
             m = cPickle.load(open(fname, "rb"))
         except IOError:
@@ -510,7 +510,7 @@ class ELM(object):
         """Checks data variables and fixes matrix dimensionality issues.
         """
         if X is not None:
-            if isinstance(X, basestring):  # open HDF5 file
+            if isinstance(X, string_types):  # open HDF5 file
                 try:
                     h5 = open_file(X, "r")
                 except:
@@ -533,7 +533,7 @@ class ELM(object):
                                                    (self.nnet.inputs, X.shape[1])
 
         if T is not None:
-            if isinstance(T, basestring):  # open HDF5 file
+            if isinstance(T, string_types):  # open HDF5 file
                 try:
                     h5 = open_file(T, "r")
                 except IOError:

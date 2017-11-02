@@ -7,6 +7,8 @@ Created on Mon Oct 27 17:48:33 2014
 
 import numpy as np
 import multiprocessing as mp
+from six.moves import xrange
+from six import string_types
 from time import time
 from .modules import make_hdf5, _ireader, _iwriter, _prepare_fHH, _write_fHH
 from tables import open_file
@@ -144,7 +146,6 @@ class HPELM(ELM):
         # main loop over all the data
         t = time()
         t0 = time()
-        eta = 0
         wc_vector = None
         for b in xrange(nb):
             start = b*self.batch + istart
@@ -202,7 +203,7 @@ class HPELM(ELM):
         icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
-        if isinstance(fY, basestring):
+        if isinstance(fY, string_types):
             make_hdf5((icount, self.nnet.outputs), fY, dtype=self.precision)
             h5 = open_file(fY, "a")
             for Y in h5.walk_nodes():
@@ -214,7 +215,6 @@ class HPELM(ELM):
 
         t = time()
         t0 = time()
-        eta = 0
         for b in xrange(0, nb):
             start = b*self.batch + istart
             stop = min((b+1)*self.batch + istart, icount + istart)
@@ -232,7 +232,7 @@ class HPELM(ELM):
                 print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
-        if isinstance(fY, basestring):
+        if isinstance(fY, string_types):
             h5.flush()
             h5.close()
         elif fY is None:
@@ -259,7 +259,7 @@ class HPELM(ELM):
         icount = min(icount, N - istart)
         nb = int(np.ceil(float(icount) / self.batch))  # number of batches
         # make file to store results
-        if isinstance(fH, basestring):
+        if isinstance(fH, string_types):
             make_hdf5((icount, self.nnet.L), fH, dtype=self.precision)
             h5 = open_file(fH, "a")
             for H in h5.walk_nodes():
@@ -290,7 +290,7 @@ class HPELM(ELM):
                 print("processing batch %d/%d, eta %d:%02d:%02d" % (b+1, nb, eta/3600, (eta % 3600)/60, eta % 60))
                 t = time()
 
-        if isinstance(fH, basestring):
+        if isinstance(fH, string_types):
             h5.flush()
             h5.close()
         elif fH is None:
@@ -524,7 +524,6 @@ class HPELM(ELM):
         # main loop over all the data
         t = time()
         t0 = time()
-        eta = 0
         wc_vector = None
         for b in xrange(0, nb+1):
             start_next = b*self.batch + istart
@@ -585,7 +584,6 @@ class HPELM(ELM):
 
         t = time()
         t0 = time()
-        eta = 0
         for b in xrange(0, nb+1):
             start_next = b*self.batch + istart
             stop_next = min((b+1)*self.batch + istart, icount + istart)

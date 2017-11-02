@@ -17,7 +17,7 @@ import hpelm
 def classification_conf(folder, nn, ntype="sigm", b=1):
     folder = os.path.join(os.path.dirname(__file__), folder)
     i = np.random.randint(0, 10)
-    print "using init number: ", i
+    print("using init number: ", i)
     # get file names
     Xtr = np.load(os.path.join(folder, "xtrain_%d.npy" % (i + 1)))
     Xts = np.load(os.path.join(folder, "xtest_%d.npy" % (i + 1)))

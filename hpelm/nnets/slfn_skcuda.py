@@ -261,8 +261,8 @@ class SLFNSkCUDA(SLFN):
         """
         _, B, info = self.posv(HH, HT)
         if info > 0:
-            print "ELM covariance matrix is not full rank; solving with SVD (slow)"
-            print "This happened because you have duplicated or too many neurons"
+            print("ELM covariance matrix is not full rank; solving with SVD (slow)")
+            print("This happened because you have duplicated or too many neurons")
             HH = np.triu(HH) + np.triu(HH, k=1).T
             B = np.linalg.lstsq(HH, HT)[0]
         B = np.array(B, order='C', dtype=self.precision)

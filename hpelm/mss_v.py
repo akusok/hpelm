@@ -42,9 +42,9 @@ def train_v(self, X, T, Xv, Tv):
     iA = 1
     iE = L
     l = iE - iA
-    iB = iA + l/4
-    iC = iA + l/2
-    iD = iA + 3*l/4
+    iB = iA + l//4
+    iC = iA + l//2
+    iD = iA + 3*l//4
 
     l = 3  # run the while loop at least once
     while l > 2:
@@ -71,8 +71,8 @@ def train_v(self, X, T, Xv, Tv):
             iA = iB
             iE = iD
         l = iE - iA
-        iB = iA + l/4
-        iD = iA + (3*l)/4
+        iB = iA + l//4
+        iD = iA + (3*l)//4
 
     k_opt = [n1 for n1 in [iA, iB, iC, iD, iE] if e[n1] == m][0]  # find minimum index
     best_L = rank[:k_opt]

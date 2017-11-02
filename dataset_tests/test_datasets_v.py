@@ -26,10 +26,10 @@ def classification_accuracy(folder, nn, ntype="sigm"):
         N = Xtr.shape[0]
         ix = np.arange(N)
         np.random.shuffle(ix)
-        Xvl = Xtr[ix[:N/5]]
-        Tvl = Ttr[ix[:N/5]]
-        Xtr = Xtr[ix[N/5:]]
-        Ttr = Ttr[ix[N/5:]]
+        Xvl = Xtr[ix[:N//5]]
+        Tvl = Ttr[ix[:N//5]]
+        Xtr = Xtr[ix[N//5:]]
+        Ttr = Ttr[ix[N//5:]]
         # train ELM
         elm = hpelm.ELM(Xtr.shape[1], Ttr.shape[1])
         elm.add_neurons(nn, ntype)
@@ -55,10 +55,10 @@ def regression_accuracy(folder, nn):
         N = Xtr.shape[0]
         ix = np.arange(N)
         np.random.shuffle(ix)
-        Xvl = Xtr[ix[:N/5]]
-        Tvl = Ttr[ix[:N/5]]
-        Xtr = Xtr[ix[N/5:]]
-        Ttr = Ttr[ix[N/5:]]
+        Xvl = Xtr[ix[:N//5]]
+        Tvl = Ttr[ix[:N//5]]
+        Xtr = Xtr[ix[N//5:]]
+        Ttr = Ttr[ix[N//5:]]
         # train ELM
         elm = hpelm.ELM(Xtr.shape[1], Ttr.shape[1])
         elm.add_neurons(nn, "sigm")

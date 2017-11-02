@@ -6,6 +6,8 @@ Created on Thu Apr 16 12:10:02 2015
 """
 
 from tables import open_file
+from six import string_types
+from six.moves import xrange
 import numpy as np
 from scipy.spatial.distance import cdist
 
@@ -22,7 +24,7 @@ def rbf_param(data, k, kind="sqeuclidean"):
         kind = "chebyshev"
     else:
         kind = "sqeuclidean"
-    if isinstance(data, basestring):
+    if isinstance(data, string_types):
         h5 = open_file(data, "r")
         X = h5.root.data
     else:
@@ -57,7 +59,7 @@ def rbf_param(data, k, kind="sqeuclidean"):
             i += 1
             if i == k:
                 break
-    if isinstance(data, basestring):
+    if isinstance(data, string_types):
         h5.close()
 
     return W, B

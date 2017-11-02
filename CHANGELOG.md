@@ -1,6 +1,10 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.5] - 22-03-2016
+### Fixed
+- Python 3 compatibility
+
 ## [1.0.3] - 22-03-2016
 ### Fixed
 - Fixed a bug with "icount" size

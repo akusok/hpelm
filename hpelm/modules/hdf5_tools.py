@@ -7,6 +7,8 @@ Created on Thu Apr  2 21:12:46 2015
 """
 
 import numpy as np
+from six import string_types
+from six.moves import xrange
 import csv
 from tables import open_file, Atom, Filters
 import os
@@ -166,11 +168,11 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
     # open data file
     if isinstance(data, np.ndarray):
         X = data
-    elif isinstance(data, basestring) and data[-3:] in ['npy']:
+    elif isinstance(data, string_types) and data[-3:] in ['npy']:
         X = np.load(data)
-    elif isinstance(data, basestring) and data[-3:] in ['.gz', 'bz2']:
+    elif isinstance(data, string_types) and data[-3:] in ['.gz', 'bz2']:
         X = np.loadtxt(data, dtype=dtype, delimiter=delimiter, skiprows=skiprows)
-    elif isinstance(data, basestring) and data[-3:] in ['txt', 'csv']:
+    elif isinstance(data, string_types) and data[-3:] in ['txt', 'csv']:
         # iterative out-of-memory loader for huge .csv/.txt files
         fill = "iter"
         # check data dimensionality
@@ -226,7 +228,7 @@ def _ireader(fX, q_in, q_out):
     q_in - a (start, stop) tuple of read indexes; if start >= stop then reader terminates
     q_out - a queue for chunks red from a disk
     """
-    assert isinstance(fX, basestring), "Asyncronous I/O only supported with HDF5 data files"
+    assert isinstance(fX, string_types), "Asyncronous I/O only supported with HDF5 data files"
     hX = open_file(fX, "r")
     for X in hX.walk_nodes():
         pass  # find a node with whatever name
@@ -244,7 +246,7 @@ def _iwriter(fX, q_in):
 
     q_in - a (Xbatch, start, stop) tuple of data to write indexes; if q_in is None then writer terminates
     """
-    assert isinstance(fX, basestring), "Asyncronous I/O only supported with HDF5 data files"
+    assert isinstance(fX, string_types), "Asyncronous I/O only supported with HDF5 data files"
     hX = open_file(fX, "a")
     for X in hX.walk_nodes():
         pass  # find a node with whatever name

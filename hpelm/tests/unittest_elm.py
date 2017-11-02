@@ -10,9 +10,8 @@ import tempfile
 from unittest import TestCase
 import numpy as np
 import sys
-
-
 from hpelm import ELM
+
 
 class TestCorrectness(TestCase):
 

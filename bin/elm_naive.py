@@ -22,4 +22,4 @@ elm.add_neurons(15, "sigm")
 elm.train(X, Y, "c")
 Yh = elm.predict(X)
 acc = float(np.sum(Y.argmax(1) == Yh.argmax(1))) / Y.shape[0]
-print "Iris dataset training error: %.1f%%" % (100-acc*100)
+print("Iris dataset training error: %.1f%%" % (100-acc*100))
