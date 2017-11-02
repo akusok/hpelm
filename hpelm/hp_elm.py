@@ -5,7 +5,6 @@ Created on Mon Oct 27 17:48:33 2014
 @author: akusok
 """
 
-from past.builtins import basestring, range, xrange
 import numpy as np
 import multiprocessing as mp
 from six.moves import xrange
