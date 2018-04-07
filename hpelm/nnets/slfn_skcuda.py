@@ -9,7 +9,7 @@ Created on Sat Sep 12 13:10:23 2015
 @author: akusok
 """
 
-from slfn import SLFN
+from .slfn import SLFN
 import numpy as np
 from scipy.linalg import lapack
 from scipy.spatial.distance import cdist

@@ -74,7 +74,7 @@ class ELM(object):
         self.accelerator = accelerator
         if accelerator is "GPU":
             print("Using CUDA GPU acceleration with Scikit-CUDA")
-            from nnets.slfn_skcuda import SLFNSkCUDA
+            from .nnets.slfn_skcuda import SLFNSkCUDA
             self.nnet = SLFNSkCUDA(inputs, outputs, precision=self.precision, norm=norm)
         elif accelerator is "basic":
             print("Using slower basic Python solver")
