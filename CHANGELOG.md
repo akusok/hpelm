@@ -1,6 +1,10 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.6] - 22-03-2016
+### Fixed
+- Python 3 bug on module import with GPU acceleration
+
 ## [1.0.5] - 22-03-2016
 ### Fixed
 - Python 3 compatibility
