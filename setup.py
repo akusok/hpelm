@@ -9,7 +9,7 @@ else:
     ireqs = [
           'numpy',
           'scipy>=0.12',
-          'pytables',
+          'tables',
           'fasteners',
           'six',
           'nose'
