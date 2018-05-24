@@ -6,9 +6,11 @@ Created on Thu Apr  2 21:12:46 2015
 @author: akusok
 """
 
+from __future__ import division
+
 import numpy as np
 from six import string_types
-from six.moves import xrange
+from six.moves import range
 import csv
 from tables import open_file, Atom, Filters
 import os
@@ -21,7 +23,7 @@ def _prepare_fHH(fHH, fHT, nnet, precision):
     Args:
         fHH (string): hdf5 filename to store HH, None for ignore disk storage
         fHT (string): hdf5 filename to store HT, None for ignore disk storage
-        nent (nnets Object): neural network implementation from HPELM
+        nnet (nnets Object): neural network implementation from HPELM
         precision (np.float32/64): precision
     """
     if (fHH is not None) and (fHT is not None):
@@ -39,10 +41,10 @@ def _prepare_fHH(fHH, fHT, nnet, precision):
                 pass  # find a node with whatever name
             try:
                 assert node is not None, "Matrix in %d does not exist" % fHH
-                assert node is not None and node.shape[0] == L and node.shape[1] == L, \
-                       "Matrix in %d has a wrong shape: (%d, %d) expected, (%d, %d) found" % \
-                       (fHH, L, L, node.shape[0], node.shape[1])
-            except AssertionError as e:
+                msg = "Matrix in {:d} has a wrong shape: ({:d}, {:d}) expected, ({:d}, {:d}) found"
+                msg = msg.format(fHH, L, L, node.shape[0], node.shape[1])
+                assert node is not None and node.shape[0] == L and node.shape[1] == L, msg
+            except AssertionError:
                 raise  # re-raise same error
             finally:
                 h5.close()
@@ -57,15 +59,16 @@ def _prepare_fHH(fHH, fHT, nnet, precision):
                 pass  # find a node with whatever name
             try:
                 assert node is not None, "Matrix in %d does not exist" % fHT
-                assert node is not None and node.shape[0] == L and node.shape[1] == outputs, \
-                       "Matrix in %d has a wrong shape: (%d, %d) expected, (%d, %d) found" % \
-                       (fHT, L, outputs, node.shape[0], node.shape[1])
-            except AssertionError as e:
+                msg = "Matrix in {:d} has a wrong shape: ({:d}, {:d}) expected, ({:d}, {:d}) found"
+                msg = msg.format(fHT, L, outputs, node.shape[0], node.shape[1])
+                assert node is not None and node.shape[0] == L and node.shape[1] == outputs, msg
+            except AssertionError:
                 raise  # re-raise same error
             finally:
                 h5.close()
         else:
             make_hdf5((L, outputs), fHT, precision)
+
 
 def _write_fHH(fHH, fHT, HH, HT):
     """Writes HH,HT data into fHH,fHT files, multi-process safe with lock file.
@@ -75,6 +78,7 @@ def _write_fHH(fHH, fHT, HH, HT):
     fHH_lock = fHH + ".lock"
     with fasteners.InterProcessLock(fHH_lock):
         h5 = open_file(fHH, "a")
+        node = None
         for node in h5.walk_nodes():
             pass  # find a node with whatever name
         node[:] += HH
@@ -94,19 +98,21 @@ def _write_fHH(fHH, fHT, HH, HT):
 def normalize_hdf5(h5file, mean=None, std=None, batch=None):
     """Calculates and applies normalization to data in HDF5 file.
 
+    :param h5file: - HDF5 format data file
     :param mean: - known vector of mean values
     :param std: - known vector of standard deviations
     :param batch: - number of rows to read at once, default is a native batch size
     """
 
     h5 = open_file(h5file, "a")
+    node = None
     for node in h5.walk_nodes():
         pass  # find a node with whatever name
     dt = node.dtype
     N, d = node.shape  # HDF5 files are transposed, for Matlab compatibility
     if batch is None:
         batch = node.chunkshape[0]
-    nb = N/batch
+    nb = N//batch
     if N > nb*batch:
         nb += 1  # add last incomplete step
 
@@ -115,7 +121,7 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
             print("calculating mean and standard deviation of data")
             E_x = np.zeros((d,), dtype=np.float64)
             E_x2 = np.zeros((d,), dtype=np.float64)
-            for b in xrange(nb):
+            for b in range(nb):
                 start = b*batch
                 step = min(batch, N-start)
                 X1 = node[start: start+step, :].astype(np.float64)
@@ -132,14 +138,16 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
             print("if you want to run normalization anyway, call the function with 'mean' and 'std' params")
             return node.attrs.mean, node.attrs.std
     else:
-        assert len(mean) == d, "Incorrect lenght of a vector of means: %d expected, %d found" % (d, len(mean))
-        assert len(std) == d, "Incorrect lenght of a vector of standard deviations: %d expected, %d found" % (d, len(std))
+        msg1 = "Incorrect lenght of a vector of means: %d expected, %d found" % (d, len(mean))
+        assert len(mean) == d, msg1
+        msg2 = "Incorrect lenght of a vector of standard deviations: %d expected, %d found" % (d, len(std))
+        assert len(std) == d, msg2
         node.attrs.mean = mean
         node.attrs.std = std
     std[std == 0] = 1  # prevent division by zero for std=0
 
     print("applying normalization")
-    for b in xrange(nb):
+    for b in range(nb):
         start = b*batch
         step = min(batch, N-start)
         X = node[start: start+step].astype(np.float64)
@@ -150,22 +158,21 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
     return mean, std
 
 
-#def oversample(data, targets, classes):
-#    pass
-
-
 def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_level=0):
     """Makes an HDF5 file from whatever given data.
 
     :param data: - input data in Numpy.ndarray or filename, or a shape tuple
     :param h5file: - name (and path) of the output HDF5 file
+    :param dtype: - type of data in HDF5 file, from Numpy types
     :param delimiter: - data delimiter for text, csv files
+    :param skiprows: - number of rows to skip, if input is read from a text file
     :param comp_level: - compression level of the HDF5 file
     """
     assert comp_level < 10, "Compression level must be 0-9 (0 for no compression)"
     fill = ""
 
     # open data file
+    X = None
     if isinstance(data, np.ndarray):
         X = data
     elif isinstance(data, string_types) and data[-3:] in ['npy']:
@@ -177,7 +184,7 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
         fill = "iter"
         # check data dimensionality
         with open(data, "rU") as f:
-            for _ in xrange(skiprows):
+            for _ in range(skiprows):
                 f.readline()
             reader = csv.reader(f, delimiter=delimiter)
             for line in reader:
@@ -204,7 +211,7 @@ def make_hdf5(data, h5file, dtype=np.float64, delimiter=" ", skiprows=0, comp_le
     if fill == "iter":  # iteratively fill the data
         h5data = h5.create_earray(h5.root, "data", a, (0, X.shape[0]), filters=flt)
         with open(data, "rU") as f:
-            for _ in xrange(skiprows):
+            for _ in range(skiprows):
                 f.readline()
             reader = csv.reader(f, delimiter=delimiter)
             for line in reader:
@@ -230,6 +237,7 @@ def _ireader(fX, q_in, q_out):
     """
     assert isinstance(fX, string_types), "Asyncronous I/O only supported with HDF5 data files"
     hX = open_file(fX, "r")
+    X = None
     for X in hX.walk_nodes():
         pass  # find a node with whatever name
 
@@ -248,6 +256,7 @@ def _iwriter(fX, q_in):
     """
     assert isinstance(fX, string_types), "Asyncronous I/O only supported with HDF5 data files"
     hX = open_file(fX, "a")
+    X = None
     for X in hX.walk_nodes():
         pass  # find a node with whatever name
 

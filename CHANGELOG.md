@@ -1,7 +1,11 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
-## [1.0.6] - 22-03-2016
+## [1.0.7] - 24-05-2018
+### Fixed
+- Python 3 support for hdf5_tools
+
+## [1.0.6] - 22-03-2018
 ### Fixed
 - Python 3 bug on module import with GPU acceleration
 

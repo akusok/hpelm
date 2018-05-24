@@ -9,7 +9,7 @@ else:
     ireqs = [
           'numpy',
           'scipy>=0.12',
-          'tables',
+          'pytables',
           'fasteners',
           'six',
           'nose'
@@ -26,7 +26,7 @@ def readme():
 # sphinx-apidoc -f -o docs hpelm; cd docs; make html; cd ../
 
 setup(name='hpelm',
-      version='1.0.6',
+      version='1.0.7',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
