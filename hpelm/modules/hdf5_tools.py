@@ -132,10 +132,12 @@ def normalize_hdf5(h5file, mean=None, std=None, batch=None):
             std = (E_x2 - E2_x)**0.5
             node.attrs.mean = mean
             node.attrs.std = std
+            h5.close()
             return mean, std
         else:  # data is already normalized
             print("data was already normalized, returning 'mean', 'std' parameters")
             print("if you want to run normalization anyway, call the function with 'mean' and 'std' params")
+            h5.close()
             return node.attrs.mean, node.attrs.std
     else:
         msg1 = "Incorrect lenght of a vector of means: %d expected, %d found" % (d, len(mean))
