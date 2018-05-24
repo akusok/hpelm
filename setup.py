@@ -26,7 +26,7 @@ def readme():
 # sphinx-apidoc -f -o docs hpelm; cd docs; make html; cd ../
 
 setup(name='hpelm',
-      version='1.0.7',
+      version='1.0.8',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
