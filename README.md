@@ -1,10 +1,23 @@
 High Performance toolbox for Extreme Learning Machines
 --------
 
-Extreme learning machines (ELM) are a particular kind of Artificial Neural Networks,
-which solve classification and regression problems. Their performance is comparable
-to a classical Multilayer Perceptron trained with Error Back-Propagation algorithm,
-but the training time is up to 6 orders of magnitude smaller. (yes, a million times!)
+Extreme Learning Machine (ELM) is a machine learning model universally suitable for classification and regression 
+problems. It includes one or several types of hidden neurons concatenated together into the hidden neuron layer.
+Each neuron type has its own connection to input layer (dense, sparse or pairwise function based), and an element-wise
+transformation function applied on hidden layer output that is usually non-linear and bound. ELM model also includes
+a linear solver for the output weights, with several options and multiple parameters available: batch solvers,
+L2 and L1 regularization, iterative addition and removal ("forgetting") or training data samples, Lanczos finite
+iterative solvers, GPU-accelerated solvers, and distributed solvers.
+
+ELM toolbox supports export of trained models into Scikit-Learn compatible format for inference, 
+and Scikit-Learn compatible models for training with limited solver options 
+(and reduced performance at very large tasks).
+
+The main feature of ELM are randomly selected and fixed parameters of hidden neurons that never change. 
+This provides an explicit solution for output weights, unlike in traditional neural networks that have to be solved 
+iteratively as optimal weights of input and output layers depend on each other. 
+ELM performance is comparable to a classical Multilayer Perceptron trained with error back-propagation algorithm, 
+but explicit solution reduces training time by up to 6 orders of magnitude. (*yes, a million times!*)
 
 ELMs are suitable for processing huge datasets and dealing with Big Data,
 and this toolbox is created as their fastest and most scalable implementation.

@@ -13,3 +13,20 @@ from [Stackoverflow thread](https://stackoverflow.com/questions/4203163/how-do-i
 
 Don't forget to test each class in isolation using unittest.
 Also, there's no law that says classes must be mutable. In your case, for example, you have almost no mutable data. What you have is derived data, created by transformation functions from the source dataset.
+
+
+####################################################################################
+
+Extreme Learning Machine (ELM) is a machine learning model universally suitable for classification and regression 
+problems. It includes one or several types of hidden neurons concatenated together into the hidden neuron layer.
+Each neuron type has its own connection to input layer (dense, sparse or pairwise function based), and an element-wise
+transformation function applied on hidden layer output that is usually non-linear and bound. ELM model also includes
+a linear solver for the output weights, with several options and multiple parameters available: batch solvers,
+L2 and L1 regularization, iterative addition and removal ("forgetting") or training data samples, Lanczos finite
+iterative solvers, GPU-accelerated solvers, and distributed solvers.
+
+ELM toolbox supports export of trained models into Scikit-Learn compatible format for inference, and training of
+new models with limited solver options (and reduced performance for very large tasks).
+
+
+
