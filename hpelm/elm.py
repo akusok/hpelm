@@ -31,7 +31,7 @@ class ELM(object):
             for model structure selection (validation, cross-validation, Leave-One-Out). Can be changed later directly
             as a class attribute.
         accelerator ("GPU"/"basic", optional): type of accelerated ELM to use: None, 'GPU', 'basic', ...
-        precision (optional): data precision to use, supports signle ('single', '32' or numpy.float32) or double
+        precision (optional): data precision to use, supports single ('single', '32' or numpy.float32) or double
             ('double', '64' or numpy.float64). Single precision is faster but may cause numerical errors. Majority
             of GPUs work in single precision. Default: **double**.
         norm (double, optinal): L2-normalization parameter, **None** gives the default value.
@@ -45,7 +45,7 @@ class ELM(object):
             complex logic. Different implementations are given by different classes: for Python, for GPU, etc.
             See ``hpelm.nnets`` folder for particular files. You can implement your own computational algorithm
             by inheriting from ``hpelm.nnets.SLFN`` and overwriting some methods.
-        flist (list of strings): Awailable types of neurons, use them when adding new neurons.
+        flist (list of strings): Available types of neurons, use them when adding new neurons.
 
     Note:
         Below the 'matrix' type means a 2-dimensional Numpy.ndarray.
