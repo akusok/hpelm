@@ -412,7 +412,7 @@ class ELM(object):
 
         """
         m = self._get_output_format()
-        
+
         return cPickle.dumps(m)
 
     def _get_output_format(self):
