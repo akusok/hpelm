@@ -1,6 +1,10 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
+## [1.0.10] - 13-05-2024
+### New
+- Save and load model with string I/O in addition to files
+
 ## [1.0.9] - 24-05-2018
 ### Fixed
 - Python 3 support for hdf5_tools, bug fixing
