@@ -1,7 +1,7 @@
 # Change Log
 All changes to 'hpelm' toolbox will be documented in this file.
 
-## [1.0.9] - 24-05-2018
+## [1.0.10] - 24-05-2018
 ### New
 - Save and load model with string I/O in addition to files
 
