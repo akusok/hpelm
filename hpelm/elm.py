@@ -395,17 +395,36 @@ class ELM(object):
             fname (string): filename to save model into.
         """
         assert isinstance(fname, string_types), "Model file name must be a string"
-        m = {"inputs": self.nnet.inputs,
-             "outputs": self.nnet.outputs,
-             "Classification": self.classification,
-             "Weights_WC": self.wc,
-             "neurons": self.nnet.get_neurons(),
-             "norm": self.nnet.norm,  # W and bias are here
-             "Beta": self.nnet.get_B()}
+        m = self._get_output_format()
         try:
             cPickle.dump(m, open(fname, "wb"), -1)
         except IOError:
             raise IOError("Cannot create a model file at: %s" % fname)
+
+    def dumps(self) -> bytes:
+        """Output ELM model with current parameters to a bytes object
+
+        Model does not save a particular solver, precision batch size. They are obtained from
+        a new ELM when loading the model (so one can switch to another solver, for instance).
+
+        Also ranking and max number of neurons are not saved, because they
+        are runtime training info irrelevant after the training completes.
+
+        """
+        m = self._get_output_format()
+
+        return cPickle.dumps(m)
+
+    def _get_output_format(self):
+        return {
+            "inputs": self.nnet.inputs,
+            "outputs": self.nnet.outputs,
+            "Classification": self.classification,
+            "Weights_WC": self.wc,
+            "neurons": self.nnet.get_neurons(),
+            "norm": self.nnet.norm,  # W and bias are here
+            "Beta": self.nnet.get_B()
+        }
 
     def load(self, fname):
         """Load ELM model data from a file.
@@ -420,6 +439,20 @@ class ELM(object):
             m = cPickle.load(open(fname, "rb"))
         except IOError:
             raise IOError("Model file not found: %s" % fname)
+        self._update_from_output(m)
+
+    def loads(self, obj: bytes):
+        """Load ELM model data from bytes object
+
+        Load requires an ``ELM`` object, and it uses solver type, precision and batch size from that ELM object.
+
+        Args:
+            obj (bytes): bytes object to load from.
+        """
+        m = cPickle.loads(obj)
+        self._update_from_output(m)
+
+    def _update_from_output(self, m: dict):
         inputs = m["inputs"]
         outputs = m["outputs"]
         self.classification = m["Classification"]
