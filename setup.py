@@ -12,7 +12,7 @@ else:
           'tables',
           'fasteners',
           'six',
-          'nose'
+          'pytest'
       ]
 
 
@@ -26,7 +26,7 @@ def readme():
 # sphinx-apidoc -f -o docs hpelm; cd docs; make html; cd ../
 
 setup(name='hpelm',
-      version='1.0.9',
+      version='1.0.10',
       description='High-Performance implementation of an Extreme Learning Machine',
       long_description=readme(),
       classifiers=[
@@ -50,7 +50,7 @@ setup(name='hpelm',
                 'hpelm.nnets'],
       install_requires=ireqs,  # ReadTheDocs fix
       scripts=['bin/elm_naive.py'],
-      test_suite='nose.collector',
-      tests_require=['nose'],
+      test_suite='pytest',
+      tests_require=['pytest'],
       include_package_data=True,
       zip_safe=False)

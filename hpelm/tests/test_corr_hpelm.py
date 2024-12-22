@@ -121,32 +121,32 @@ class TestCorrectness(TestCase):
     def test_SLFN_AddLinearNeurons_GotThem(self):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "lin")
-        self.assertEquals("lin", hpelm.nnet.get_neurons()[0][1])
+        self.assertEqual("lin", hpelm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddSigmoidalNeurons_GotThem(self):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "sigm")
-        self.assertEquals("sigm", hpelm.nnet.get_neurons()[0][1])
+        self.assertEqual("sigm", hpelm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddTanhNeurons_GotThem(self):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "tanh")
-        self.assertEquals("tanh", hpelm.nnet.get_neurons()[0][1])
+        self.assertEqual("tanh", hpelm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfL1Neurons_GotThem(self):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "rbf_l1")
-        self.assertEquals("rbf_l1", hpelm.nnet.get_neurons()[0][1])
+        self.assertEqual("rbf_l1", hpelm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfL2Neurons_GotThem(self):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "rbf_l2")
-        self.assertEquals("rbf_l2", hpelm.nnet.get_neurons()[0][1])
+        self.assertEqual("rbf_l2", hpelm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfLinfNeurons_GotThem(self):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "rbf_linf")
-        self.assertEquals("rbf_linf", hpelm.nnet.get_neurons()[0][1])
+        self.assertEqual("rbf_linf", hpelm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddUfuncNeurons_GotThem(self):
         hpelm = HPELM(1, 1)
@@ -158,7 +158,7 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "lin")
         hpelm.add_neurons(1, "sigm")
-        self.assertEquals(2, len(hpelm.nnet.get_neurons()))
+        self.assertEqual(2, len(hpelm.nnet.get_neurons()))
         ntypes = [nr[1] for nr in hpelm.nnet.get_neurons()]
         self.assertIn("lin", ntypes)
         self.assertIn("sigm", ntypes)
@@ -167,8 +167,8 @@ class TestCorrectness(TestCase):
         hpelm = HPELM(1, 1)
         hpelm.add_neurons(1, "lin")
         hpelm.add_neurons(1, "lin")
-        self.assertEquals(1, len(hpelm.nnet.get_neurons()))
-        self.assertEquals(2, hpelm.nnet.get_neurons()[0][0])
+        self.assertEqual(1, len(hpelm.nnet.get_neurons()))
+        self.assertEqual(2, hpelm.nnet.get_neurons()[0][0])
 
     def test_AddNeurons_InitBias_BiasInModel(self):
         hpelm = HPELM(1, 1)

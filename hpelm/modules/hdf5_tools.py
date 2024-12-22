@@ -40,9 +40,9 @@ def _prepare_fHH(fHH, fHT, nnet, precision):
             for node in h5.walk_nodes():
                 pass  # find a node with whatever name
             try:
-                assert node is not None, "Matrix in %d does not exist" % fHH
-                msg = "Matrix in {:d} has a wrong shape: ({:d}, {:d}) expected, ({:d}, {:d}) found"
-                msg = msg.format(fHH, L, L, node.shape[0], node.shape[1])
+                assert node is not None, f"Matrix in {fHH} does not exist"
+                s0 = node.shape[0]
+                msg = f"Matrix in {fHH} has a wrong shape: ({L}, {L}) expected, ({s0}, {s0}) found"
                 assert node is not None and node.shape[0] == L and node.shape[1] == L, msg
             except AssertionError:
                 raise  # re-raise same error
@@ -58,9 +58,8 @@ def _prepare_fHH(fHH, fHT, nnet, precision):
             for node in h5.walk_nodes():
                 pass  # find a node with whatever name
             try:
-                assert node is not None, "Matrix in %d does not exist" % fHT
-                msg = "Matrix in {:d} has a wrong shape: ({:d}, {:d}) expected, ({:d}, {:d}) found"
-                msg = msg.format(fHT, L, outputs, node.shape[0], node.shape[1])
+                assert node is not None, f"Matrix in {fHT} does not exist"
+                msg = f"Matrix in {fHT} has a wrong shape: ({L}, {outputs}) expected, ({node.shape[0]}, {node.shape[1]}) found"
                 assert node is not None and node.shape[0] == L and node.shape[1] == outputs, msg
             except AssertionError:
                 raise  # re-raise same error
