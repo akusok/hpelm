@@ -418,7 +418,7 @@ class HPELM(ELM):
         classification = self.classification is not None
 
         Ls = np.logspace(np.log(3), np.log(L), steps, base=np.e, endpoint=True)
-        Ls = np.ceil(Ls).astype(np.int)
+        Ls = np.ceil(Ls).astype(int)
         Ls = np.unique(Ls)  # numbers of neurons to check
         k = Ls.shape[0]
         errs = np.zeros((k,))  # errors for these numbers of neurons

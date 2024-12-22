@@ -96,32 +96,32 @@ class TestCorrectness(TestCase):
     def test_SLFN_AddLinearNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "lin")
-        self.assertEquals("lin", elm.nnet.get_neurons()[0][1])
+        self.assertEqual("lin", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddSigmoidalNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "sigm")
-        self.assertEquals("sigm", elm.nnet.get_neurons()[0][1])
+        self.assertEqual("sigm", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddTanhNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "tanh")
-        self.assertEquals("tanh", elm.nnet.get_neurons()[0][1])
+        self.assertEqual("tanh", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfL1Neurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "rbf_l1")
-        self.assertEquals("rbf_l1", elm.nnet.get_neurons()[0][1])
+        self.assertEqual("rbf_l1", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfL2Neurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "rbf_l2")
-        self.assertEquals("rbf_l2", elm.nnet.get_neurons()[0][1])
+        self.assertEqual("rbf_l2", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddRbfLinfNeurons_GotThem(self):
         elm = ELM(1, 1)
         elm.add_neurons(1, "rbf_linf")
-        self.assertEquals("rbf_linf", elm.nnet.get_neurons()[0][1])
+        self.assertEqual("rbf_linf", elm.nnet.get_neurons()[0][1])
 
     def test_SLFN_AddUfuncNeurons_GotThem(self):
         elm = ELM(1, 1)
@@ -133,7 +133,7 @@ class TestCorrectness(TestCase):
         elm = ELM(1, 1)
         elm.add_neurons(1, "lin")
         elm.add_neurons(1, "sigm")
-        self.assertEquals(2, len(elm.nnet.get_neurons()))
+        self.assertEqual(2, len(elm.nnet.get_neurons()))
         ntypes = [nr[1] for nr in elm.nnet.get_neurons()]
         self.assertIn("lin", ntypes)
         self.assertIn("sigm", ntypes)
@@ -142,8 +142,8 @@ class TestCorrectness(TestCase):
         elm = ELM(1, 1)
         elm.add_neurons(1, "lin")
         elm.add_neurons(1, "lin")
-        self.assertEquals(1, len(elm.nnet.get_neurons()))
-        self.assertEquals(2, elm.nnet.get_neurons()[0][0])
+        self.assertEqual(1, len(elm.nnet.get_neurons()))
+        self.assertEqual(2, elm.nnet.get_neurons()[0][0])
 
     def test_AddNeurons_InitBias_BiasInModel(self):
         elm = ELM(1, 1)

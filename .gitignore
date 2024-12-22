@@ -20,11 +20,13 @@ _build
 /*.egg-info
 /*.egg
 
-# OSX stuff
+# OSX
 *.DS_Store
 *~
 
-# PyCharm crap
+# PyCharm
 .idea/
 .idea
 .coverage
+
+.eggs/
